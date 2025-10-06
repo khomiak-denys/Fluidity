@@ -1,0 +1,30 @@
+name: fluidity
+description: "A new Flutter project."
+
+publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+
+
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+
+  fl_chart: ^0.68.0
+  flutter_animate: ^4.5.0
+  # lucide_icons removed due to version conflicts; using built-in Icons instead
+  cupertino_icons: ^1.0.8
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/water.jpg
+
