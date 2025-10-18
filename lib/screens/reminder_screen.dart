@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
+import '../models/reminder.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -15,33 +16,6 @@ const Color gray200 = Color(0xFFE5E7EB);
 const Color gray400 = Color(0xFF9CA3AF);
 const Color mutedForeground = Color(0xFF6B7280); // text-muted-foreground
 const Color red500 = Color(0xFFEF4444);
-
-// =========================================================================
-// МОДЕЛЬ
-// =========================================================================
-
-class Reminder {
-  final String id;
-  final String time; // Формат "HH:mm"
-  final bool enabled;
-  final String label;
-
-  Reminder({
-    required this.id,
-    required this.time,
-    required this.enabled,
-    required this.label,
-  });
-
-  Reminder copyWith({bool? enabled}) {
-    return Reminder(
-      id: id,
-      time: time,
-      enabled: enabled ?? this.enabled,
-      label: label,
-    );
-  }
-}
 
 // =========================================================================
 // ЕКРАН НАГАДУВАНЬ

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
-import '../widgets/water_intake.dart'; // WaterIntakeEntry is defined here
+import '../models/water_intake.dart'; // WaterIntakeEntry model
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);

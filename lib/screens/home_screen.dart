@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart'; // Для TextInputType.number
 import 'package:fluidity/widgets/water_progress.dart';
-import 'package:fluidity/widgets/water_intake.dart';
+import '../models/water_intake.dart';
+import '../widgets/water_intake.dart';
 import 'package:fluidity/ui/button.dart';
 
-// --- Custom Colors/Styles (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
 const Color cyan50 = Color(0xFFECFEFF);
 const Color sky200 = Color(0xFFBAE6FD);
@@ -122,7 +122,6 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     setState(() {
       entries.removeWhere((e) => e.id == id);
     });
-    // Імітація sonner toast.success
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('Запис видалено'), 
@@ -470,10 +469,10 @@ class _EmptyStateCard extends StatelessWidget {
         side: const BorderSide(color: sky200, style: BorderStyle.solid, width: 2), 
       ),
       child: const Padding(
-        padding: EdgeInsets.all(32.0), // p-8
+        padding: EdgeInsets.all(32.0), 
         child: Column(
           children: [
-            Text('💧', style: TextStyle(fontSize: 40)), // text-4xl mb-4
+            Text('💧', style: TextStyle(fontSize: 40)), 
             SizedBox(height: 16), // mb-2
             Text('Почніть відстеження!', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: sky700)), // font-medium text-sky-700
             SizedBox(height: 8), 

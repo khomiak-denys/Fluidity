@@ -4,8 +4,9 @@ import 'screens/login_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/reminder_screen.dart';
 import 'screens/profile_screen.dart';
-import 'package:fluidity/widgets/water_intake.dart';
-import 'package:fluidity/widgets/bottom_navigation.dart';
+import 'models/water_intake.dart';
+import 'widgets/water_intake.dart';
+import 'widgets/bottom_navigation.dart';
 import 'screens/register_screen.dart';
 
 void main() {
