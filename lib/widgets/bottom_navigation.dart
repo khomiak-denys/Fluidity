@@ -1,5 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
+
+// --- Custom Colors (Derived from Tailwind classes) ---
+const Color sky200 = Color(0xFFBAE6FD);
+const Color sky100 = Color(0xFFE0F2FE); // bg-sky-100
+const Color sky600 = Color(0xFF0284C7); // text-sky-600
+const Color tabInActiveColor = Color(0xFF9E9E9E); // Приблизно Colors.grey[400]
 
 class BottomNavigation extends StatelessWidget {
   final String activeTab;
@@ -11,71 +16,129 @@ class BottomNavigation extends StatelessWidget {
     required this.onTabChange,
   });
 
+  // Дані вкладок, використовуючи іконки з Material Icons
+  static const _tabs = [
+    {'id': 'home', 'icon': Icons.home_rounded, 'label': 'Головна'},
+    {'id': 'statistics', 'icon': Icons.bar_chart_rounded, 'label': 'Статистика'},
+    {'id': 'reminders', 'icon': Icons.notifications_rounded, 'label': 'Нагадування'},
+    {'id': 'profile', 'icon': Icons.person_rounded, 'label': 'Профіль'},
+  ];
+
   @override
   Widget build(BuildContext context) {
-    final tabs = [
-      {'id': 'home', 'icon': Icons.home_rounded, 'label': 'Головна'},
-      {'id': 'statistics', 'icon': Icons.bar_chart_rounded, 'label': 'Статистика'},
-      {'id': 'reminders', 'icon': Icons.notifications_rounded, 'label': 'Нагадування'},
-      {'id': 'profile', 'icon': Icons.person_rounded, 'label': 'Профіль'},
-    ];
+    // Використовуємо BottomAppBar, щоб розмістити його внизу
+    return BottomAppBar(
+      color: Colors.white,
+      padding: EdgeInsets.zero,
+      elevation: 0,
+      surfaceTintColor: Colors.transparent,
+      child: Container(
+        // border-t border-sky-200
+        decoration: const BoxDecoration(
+          color: Colors.white,
+          border: Border(top: BorderSide(color: sky200, width: 1)),
+        ),
+        padding: const EdgeInsets.only(left: 8, right: 8, top: 4), // px-2 py-1
+        child: SafeArea(
+          top: false,
+          // flex justify-around max-w-sm mx-auto
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 420), // max-w-sm
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: _tabs.map((tab) {
+                  final id = tab['id'] as String;
+                  final isActive = activeTab == id;
+                  final icon = tab['icon'] as IconData;
+                  final label = tab['label'] as String;
 
-    return Container(
-      decoration: const BoxDecoration(
-        color: Colors.white,
-        border: Border(top: BorderSide(color: Color(0xFFBAE6FD), width: 1)), // border-sky-200
-      ),
-      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
-      child: SafeArea(
-        top: false,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: tabs.map((tab) {
-            final id = tab['id'] as String;
-            final isActive = activeTab == id;
-            final icon = tab['icon'] as IconData;
-            final label = tab['label'] as String;
-
-            return GestureDetector(
-              onTap: () => onTabChange(id),
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOut,
-                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                decoration: BoxDecoration(
-                  color: isActive ? const Color(0xFFE0F2FE) : Colors.transparent, // bg-sky-100
-                  borderRadius: BorderRadius.circular(10),
-                ),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    Icon(
-                      icon,
-                      color: isActive ? const Color(0xFF0284C7) : Colors.grey[400], // text-sky-600
-                      size: 22,
-                    ),
-                    const SizedBox(height: 3),
-                    Text(
-                      label,
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
-                        color: isActive ? const Color(0xFF0284C7) : Colors.grey[400],
-                        height: 1.1,
+                  // Використовуємо LayoutBuilder для отримання розмірів і правильної емуляції
+                  // "активного фону", хоча це не ідеальна імітація motion.div
+                  return Expanded(
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 2.0), // Невеликий відступ між кнопками
+                      child: InkWell(
+                        onTap: () => onTabChange(id),
+                        borderRadius: BorderRadius.circular(8), // rounded-lg
+                        child: _TabItem(
+                          isActive: isActive,
+                          icon: icon,
+                          label: label,
+                        ),
                       ),
                     ),
-                  ],
-                ),
-              ).animate(
-                target: isActive ? 1 : 0,
-              ).scale(
-                duration: const Duration(milliseconds: 200),
-                begin: const Offset(1, 1),
-                end: const Offset(1.05, 1.05),
+                  );
+                }).toList(),
               ),
-            );
-          }).toList(),
+            ),
+          ),
         ),
+      ),
+    );
+  }
+}
+
+// Окремий віджет для анімації вкладки, імітуючи motion.div з layoutId
+class _TabItem extends StatelessWidget {
+  final bool isActive;
+  final IconData icon;
+  final String label;
+
+  const _TabItem({
+    required this.isActive,
+    required this.icon,
+    required this.label,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    // Використовуємо Material для InkWell та Stack для розміщення фону
+    return Container(
+      constraints: const BoxConstraints(minHeight: 44), // min-h-[44px]
+      padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4), // py-2 px-2
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          // Активний фон (motion.div layoutId="activeTab")
+          if (isActive)
+            Positioned.fill(
+              child: AnimatedContainer(
+                duration: const Duration(milliseconds: 300), // Імітація 'spring'
+                curve: Curves.easeOut,
+                decoration: BoxDecoration(
+                  color: sky100, // bg-sky-100
+                  borderRadius: BorderRadius.circular(8), // rounded-lg
+                ),
+              ),
+            ),
+
+          // Зміст вкладки (relative z-10)
+          Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(
+                icon,
+                // w-5 h-5 mb-1 transition-colors
+                size: 20,
+                color: isActive ? sky600 : tabInActiveColor,
+              ),
+              const SizedBox(height: 4), // mb-1
+              Text(
+                label,
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  // text-xs transition-colors leading-none
+                  fontSize: 10,
+                  fontWeight: isActive ? FontWeight.w500 : FontWeight.normal,
+                  color: isActive ? sky600 : tabInActiveColor,
+                  height: 1.0, // Емуляція leading-none
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

@@ -23,6 +23,8 @@ class AppButton extends StatelessWidget {
   final ButtonSize size;
   final IconData? icon;
   final bool isDisabled;
+  final Color? borderColor;
+  final Color? textColor;
 
   const AppButton({
     super.key,
@@ -32,40 +34,47 @@ class AppButton extends StatelessWidget {
     this.size = ButtonSize.medium,
     this.icon,
     this.isDisabled = false,
+    this.borderColor,
+    this.textColor
   });
 
-  @override
-  Widget build(BuildContext context) {
-    final (bgColor, fgColor, borderColor) = _getColors(context);
-    final (padding, fontSize) = _getSize();
+@override
+Widget build(BuildContext context) {
+  final (bgColor, fgColor, defaultBorderColor) = _getColors(context); // змінив назву
+  final (padding, fontSize) = _getSize();
+  
+  // Використовуємо this.borderColor якщо є, інакше defaultBorderColor
+  final effectiveBorderColor = this.borderColor ?? defaultBorderColor;
 
-    return Opacity(
-      opacity: isDisabled ? 0.5 : 1.0,
-      child: TextButton(
-        onPressed: isDisabled ? null : onPressed,
-        style: TextButton.styleFrom(
-          backgroundColor: bgColor,
-          foregroundColor: fgColor,
-          padding: padding,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(8),
-            side: borderColor != null ? BorderSide(color: borderColor) : BorderSide.none,
-          ),
-        ),
-        child: Row(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            if (icon != null) Icon(icon, size: fontSize + 2),
-            if (icon != null) const SizedBox(width: 6),
-            Text(
-              text,
-              style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w500),
-            ),
-          ],
+  return Opacity(
+    opacity: isDisabled ? 0.5 : 1.0,
+    child: TextButton(
+      onPressed: isDisabled ? null : onPressed,
+      style: TextButton.styleFrom(
+        backgroundColor: bgColor,
+        foregroundColor: fgColor,
+        padding: padding,
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(8),
+          side: effectiveBorderColor != null 
+            ? BorderSide(color: effectiveBorderColor, width: 2) // додав width
+            : BorderSide.none,
         ),
       ),
-    );
-  }
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) Icon(icon, size: fontSize + 2),
+          if (icon != null) const SizedBox(width: 6),
+          Text(
+            text,
+            style: TextStyle(fontSize: fontSize, fontWeight: FontWeight.w500),
+          ),
+        ],
+      ),
+    ),
+  );
+}
 
   (Color?, Color?, Color?) _getColors(BuildContext context) {
     final theme = Theme.of(context);
@@ -75,7 +84,7 @@ class AppButton extends StatelessWidget {
       case ButtonVariant.destructive:
         return (Colors.red, Colors.white, null);
       case ButtonVariant.outline:
-        return (Colors.transparent, theme.colorScheme.onBackground, theme.dividerColor);
+        return (Colors.transparent, theme.colorScheme.onSurface, theme.dividerColor);
       case ButtonVariant.secondary:
         return (theme.colorScheme.secondaryContainer, theme.colorScheme.onSecondaryContainer, null);
       case ButtonVariant.ghost:

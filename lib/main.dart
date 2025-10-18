@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
-import 'home_screen.dart';
-import 'login_screen.dart';
-import 'statistics_screen.dart';
-import 'reminder_screen.dart';
-import 'profile_screen.dart';
+import 'screens/home_screen.dart';
+import 'screens/login_screen.dart';
+import 'screens/statistics_screen.dart';
+import 'screens/reminder_screen.dart';
+import 'screens/profile_screen.dart';
+import 'package:fluidity/widgets/water_intake.dart';
+import 'package:fluidity/widgets/bottom_navigation.dart';
+import 'screens/register_screen.dart';
 
 void main() {
   runApp(const WaterTrackerApp());
@@ -18,15 +21,16 @@ class WaterTrackerApp extends StatefulWidget {
 
 class _WaterTrackerAppState extends State<WaterTrackerApp> {
   bool isAuthenticated = false;
+  final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   String activeTab = 'home';
   int dailyGoal = 2000;
   bool notificationsEnabled = true;
 
   // Mock data
   List<WaterIntakeEntry> entries = [
-    WaterIntakeEntry(id: '1', amount: 250, time: '09:30', type: 'glass'),
-    WaterIntakeEntry(id: '2', amount: 500, time: '12:15', type: 'bottle'),
-    WaterIntakeEntry(id: '3', amount: 350, time: '15:45', type: 'cup'),
+    WaterIntakeEntry(id: '1', amount: 250, time: '09:30', type: 'glass', comment: ''),
+    WaterIntakeEntry(id: '2', amount: 500, time: '12:15', type: 'bottle', comment: ''),
+    WaterIntakeEntry(id: '3', amount: 350, time: '15:45', type: 'cup', comment: ''),
   ];
 
   List reminders = [
@@ -47,8 +51,12 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
     return true;
   }
 
-  void handleRegister() {
-    // TODO: implement registration flow (navigate to register screen or show dialog)
+  Future<bool> handleRegister(String firstName, String lastName, String phone, String password) async {
+    // TODO: replace with real registration logic. For now, mock success and authenticate.
+    setState(() {
+      isAuthenticated = true;
+    });
+    return true;
   }
 
   void handleSignOut() {
@@ -96,25 +104,23 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
+      navigatorKey: _navigatorKey,
+      routes: {
+        '/register': (_) => RegisterScreen(onRegister: handleRegister),
+      },
       home: isAuthenticated
           ? Scaffold(
               body: renderScreen(),
-              bottomNavigationBar: BottomNavigationBar(
-                currentIndex: ['home', 'statistics', 'reminders', 'profile'].indexOf(activeTab),
-                onTap: (index) {
-                  setTab(['home', 'statistics', 'reminders', 'profile'][index]);
-                },
-                items: const [
-                  BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Home'),
-                  BottomNavigationBarItem(icon: Icon(Icons.bar_chart), label: 'Statistics'),
-                  BottomNavigationBarItem(icon: Icon(Icons.notifications), label: 'Reminders'),
-                  BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
-                ],
+              bottomNavigationBar: BottomNavigation(
+                activeTab: activeTab,
+                onTabChange: setTab,
               ),
             )
-          : LoginScreen(
-              onLogin: handleLogin,
-              onRegister: handleRegister,
+          : Builder(
+              builder: (context) => LoginScreen(
+                onLogin: handleLogin,
+                onRegister: () => _navigatorKey.currentState?.pushNamed('/register'),
+              ),
             ),
     );
   }

@@ -17,8 +17,7 @@ class WaterProgress extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
   final double percentage = (current / goal).clamp(0.0, 1.0).toDouble();
-    const radius = 75.0;
-    final circumference = 2 * pi * radius;
+  const radius = 75.0;
 
     return Center(
       child: SizedBox(
