@@ -25,6 +25,7 @@ class WaterTrackerApp extends StatefulWidget {
 
 class _WaterTrackerAppState extends State<WaterTrackerApp> {
   bool isAuthenticated = false;
+  String? authError;
   final GlobalKey<NavigatorState> _navigatorKey = GlobalKey<NavigatorState>();
   String activeTab = 'home';
   int dailyGoal = 2000;
@@ -49,28 +50,38 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
 
   Future<bool> handleLogin(String email, String password) async {
     final ok = await FirebaseService.instance.signInWithEmail(email.trim(), password);
-    final ctx = _navigatorKey.currentContext;
     if (ok) {
-      if (mounted) setState(() => isAuthenticated = true);
+      if (mounted) {
+        setState(() {
+          isAuthenticated = true;
+          authError = null;
+        });
+      }
       FirebaseService.instance.logEvent('login', {'method': 'email'});
-  if (ctx != null) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Успішний вхід'))); // ignore: use_build_context_synchronously
       return true;
     } else {
-  if (ctx != null) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Помилка входу: перевірте email/пароль'), backgroundColor: Colors.red)); // ignore: use_build_context_synchronously
+      if (mounted) {
+        setState(() => authError = 'Помилка входу: перевірте email/пароль');
+      }
       return false;
     }
   }
 
   Future<bool> handleRegister(String firstName, String lastName, String email, String password) async {
     final ok = await FirebaseService.instance.registerWithEmail(firstName.trim(), lastName.trim(), email.trim(), password);
-    final ctx = _navigatorKey.currentContext;
     if (ok) {
-      if (mounted) setState(() => isAuthenticated = true);
+      if (mounted) {
+        setState(() {
+          isAuthenticated = true;
+          authError = null;
+        });
+      }
       FirebaseService.instance.logEvent('sign_up', {'method': 'email'});
-  if (ctx != null) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Реєстрація пройшла успішно'))); // ignore: use_build_context_synchronously
       return true;
     } else {
-  if (ctx != null) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Не вдалося зареєструвати користувача'), backgroundColor: Colors.red)); // ignore: use_build_context_synchronously
+      if (mounted) {
+        setState(() => authError = 'Не вдалося зареєструвати користувача');
+      }
       return false;
     }
   }
@@ -101,13 +112,20 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       case 'reminders':
         return const RemindersScreen();
       case 'profile':
+        final fbUser = FirebaseService.instance.auth.currentUser;
+        final userMap = <String, String>{
+          'uid': fbUser?.uid ?? mockUser['uid'].toString(),
+          'phoneNumber': fbUser?.phoneNumber ?? mockUser['phoneNumber'].toString(),
+          'displayName': fbUser?.displayName ?? '',
+          'email': fbUser?.email ?? '',
+        };
         return ProfileScreen(
           dailyGoal: dailyGoal,
           onDailyGoalChange: (g) => setState(() => dailyGoal = g),
           notificationsEnabled: notificationsEnabled,
           onNotificationsToggle: () => setState(() => notificationsEnabled = !notificationsEnabled),
           onSignOut: handleSignOut,
-          user: mockUser,
+          user: userMap,
           language: language,
           onLanguageChange: (l) => setState(() => language = l),
         );
@@ -122,7 +140,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigatorKey,
       routes: {
-        '/register': (_) => RegisterScreen(onRegister: handleRegister),
+        '/register': (_) => RegisterScreen(onRegister: handleRegister, error: authError),
       },
       home: isAuthenticated
           ? Scaffold(
@@ -136,6 +154,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
               builder: (context) => LoginScreen(
                 onLogin: handleLogin,
                 onRegister: () => _navigatorKey.currentState?.pushNamed('/register'),
+                error: authError,
               ),
             ),
     );

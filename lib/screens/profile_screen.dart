@@ -108,6 +108,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
   @override
   Widget build(BuildContext context) {
     final userPhone = widget.user["phoneNumber"] ?? "";
+    final displayName = widget.user['displayName']?.isNotEmpty == true ? widget.user['displayName'] : null;
+    final email = widget.user['email'] ?? '';
 
     return Scaffold(
       backgroundColor: Colors.white, // Фон білий, а не світло-блакитний, як у попередньому Flutter-коді
@@ -132,8 +134,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
               const SizedBox(height: 16),
 
-              // --- User Info Card (motion.div) ---
-              _buildUserInfoCard(userPhone)
+        // --- User Info Card (motion.div) ---
+        _buildUserInfoCard(userPhone, displayName, email)
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 100.ms)
                   .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.0, 1.0)),
@@ -183,7 +185,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildUserInfoCard(String userPhone) {
+  Widget _buildUserInfoCard(String userPhone, String? displayName, String email) {
     // Card className="bg-gradient-to-r from-sky-50 to-cyan-50 border-sky-200"
     return Card(
       margin: EdgeInsets.zero,
@@ -215,8 +217,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text("Вітаю!", style: TextStyle(fontWeight: FontWeight.w600, color: sky700)), // font-semibold text-sky-700
-                Text(userPhone, style: const TextStyle(color: mutedForeground, fontSize: 13)), // text-sm text-muted-foreground
+                Text(displayName ?? 'Вітаю!', style: const TextStyle(fontWeight: FontWeight.w600, color: sky700)), // font-semibold text-sky-700
+                if (email.isNotEmpty) Text(email, style: const TextStyle(color: mutedForeground, fontSize: 13)),
+                if (email.isEmpty) Text(userPhone, style: const TextStyle(color: mutedForeground, fontSize: 13)), // text-sm text-muted-foreground
                 const SizedBox(height: 4),
                 // Demo User Badge
                 Container(

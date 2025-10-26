@@ -11,7 +11,11 @@ const Color sky200 = Color(0xFFBAE6FD);
 
 class RegisterScreen extends StatefulWidget {
   final Future<bool> Function(String firstName, String lastName, String email, String password)? onRegister;
-  const RegisterScreen({Key? key, this.onRegister}) : super(key: key);
+  final bool isLoading;
+  final String? error;
+
+  const RegisterScreen({Key? key, this.onRegister, this.isLoading = false, this.error}) : super(key: key);
+
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
@@ -237,6 +241,14 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                                   style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                                 ),
                               ),
+                              if (widget.error != null) ...[
+                                const SizedBox(height: 8),
+                                Text(
+                                  widget.error!,
+                                  style: const TextStyle(color: Colors.red),
+                                  textAlign: TextAlign.center,
+                                ),
+                              ],
                             ],
                           ),
                         ),
