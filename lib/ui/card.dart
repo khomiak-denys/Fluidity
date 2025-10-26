@@ -142,7 +142,7 @@ class CardDescription extends StatelessWidget {
     return Text(
       text,
       style: style ?? theme.textTheme.bodyMedium?.copyWith(
-        color: theme.textTheme.bodySmall?.color?.withOpacity(0.7),
+        color: theme.textTheme.bodySmall?.color?.withAlpha((0.7 * 255).round()),
       ),
     );
   }

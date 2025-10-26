@@ -44,7 +44,7 @@ Widget build(BuildContext context) {
   final (padding, fontSize) = _getSize();
   
   // Використовуємо this.borderColor якщо є, інакше defaultBorderColor
-  final effectiveBorderColor = this.borderColor ?? defaultBorderColor;
+  final effectiveBorderColor = borderColor ?? defaultBorderColor;
 
   return Opacity(
     opacity: isDisabled ? 0.5 : 1.0,

@@ -87,7 +87,7 @@ class WaterIntakeCard extends StatelessWidget {
                         const SizedBox(height: 4),
                         Row(
                           children: [
-                            Icon(Icons.access_time, size: 12, color: Colors.grey),
+                            const Icon(Icons.access_time, size: 12, color: Colors.grey),
                             const SizedBox(width: 4),
                             Text(
                               entry.time,

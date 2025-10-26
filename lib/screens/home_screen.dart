@@ -34,7 +34,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   // Припускаємо, що WaterIntakeEntry - це клас, визначений у water_intake.dart
   List<WaterIntakeEntry> entries = [];
-  bool _isDialogOpen = false;
 
   // Анімаційні контролери для імітації motion.div
   late AnimationController _headerController;
@@ -103,10 +102,10 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         comment: comment ?? '',
       ));
     });
-    // Закриття діалогу
-    Navigator.of(context).pop(); 
-    // Оновлення стану, що діалог закрито
-    setState(() => _isDialogOpen = false);
+  // Закриття діалогу
+  Navigator.of(context).pop(); 
+  // Оновлення UI
+  setState(() {});
     
     // Імітація sonner toast.success
     ScaffoldMessenger.of(context).showSnackBar(
@@ -134,16 +133,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   int get totalIntake => entries.fold(0, (sum, e) => sum + e.amount);
 
   void _showCustomAddDialog(BuildContext context) {
-    setState(() => _isDialogOpen = true);
+  setState(() {});
     showDialog(
       context: context,
       builder: (context) {
         return _CustomAddDialog(
           onAdd: handleCustomAdd,
-          onClose: () => setState(() => _isDialogOpen = false),
+          onClose: () => setState(() {}),
         );
       },
-    ).then((_) => setState(() => _isDialogOpen = false)); // На випадок закриття через backdrop
+  ).then((_) => setState(() {})); // На випадок закриття через backdrop
   }
 
   @override
@@ -327,12 +326,12 @@ class _AnimatedGoalCard extends StatelessWidget {
           ),
           // bg-gradient-to-r from-green-50 to-emerald-50
           color: green50, // Використовуємо один колір для простоти емуляції градієнта
-          child: Padding(
-            padding: const EdgeInsets.all(16.0), // p-4
+          child: const Padding(
+            padding: EdgeInsets.all(16.0), // p-4
             child: Column(
               children: [
-                const Text('🎉', style: TextStyle(fontSize: 24)), // text-2xl mb-2
-                const SizedBox(height: 4), // mb-1
+                Text('🎉', style: TextStyle(fontSize: 24)), // text-2xl mb-2
+                SizedBox(height: 4), // mb-1
                 Text('Вітаємо!', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: green700)), // font-semibold text-green-700
                 Text('Ви досягли своєї денної цілі!', style: TextStyle(fontSize: 13, color: green600)), // text-sm text-green-600
               ],
@@ -365,11 +364,11 @@ class _QuickAddSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // CardHeader className="pb-3"
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12), // Емуляція CardHeader з pb-3
+          const Padding(
+            padding: EdgeInsets.fromLTRB(16, 16, 16, 12), // Емуляція CardHeader з pb-3
             child: Text(
               'Додати',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700), // CardTitle text-sky-700 text-base sm:text-lg
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700), // CardTitle text-sky-700 text-base sm:text-lg
             ),
           ),
           // CardContent className="pt-0"
@@ -577,7 +576,7 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
             const Text('Тип посуду', style: TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
             const SizedBox(height: 4),
             DropdownButtonFormField<String>(
-              value: _selectedType,
+              initialValue: _selectedType,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),

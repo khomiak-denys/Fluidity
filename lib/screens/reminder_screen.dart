@@ -267,7 +267,7 @@ class _ReminderCard extends StatelessWidget {
                   value: enabled,
                   onChanged: (_) => onToggle(reminder.id),
                   activeThumbColor: sky500,
-                  activeTrackColor: sky500.withOpacity(0.24),
+                  activeTrackColor: sky500.withAlpha((0.24 * 255).round()),
                 ),
                 // Delete Button (Button variant="ghost")
                 IconButton(

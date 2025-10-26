@@ -5,11 +5,14 @@ import 'screens/statistics_screen.dart';
 import 'screens/reminder_screen.dart';
 import 'screens/profile_screen.dart';
 import 'models/water_intake.dart';
-import 'widgets/water_intake.dart';
+import 'services/firebase_service.dart';
 import 'widgets/bottom_navigation.dart';
 import 'screens/register_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  // Initialize Firebase
+  await FirebaseService.instance.init();
   runApp(const WaterTrackerApp());
 }
 
@@ -44,20 +47,32 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
 
   final mockUser = {'uid': 'demo-user', 'phoneNumber': '+380 50 123 45 67'};
 
-  Future<bool> handleLogin(String phone, String password) async {
-    // TODO: replace with real authentication logic (API call, validation, etc.)
-    setState(() {
-      isAuthenticated = true;
-    });
-    return true;
+  Future<bool> handleLogin(String email, String password) async {
+    final ok = await FirebaseService.instance.signInWithEmail(email.trim(), password);
+    final ctx = _navigatorKey.currentContext;
+    if (ok) {
+      if (mounted) setState(() => isAuthenticated = true);
+      FirebaseService.instance.logEvent('login', {'method': 'email'});
+  if (ctx != null) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Успішний вхід'))); // ignore: use_build_context_synchronously
+      return true;
+    } else {
+  if (ctx != null) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Помилка входу: перевірте email/пароль'), backgroundColor: Colors.red)); // ignore: use_build_context_synchronously
+      return false;
+    }
   }
 
-  Future<bool> handleRegister(String firstName, String lastName, String phone, String password) async {
-    // TODO: replace with real registration logic. For now, mock success and authenticate.
-    setState(() {
-      isAuthenticated = true;
-    });
-    return true;
+  Future<bool> handleRegister(String firstName, String lastName, String email, String password) async {
+    final ok = await FirebaseService.instance.registerWithEmail(firstName.trim(), lastName.trim(), email.trim(), password);
+    final ctx = _navigatorKey.currentContext;
+    if (ok) {
+      if (mounted) setState(() => isAuthenticated = true);
+      FirebaseService.instance.logEvent('sign_up', {'method': 'email'});
+  if (ctx != null) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Реєстрація пройшла успішно'))); // ignore: use_build_context_synchronously
+      return true;
+    } else {
+  if (ctx != null) ScaffoldMessenger.of(ctx).showSnackBar(const SnackBar(content: Text('Не вдалося зареєструвати користувача'), backgroundColor: Colors.red)); // ignore: use_build_context_synchronously
+      return false;
+    }
   }
 
   void handleSignOut() {

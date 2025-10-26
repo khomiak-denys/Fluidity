@@ -1,5 +1,3 @@
-import 'package:flutter/material.dart';
-
 class WaterIntakeEntry {
   final String id;
   final int amount;

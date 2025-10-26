@@ -40,7 +40,7 @@ class WaterProgress extends StatelessWidget {
               children: [
                 Animate(
                   effects: [
-                    ScaleEffect(begin: const Offset(0.8, 0.8), end: const Offset(1, 1)),
+                    const ScaleEffect(begin: Offset(0.8, 0.8), end: Offset(1, 1)),
                     FadeEffect(begin: 0, end: 1, delay: 500.ms, duration: 500.ms),
                   ],
                   child: Column(
@@ -95,10 +95,10 @@ class _CirclePainter extends CustomPainter {
       ..strokeWidth = strokeWidth
       ..style = PaintingStyle.stroke;
 
-    final gradient = SweepGradient(
+    const gradient = SweepGradient(
       startAngle: -pi / 2,
       endAngle: 3 * pi / 2,
-      colors: const [
+      colors: [
         Color(0xFF0EA5E9),
         Color(0xFF06B6D4),
         Color(0xFF10B981),

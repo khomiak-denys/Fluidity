@@ -197,7 +197,7 @@ class StatisticsScreen extends StatelessWidget {
                       const SizedBox(height: 4),
                       Text(
                         stat['value'] as String,
-                        style: TextStyle(
+                        style: const TextStyle(
                           fontSize: 22, // text-lg sm:text-2xl
                           fontWeight: FontWeight.bold,
                           color: sky700,
@@ -253,7 +253,7 @@ class StatisticsScreen extends StatelessWidget {
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   maxY: dailyGoal * 1.2, // Максимальне значення на осі Y
-                  barTouchData: BarTouchData(enabled: true),
+                  barTouchData: const BarTouchData(enabled: true),
                   titlesData: FlTitlesData(
                     show: true,
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -292,14 +292,14 @@ class StatisticsScreen extends StatelessWidget {
                       if (value == dailyGoal) {
                         // Імітація лінії цілі (goal)
                         return FlLine(
-                          color: green600.withOpacity(0.7),
+                          color: green600.withAlpha((0.7 * 255).round()),
                           strokeWidth: 1.5,
                           // FlChart не підтримує пунктирну лінію Goal Line безпосередньо,
                           // але ми можемо імітувати її товстою лінією.
                         );
                       }
                       return FlLine(
-                        color: borderGray.withOpacity(0.5), // CartesianGrid stroke="#e0f7ff"
+                        color: borderGray.withAlpha((0.5 * 255).round()), // CartesianGrid stroke="#e0f7ff"
                         strokeWidth: 0.5,
                       );
                     },
@@ -315,7 +315,7 @@ class StatisticsScreen extends StatelessWidget {
                           toY: (data['intake'] as int).toDouble(),
                           // Використовуємо LinearGradient для імітації градієнта
                           gradient: LinearGradient(
-                            colors: [sky600.withOpacity(0.8), sky600.withOpacity(0.6)],
+                            colors: [sky600.withAlpha((0.8 * 255).round()), sky600.withAlpha((0.6 * 255).round())],
                             begin: Alignment.topCenter,
                             end: Alignment.bottomCenter,
                           ),

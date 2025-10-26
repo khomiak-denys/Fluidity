@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
+import '../services/firebase_service.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -163,7 +164,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return Column(
+    return const Column(
       children: [
         Text(
           "Профіль",
@@ -173,8 +174,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: sky700, // text-sky-700
           ),
         ),
-        const SizedBox(height: 4),
-        const Text(
+        SizedBox(height: 4),
+        Text(
           "Налаштуйте Fluidity для себе",
           style: TextStyle(color: mutedForeground, fontSize: 13), // text-muted-foreground
         ),
@@ -200,7 +201,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Container(
               width: 56, // w-16 sm:w-16
               height: 56, // h-16 sm:h-16
-              decoration: BoxDecoration(
+              decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
                   colors: [sky600, cyan50],
@@ -214,7 +215,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text("Вітаю!", style: TextStyle(fontWeight: FontWeight.w600, color: sky700)), // font-semibold text-sky-700
+                const Text("Вітаю!", style: TextStyle(fontWeight: FontWeight.w600, color: sky700)), // font-semibold text-sky-700
                 Text(userPhone, style: const TextStyle(color: mutedForeground, fontSize: 13)), // text-sm text-muted-foreground
                 const SizedBox(height: 4),
                 // Demo User Badge
@@ -224,7 +225,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: green100, // bg-green-100
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: Text(
+                  child: const Text(
                     "Демо користувач",
                     style: TextStyle(fontSize: 11, color: green700, fontWeight: FontWeight.w500), // text-xs text-green-700
                   ),
@@ -238,7 +239,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSettingsSection(BuildContext context, Map<String, dynamic> section) {
-    final SectionIcon = section['icon'] as IconData;
+  final sectionIcon = section['icon'] as IconData;
 
     return Card(
       margin: EdgeInsets.zero,
@@ -252,11 +253,11 @@ class _ProfileScreenState extends State<ProfileScreen> {
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 4), // pb-3
             child: Row(
               children: [
-                Icon(SectionIcon, color: sky700, size: 20), // w-5 h-5 text-sky-700
+                Icon(sectionIcon, color: sky700, size: 20), // w-5 h-5 text-sky-700
                 const SizedBox(width: 8),
                 Text(
                   section['title'] as String,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700), // CardTitle text-sky-700
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700), // CardTitle text-sky-700
                 ),
               ],
             ),
@@ -282,7 +283,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSettingItem({required Map<String, dynamic> item}) {
-    final ItemIcon = item['icon'] as IconData;
+  final itemIcon = item['icon'] as IconData;
     final String label = item['label'] as String;
     final String value = item['value'] as String;
     final VoidCallback onTap = item['action'] as VoidCallback;
@@ -306,19 +307,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   width: 32,
                   height: 32,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
                   ),
-                  child: Icon(ItemIcon, size: 16, color: sky600), // w-4 h-4 text-sky-600
+                  child: Icon(itemIcon, size: 16, color: sky600), // w-4 h-4 text-sky-600
                 ),
                 const SizedBox(width: 12),
-                Text(label, style: TextStyle(fontWeight: FontWeight.w500, color: sky700, fontSize: 15)), // font-medium text-sky-700 text-sm sm:text-base
+                Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: sky700, fontSize: 15)), // font-medium text-sky-700 text-sm sm:text-base
               ],
             ),
             Text(
               value,
-              style: TextStyle(color: mutedForeground, fontSize: 13), // text-muted-foreground text-xs sm:text-sm
+              style: const TextStyle(color: mutedForeground, fontSize: 13), // text-muted-foreground text-xs sm:text-sm
             ),
           ],
         ),
@@ -327,7 +328,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSwitchItem({required Map<String, dynamic> item}) {
-    final ItemIcon = item['icon'] as IconData;
+  final itemIcon = item['icon'] as IconData;
     final String label = item['label'] as String;
     final VoidCallback onToggle = item['action'] as VoidCallback;
 
@@ -349,21 +350,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 Container(
                   width: 32,
                   height: 32,
-                  decoration: BoxDecoration(
+                  decoration: const BoxDecoration(
                     shape: BoxShape.circle,
                     color: Colors.white,
                   ),
-                  child: Icon(ItemIcon, size: 16, color: sky600),
+                  child: Icon(itemIcon, size: 16, color: sky600),
                 ),
                 const SizedBox(width: 12),
-                Text(label, style: TextStyle(fontWeight: FontWeight.w500, color: sky700, fontSize: 15)),
+                Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: sky700, fontSize: 15)),
               ],
             ),
               Switch(
                 value: widget.notificationsEnabled,
                 onChanged: (_) => onToggle(),
                 activeThumbColor: sky600,
-                activeTrackColor: sky600.withOpacity(0.24), // Колір акценту
+                activeTrackColor: sky600.withAlpha((0.24 * 255).round()), // Колір акценту
               ),
           ],
         ),
@@ -372,26 +373,41 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildSignOutButton() {
-    return OutlinedButton(
-      onPressed: widget.onSignOut,
-      style: OutlinedButton.styleFrom(
-        foregroundColor: red600, // text-red-600
-        backgroundColor: Colors.white,
-        side: const BorderSide(color: red200, width: 1), // border-red-200
-        minimumSize: const Size(double.infinity, 56), // w-full h-12 sm:h-14
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-      ),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Icon(Icons.logout, size: 20), // w-4 h-4 mr-2
-          const SizedBox(width: 8),
-          Text(
-            "Вийти з акаунту",
-            style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        OutlinedButton(
+          onPressed: widget.onSignOut,
+          style: OutlinedButton.styleFrom(
+            foregroundColor: red600, // text-red-600
+            backgroundColor: Colors.white,
+            side: const BorderSide(color: red200, width: 1), // border-red-200
+            minimumSize: const Size(double.infinity, 56), // w-full h-12 sm:h-14
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-        ],
-      ),
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.logout, size: 20), // w-4 h-4 mr-2
+              SizedBox(width: 8),
+              Text(
+                "Вийти з акаунту",
+                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+        ElevatedButton(
+          onPressed: () {
+            // Log an event and force a crash for testing Crashlytics
+            FirebaseService.instance.logEvent('profile_test_crash', {'source': 'profile_screen'});
+            FirebaseService.instance.forceCrash();
+          },
+          style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
+          child: const Text('Тестувати Crashlytics', style: TextStyle(color: Colors.white)),
+        ),
+      ],
     );
   }
 }

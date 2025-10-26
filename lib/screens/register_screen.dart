@@ -10,7 +10,7 @@ const Color sky700 = Color(0xFF0369A1);
 const Color sky200 = Color(0xFFBAE6FD);
 
 class RegisterScreen extends StatefulWidget {
-  final Future<bool> Function(String firstName, String lastName, String phone, String password)? onRegister;
+  final Future<bool> Function(String firstName, String lastName, String email, String password)? onRegister;
   const RegisterScreen({Key? key, this.onRegister}) : super(key: key);
   @override
   State<RegisterScreen> createState() => _RegisterScreenState();
@@ -21,7 +21,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   final _formKey = GlobalKey<FormState>();
   final _firstNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();
-  final _phoneCtrl = TextEditingController();
+  final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
   // Анімація для імітації motion.div
@@ -52,32 +52,32 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     _animationController.dispose();
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
-    _phoneCtrl.dispose();
+    _emailCtrl.dispose();
     _passwordCtrl.dispose();
     super.dispose();
   }
 
-  void _submit() {
+  Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
       // If an onRegister callback is provided, call it and handle result.
       final first = _firstNameCtrl.text.trim();
       final last = _lastNameCtrl.text.trim();
-      final phone = _phoneCtrl.text.trim();
+      final email = _emailCtrl.text.trim();
       final pass = _passwordCtrl.text;
 
       if (widget.onRegister != null) {
-        widget.onRegister!(first, last, phone, pass).then((ok) {
-          if (ok) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Реєстрація успішна (імітація)')),
-            );
-            Navigator.of(context).pop();
-          } else {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('Реєстрація не вдалася')),
-            );
-          }
-        });
+        final ok = await widget.onRegister!(first, last, email, pass);
+        if (!mounted) return;
+        if (ok) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Реєстрація успішна (імітація)')),
+          );
+          Navigator.of(context).pop();
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Реєстрація не вдалася')),
+          );
+        }
       } else {
         // Fallback: local mock behaviour
         ScaffoldMessenger.of(context).showSnackBar(
@@ -150,7 +150,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                         borderRadius: BorderRadius.circular(12),
                         side: const BorderSide(color: sky200, width: 1),
                       ),
-                      color: Colors.white.withOpacity(0.8),
+                                   color: Colors.white.withAlpha((0.8 * 255).round()),
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
                         child: Form(
@@ -159,7 +159,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
                               // CardHeader
-                              Text(
+                              const Text(
                                 'Створення акаунту',
                                 textAlign: TextAlign.center,
                                 style: TextStyle(
@@ -197,11 +197,17 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                               const SizedBox(height: 16),
 
                               _buildInputField(
-                                controller: _phoneCtrl,
-                                label: 'Номер телефону',
+                                controller: _emailCtrl,
+                                label: 'Email',
                                 icon: LucideIcons.smartphone,
-                                keyboardType: TextInputType.phone,
-                                validatorText: 'Введіть телефон',
+                                keyboardType: TextInputType.emailAddress,
+                                validatorText: 'Введіть email',
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) return 'Введіть email';
+                                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                                  if (!emailRegex.hasMatch(v.trim())) return 'Неправильний формат email';
+                                  return null;
+                                },
                               ),
                               const SizedBox(height: 16),
                               
@@ -315,7 +321,7 @@ class _LogoAndTitle extends StatelessWidget {
             gradient: LinearGradient(colors: [sky500, cyan500]),
             borderRadius: BorderRadius.circular(32),
           ),
-          child: Icon(LucideIcons.droplets, color: Colors.white, size: 32),
+          child: const Icon(LucideIcons.droplets, color: Colors.white, size: 32),
         ),
         const SizedBox(height: 16),
         Text(
@@ -325,7 +331,7 @@ class _LogoAndTitle extends StatelessWidget {
             fontWeight: FontWeight.bold,
             foreground: Paint()
               ..shader = LinearGradient(
-                colors: [sky500.withOpacity(0.9), cyan500.withOpacity(0.9)],
+                colors: [sky500.withAlpha((0.9 * 255).round()), cyan500.withAlpha((0.9 * 255).round())],
               ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 50.0)),
           ),
         ),
@@ -349,7 +355,7 @@ class _LabelWithIcon extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: [
-        Icon(icon, size: 16, color: sky700.withOpacity(0.8)),
+  Icon(icon, size: 16, color: sky700.withAlpha((0.8 * 255).round())),
         const SizedBox(width: 8),
         Text(
           text,
@@ -365,11 +371,11 @@ class _FeaturesPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 32.0),
+    return const Padding(
+      padding: EdgeInsets.only(top: 32.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
-        children: const [
+        children: [
           _FeatureItem(
             icon: LucideIcons.droplets,
             text: 'Відстежування',

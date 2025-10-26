@@ -22,8 +22,9 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
-  final phoneController = TextEditingController();
+  final emailController = TextEditingController();
   final passwordController = TextEditingController();
+  final _formKey = GlobalKey<FormState>();
 
   // Імітація анімації motion.div за допомогою контролера
   late AnimationController _animationController;
@@ -52,15 +53,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   @override
   void dispose() {
     _animationController.dispose();
-    phoneController.dispose();
+    emailController.dispose();
     passwordController.dispose();
     super.dispose();
   }
 
   void handleSubmit() async {
-    // Ваша логіка перевірки та виклику onLogin
-    if (phoneController.text.isNotEmpty && passwordController.text.isNotEmpty) {
-      await widget.onLogin(phoneController.text, passwordController.text);
+    // Validate form then call onLogin
+    if ((_formKey.currentState?.validate() ?? false)) {
+      await widget.onLogin(emailController.text.trim(), passwordController.text);
     }
   }
 
@@ -125,14 +126,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                         borderRadius: BorderRadius.circular(12),
                         side: const BorderSide(color: sky200, width: 1),
                       ),
-                      color: Colors.white.withOpacity(0.8), // bg-white/80
+                      color: Colors.white.withAlpha((0.8 * 255).round()), // bg-white/80
                       child: Padding(
                         padding: const EdgeInsets.all(24.0),
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // CardHeader
-                            Text(
+                            const Text(
                               'Вхід',
                               textAlign: TextAlign.center,
                               style: TextStyle(
@@ -152,35 +153,48 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             ),
                             const SizedBox(height: 24),
 
-                            // CardContent - Phone Input
-                            _LabelWithIcon(icon: LucideIcons.smartphone, text: 'Номер телефону'),
+                            // CardContent - Email Input
+                            const _LabelWithIcon(icon: LucideIcons.smartphone, text: 'Email'),
                             const SizedBox(height: 4),
-                            TextField(
-                              controller: phoneController,
-                              keyboardType: TextInputType.phone,
-                              decoration: const InputDecoration(
-                                hintText: '+380 XX XXX XX XX',
-                                border: OutlineInputBorder(), // Імітація <Input />
-                                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                            Form(
+                              key: _formKey,
+                              child: TextFormField(
+                                controller: emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                decoration: const InputDecoration(
+                                  hintText: 'you@example.com',
+                                  border: OutlineInputBorder(),
+                                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                ),
+                                validator: (v) {
+                                  if (v == null || v.trim().isEmpty) return 'Введіть email';
+                                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                                  if (!emailRegex.hasMatch(v.trim())) return 'Неправильний формат email';
+                                  return null;
+                                },
                               ),
                             ),
                             const SizedBox(height: 16),
 
                             // CardContent - Password Input
-                            _LabelWithIcon(icon: LucideIcons.lock, text: 'Пароль'),
+                            const _LabelWithIcon(icon: LucideIcons.lock, text: 'Пароль'),
                             const SizedBox(height: 4),
-                            TextField(
+                            TextFormField(
                               controller: passwordController,
                               obscureText: true,
                               decoration: const InputDecoration(
                                 hintText: 'Введіть пароль',
-                                border: OutlineInputBorder(), // Імітація <Input />
+                                border: OutlineInputBorder(),
                                 contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                               ),
+                              validator: (v) {
+                                if (v == null || v.isEmpty) return 'Введіть пароль';
+                                if (v.length < 6) return 'Мінімум 6 символів';
+                                return null;
+                              },
                             ),
                             const SizedBox(height: 24),
 
-                            // Login Button
                             ElevatedButton(
                               onPressed: widget.isLoading ? null : handleSubmit,
                               style: ElevatedButton.styleFrom(
@@ -273,7 +287,7 @@ class _LogoAndTitle extends StatelessWidget {
             gradient: LinearGradient(colors: [sky500, cyan500]),
             borderRadius: BorderRadius.circular(32),
           ),
-          child: const Icon(LucideIcons.droplets, color: Colors.white, size: 32), // Droplets icon
+                child: const Icon(LucideIcons.droplets, color: Colors.white, size: 32), // Droplets icon
         ),
         const SizedBox(height: 16),
         // Title (h1)
@@ -285,7 +299,7 @@ class _LogoAndTitle extends StatelessWidget {
             // bg-gradient-to-r from-sky-600 to-cyan-600 bg-clip-text text-transparent
             foreground: Paint()
               ..shader = LinearGradient(
-                colors: [sky500.withOpacity(0.9), cyan500.withOpacity(0.9)],
+                colors: [sky500.withAlpha((0.9 * 255).round()), cyan500.withAlpha((0.9 * 255).round())],
               ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 50.0)),
           ),
         ),
@@ -328,13 +342,13 @@ class _FeaturesPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(top: 32.0),
+    return const Padding(
+      padding: EdgeInsets.only(top: 32.0),
       child: Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
-            children: const [
+            children: [
               _FeatureItem(
                 icon: LucideIcons.droplets,
                 text: 'Відстежування',

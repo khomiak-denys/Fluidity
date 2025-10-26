@@ -14,14 +14,19 @@ dependencies:
     sdk: flutter
 
   lucide_icons: ^0.257.0
-  fl_chart: ^0.68.0
+  fl_chart: ^1.1.1
   flutter_animate: ^4.5.0
+  firebase_core: ^4.2.0
+  firebase_auth: ^6.1.1
+  firebase_analytics: ^12.0.3
+  firebase_crashlytics: ^5.0.3
   # lucide_icons removed due to version conflicts; using built-in Icons instead
   cupertino_icons: ^1.0.8
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
+  flutter_lints: ^2.0.0
 
 flutter:
   uses-material-design: true
