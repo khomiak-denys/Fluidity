@@ -604,6 +604,54 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No account? Register'**
   String get noAccountPrompt;
+
+  /// No description provided for @auth_email_not_verified.
+  ///
+  /// In en, this message translates to:
+  /// **'Please verify your email before signing in.'**
+  String get auth_email_not_verified;
+
+  /// No description provided for @auth_invalid_credentials.
+  ///
+  /// In en, this message translates to:
+  /// **'Incorrect email or password.'**
+  String get auth_invalid_credentials;
+
+  /// No description provided for @auth_invalid_email.
+  ///
+  /// In en, this message translates to:
+  /// **'Invalid email format.'**
+  String get auth_invalid_email;
+
+  /// No description provided for @auth_weak_password.
+  ///
+  /// In en, this message translates to:
+  /// **'The password is too weak.'**
+  String get auth_weak_password;
+
+  /// No description provided for @auth_email_already_in_use.
+  ///
+  /// In en, this message translates to:
+  /// **'This email is already registered.'**
+  String get auth_email_already_in_use;
+
+  /// No description provided for @auth_registration_error.
+  ///
+  /// In en, this message translates to:
+  /// **'Registration failed. Please try again later.'**
+  String get auth_registration_error;
+
+  /// No description provided for @auth_unknown_error.
+  ///
+  /// In en, this message translates to:
+  /// **'An unknown error occurred. Please try again later.'**
+  String get auth_unknown_error;
+
+  /// No description provided for @auth_verification_email_sent.
+  ///
+  /// In en, this message translates to:
+  /// **'A verification email has been sent to your address. Please check your inbox.'**
+  String get auth_verification_email_sent;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

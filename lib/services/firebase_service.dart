@@ -46,21 +46,21 @@ class FirebaseService {
       final userCredential = await auth.signInWithEmailAndPassword(email: email, password: password);
       if (userCredential.user != null && !userCredential.user!.emailVerified) {
         await auth.signOut();
-        return 'Будь ласка, підтвердіть свою електронну пошту, перш ніж увійти.';
+        return 'auth.email_not_verified';
       }
       await analytics.logLogin(loginMethod: 'email');
       return null;
     } on FirebaseAuthException catch (e) {
       await crashlytics.recordError(e, e.stackTrace, reason: 'signInWithEmail failed');
       if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential') {
-        return 'Неправильний email або пароль.';
+        return 'auth.invalid_credentials';
       } else if (e.code == 'invalid-email') {
-        return 'Неправильний формат email.';
+        return 'auth.invalid_email';
       }
-      return 'Сталася помилка. Спробуйте пізніше.';
+      return 'auth.unknown_error';
     } catch (e, st) {
       await crashlytics.recordError(e, st, reason: 'signInWithEmail failed');
-      return 'Сталася невідома помилка.';
+      return 'auth.unknown_error';
     }
   }
 
@@ -75,16 +75,16 @@ class FirebaseService {
     } on FirebaseAuthException catch (e) {
       await crashlytics.recordError(e, e.stackTrace, reason: 'registerWithEmail failed');
       if (e.code == 'weak-password') {
-        return 'Пароль занадто слабкий.';
+        return 'auth.weak_password';
       } else if (e.code == 'email-already-in-use') {
-        return 'Цей email вже зареєстровано.';
+        return 'auth.email_already_in_use';
       } else if (e.code == 'invalid-email') {
-        return 'Неправильний формат email.';
+        return 'auth.invalid_email';
       }
-      return 'Сталася помилка реєстрації.';
+      return 'auth.registration_error';
     } catch (e, st) {
       await crashlytics.recordError(e, st, reason: 'registerWithEmail failed');
-      return 'Сталася невідома помилка.';
+      return 'auth.unknown_error';
     }
   }
 

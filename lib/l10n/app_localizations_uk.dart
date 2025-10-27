@@ -264,4 +264,28 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get noAccountPrompt => 'Немає акаунту? Зареєструватися';
+
+  @override
+  String get auth_email_not_verified => 'Будь ласка, підтвердіть вашу електронну пошту перед входом.';
+
+  @override
+  String get auth_invalid_credentials => 'Неправильний email або пароль.';
+
+  @override
+  String get auth_invalid_email => 'Неправильний формат email.';
+
+  @override
+  String get auth_weak_password => 'Пароль занадто слабкий.';
+
+  @override
+  String get auth_email_already_in_use => 'Цей email вже зареєстровано.';
+
+  @override
+  String get auth_registration_error => 'Помилка реєстрації. Спробуйте пізніше.';
+
+  @override
+  String get auth_unknown_error => 'Сталася невідома помилка. Спробуйте пізніше.';
+
+  @override
+  String get auth_verification_email_sent => 'Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення.';
 }

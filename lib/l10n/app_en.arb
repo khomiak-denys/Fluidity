@@ -91,4 +91,14 @@
     "passwordValidatorEmpty": "Please enter your password",
     "passwordValidatorLength": "Password must be at least 6 characters",
     "noAccountPrompt": "No account? Register"
+    ,
+    "auth_email_not_verified": "Please verify your email before signing in.",
+    "auth_invalid_credentials": "Incorrect email or password.",
+    "auth_invalid_email": "Invalid email format.",
+    "auth_weak_password": "The password is too weak.",
+    "auth_email_already_in_use": "This email is already registered.",
+    "auth_registration_error": "Registration failed. Please try again later.",
+    "auth_unknown_error": "An unknown error occurred. Please try again later."
+    ,
+    "auth_verification_email_sent": "A verification email has been sent to your address. Please check your inbox."
 }

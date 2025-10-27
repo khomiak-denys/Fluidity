@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+// ignore_for_file: use_build_context_synchronously
 import 'l10n/app_localizations.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
@@ -66,9 +67,9 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
         authError = error;
       });
       if (messengerCtx != null) {
-        // ignore: use_build_context_synchronously
+          final msg = _localizeAuthMessage(messengerCtx, error);
         ScaffoldMessenger.of(messengerCtx).showSnackBar(
-          SnackBar(content: Text(error), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
         );
       }
     }
@@ -83,10 +84,10 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
     if (error == null) {
       // Show a message to the user to check their email
       if (messengerCtx != null) {
-        // ignore: use_build_context_synchronously
+          final msg = language == 'uk' ? 'Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення.' : 'A verification email has been sent to your address. Please check your inbox.';
         ScaffoldMessenger.of(messengerCtx).showSnackBar(
-          const SnackBar(
-            content: Text('Лист для підтвердження надіслано на вашу пошту.'),
+          SnackBar(
+            content: Text(msg),
             backgroundColor: Colors.green,
           ),
         );
@@ -97,9 +98,9 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
         authError = error;
       });
       if (messengerCtx != null) {
-        // ignore: use_build_context_synchronously
+          final msg = _localizeAuthMessage(messengerCtx, error);
         ScaffoldMessenger.of(messengerCtx).showSnackBar(
-          SnackBar(content: Text(error), backgroundColor: Colors.red),
+          SnackBar(content: Text(msg), backgroundColor: Colors.red),
         );
       }
     }
@@ -109,6 +110,29 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
     setState(() {
       isAuthenticated = false;
     });
+  }
+
+  String _localizeAuthMessage(BuildContext ctx, String code) {
+    // Fallback localization until gen-l10n regenerates generated getters.
+    // Use the app-wide `language` state to choose a localized string.
+    final isUk = language == 'uk';
+    switch (code) {
+      case 'auth.email_not_verified':
+        return isUk ? 'Будь ласка, підтвердіть вашу електронну пошту перед входом.' : 'Please verify your email before signing in.';
+      case 'auth.invalid_credentials':
+        return isUk ? 'Неправильний email або пароль.' : 'Incorrect email or password.';
+      case 'auth.invalid_email':
+        return isUk ? 'Неправильний формат email.' : 'Invalid email format.';
+      case 'auth.weak_password':
+        return isUk ? 'Пароль занадто слабкий.' : 'The password is too weak.';
+      case 'auth.email_already_in_use':
+        return isUk ? 'Цей email вже зареєстровано.' : 'This email is already registered.';
+      case 'auth.registration_error':
+        return isUk ? 'Помилка реєстрації. Спробуйте пізніше.' : 'Registration failed. Please try again later.';
+      case 'auth.unknown_error':
+      default:
+        return isUk ? 'Сталася невідома помилка. Спробуйте пізніше.' : 'An unknown error occurred. Please try again later.';
+    }
   }
 
   void setTab(String tab) {
@@ -166,7 +190,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
               onRegister: (ctx, firstName, lastName, email, password) {
                 handleRegister(firstName, lastName, email, password);
               },
-              error: authError,
+              error: authError != null ? _localizeAuthMessage(context, authError!) : null,
             ),
       },
       home: isAuthenticated
@@ -181,7 +205,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
               builder: (context) => LoginScreen(
                 onLogin: (ctx, email, password) => handleLogin(email, password),
                 onRegister: () => _navigatorKey.currentState?.pushNamed('/register'),
-                error: authError,
+                error: authError != null ? _localizeAuthMessage(context, authError!) : null,
               ),
             ),
     );

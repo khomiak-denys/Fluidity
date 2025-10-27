@@ -91,4 +91,14 @@
     "passwordValidatorEmpty": "Будь ласка введіть ваш пароль",
     "passwordValidatorLength": "Пароль повинен містити щонайменше 6 символів",
     "noAccountPrompt": "Немає акаунту? Зареєструватися"
+    ,
+    "auth_email_not_verified": "Будь ласка, підтвердіть вашу електронну пошту перед входом.",
+    "auth_invalid_credentials": "Неправильний email або пароль.",
+    "auth_invalid_email": "Неправильний формат email.",
+    "auth_weak_password": "Пароль занадто слабкий.",
+    "auth_email_already_in_use": "Цей email вже зареєстровано.",
+    "auth_registration_error": "Помилка реєстрації. Спробуйте пізніше.",
+    "auth_unknown_error": "Сталася невідома помилка. Спробуйте пізніше."
+    ,
+    "auth_verification_email_sent": "Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення."
 }

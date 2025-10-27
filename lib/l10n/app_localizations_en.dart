@@ -264,4 +264,28 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noAccountPrompt => 'No account? Register';
+
+  @override
+  String get auth_email_not_verified => 'Please verify your email before signing in.';
+
+  @override
+  String get auth_invalid_credentials => 'Incorrect email or password.';
+
+  @override
+  String get auth_invalid_email => 'Invalid email format.';
+
+  @override
+  String get auth_weak_password => 'The password is too weak.';
+
+  @override
+  String get auth_email_already_in_use => 'This email is already registered.';
+
+  @override
+  String get auth_registration_error => 'Registration failed. Please try again later.';
+
+  @override
+  String get auth_unknown_error => 'An unknown error occurred. Please try again later.';
+
+  @override
+  String get auth_verification_email_sent => 'A verification email has been sent to your address. Please check your inbox.';
 }
