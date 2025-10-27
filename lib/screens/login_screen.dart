@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
 
 class LoginScreen extends StatefulWidget {
-  final Future<bool> Function(String phoneNumber, String password) onLogin;
+  final void Function(BuildContext context, String email, String password) onLogin;
   final VoidCallback onRegister;
   final bool isLoading;
   final String? error;
@@ -61,7 +61,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
   void handleSubmit() async {
     // Validate form then call onLogin
     if ((_formKey.currentState?.validate() ?? false)) {
-      await widget.onLogin(emailController.text.trim(), passwordController.text);
+      widget.onLogin(context, emailController.text.trim(), passwordController.text);
     }
   }
 

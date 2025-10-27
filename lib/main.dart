@@ -48,41 +48,46 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
 
   final mockUser = {'uid': 'demo-user', 'phoneNumber': '+380 50 123 45 67'};
 
-  Future<bool> handleLogin(String email, String password) async {
-    final ok = await FirebaseService.instance.signInWithEmail(email.trim(), password);
-    if (ok) {
-      if (mounted) {
-        setState(() {
-          isAuthenticated = true;
-          authError = null;
-        });
-      }
+  Future<void> handleLogin(BuildContext context, String email, String password) async {
+    final error = await FirebaseService.instance.signInWithEmail(email.trim(), password);
+    if (!mounted) return;
+
+    if (error == null) {
+      setState(() {
+        isAuthenticated = true;
+        authError = null;
+      });
       FirebaseService.instance.logEvent('login', {'method': 'email'});
-      return true;
     } else {
-      if (mounted) {
-        setState(() => authError = 'Помилка входу: перевірте email/пароль');
-      }
-      return false;
+      setState(() {
+        authError = error;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
     }
   }
 
-  Future<bool> handleRegister(String firstName, String lastName, String email, String password) async {
-    final ok = await FirebaseService.instance.registerWithEmail(firstName.trim(), lastName.trim(), email.trim(), password);
-    if (ok) {
-      if (mounted) {
-        setState(() {
-          isAuthenticated = true;
-          authError = null;
-        });
-      }
-      FirebaseService.instance.logEvent('sign_up', {'method': 'email'});
-      return true;
+  Future<void> handleRegister(BuildContext context, String firstName, String lastName, String email, String password) async {
+    final error = await FirebaseService.instance.registerWithEmail(firstName.trim(), lastName.trim(), email.trim(), password);
+    if (!mounted) return;
+
+    if (error == null) {
+      // Show a message to the user to check their email
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Лист для підтвердження надіслано на вашу пошту.'),
+          backgroundColor: Colors.green,
+        ),
+      );
+      Navigator.of(context).pop(); // Go back to login screen
     } else {
-      if (mounted) {
-        setState(() => authError = 'Не вдалося зареєструвати користувача');
-      }
-      return false;
+      setState(() {
+        authError = error;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text(error), backgroundColor: Colors.red),
+      );
     }
   }
 
@@ -140,7 +145,12 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigatorKey,
       routes: {
-        '/register': (_) => RegisterScreen(onRegister: handleRegister, error: authError),
+        '/register': (context) => RegisterScreen(
+              onRegister: (ctx, firstName, lastName, email, password) {
+                handleRegister(ctx, firstName, lastName, email, password);
+              },
+              error: authError,
+            ),
       },
       home: isAuthenticated
           ? Scaffold(
@@ -152,7 +162,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
             )
           : Builder(
               builder: (context) => LoginScreen(
-                onLogin: handleLogin,
+                onLogin: (ctx, email, password) => handleLogin(ctx, email, password),
                 onRegister: () => _navigatorKey.currentState?.pushNamed('/register'),
                 error: authError,
               ),

@@ -41,26 +41,50 @@ class FirebaseService {
     }
   }
 
-  Future<bool> signInWithEmail(String email, String password) async {
+  Future<String?> signInWithEmail(String email, String password) async {
     try {
-      await auth.signInWithEmailAndPassword(email: email, password: password);
+      final userCredential = await auth.signInWithEmailAndPassword(email: email, password: password);
+      if (userCredential.user != null && !userCredential.user!.emailVerified) {
+        await auth.signOut();
+        return 'Будь ласка, підтвердіть свою електронну пошту, перш ніж увійти.';
+      }
       await analytics.logLogin(loginMethod: 'email');
-      return true;
+      return null;
+    } on FirebaseAuthException catch (e) {
+      await crashlytics.recordError(e, e.stackTrace, reason: 'signInWithEmail failed');
+      if (e.code == 'user-not-found' || e.code == 'wrong-password' || e.code == 'invalid-credential') {
+        return 'Неправильний email або пароль.';
+      } else if (e.code == 'invalid-email') {
+        return 'Неправильний формат email.';
+      }
+      return 'Сталася помилка. Спробуйте пізніше.';
     } catch (e, st) {
       await crashlytics.recordError(e, st, reason: 'signInWithEmail failed');
-      return false;
+      return 'Сталася невідома помилка.';
     }
   }
 
-  Future<bool> registerWithEmail(String firstName, String lastName, String email, String password) async {
+  Future<String?> registerWithEmail(String firstName, String lastName, String email, String password) async {
     try {
       final cred = await auth.createUserWithEmailAndPassword(email: email, password: password);
       await cred.user?.updateDisplayName('$firstName $lastName');
+      await cred.user?.sendEmailVerification();
+      await auth.signOut(); // Force sign out until email is verified
       await analytics.logEvent(name: 'sign_up', parameters: {'method': 'email'});
-      return true;
+      return null;
+    } on FirebaseAuthException catch (e) {
+      await crashlytics.recordError(e, e.stackTrace, reason: 'registerWithEmail failed');
+      if (e.code == 'weak-password') {
+        return 'Пароль занадто слабкий.';
+      } else if (e.code == 'email-already-in-use') {
+        return 'Цей email вже зареєстровано.';
+      } else if (e.code == 'invalid-email') {
+        return 'Неправильний формат email.';
+      }
+      return 'Сталася помилка реєстрації.';
     } catch (e, st) {
       await crashlytics.recordError(e, st, reason: 'registerWithEmail failed');
-      return false;
+      return 'Сталася невідома помилка.';
     }
   }
 

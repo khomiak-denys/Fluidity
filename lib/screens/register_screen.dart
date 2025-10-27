@@ -10,7 +10,7 @@ const Color sky700 = Color(0xFF0369A1);
 const Color sky200 = Color(0xFFBAE6FD);
 
 class RegisterScreen extends StatefulWidget {
-  final Future<bool> Function(String firstName, String lastName, String email, String password)? onRegister;
+  final void Function(BuildContext context, String firstName, String lastName, String email, String password)? onRegister;
   final bool isLoading;
   final String? error;
 
@@ -70,18 +70,7 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       final pass = _passwordCtrl.text;
 
       if (widget.onRegister != null) {
-        final ok = await widget.onRegister!(first, last, email, pass);
-        if (!mounted) return;
-        if (ok) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Реєстрація успішна (імітація)')),
-          );
-          Navigator.of(context).pop();
-        } else {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Реєстрація не вдалася')),
-          );
-        }
+        widget.onRegister!(context, first, last, email, pass);
       } else {
         // Fallback: local mock behaviour
         ScaffoldMessenger.of(context).showSnackBar(
