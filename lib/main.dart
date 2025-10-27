@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'l10n/app_localizations.dart';
 import 'screens/home_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/statistics_screen.dart';
@@ -142,6 +143,9 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
+      locale: Locale(language),
       debugShowCheckedModeBanner: false,
       navigatorKey: _navigatorKey,
       routes: {

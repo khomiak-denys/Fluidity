@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 // Для імітації іконок Lucide (Droplets, Smartphone, Lock)
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:fluidity/l10n/app_localizations.dart';
 
 class LoginScreen extends StatefulWidget {
   final void Function(BuildContext context, String email, String password) onLogin;
@@ -133,8 +134,8 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           crossAxisAlignment: CrossAxisAlignment.stretch,
                           children: [
                             // CardHeader
-                            const Text(
-                              'Вхід',
+                            Text(
+                              AppLocalizations.of(context)!.loginTitle,
                               textAlign: TextAlign.center,
                               style: TextStyle(
                                 fontSize: 24,
@@ -143,10 +144,10 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                               ),
                             ),
                             const SizedBox(height: 4),
-                            const Text(
-                              'Для демонстрації введіть будь-які дані',
+                            Text(
+                              AppLocalizations.of(context)!.loginSubtitle,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 13,
                                 color: Colors.grey, // text-muted-foreground
                               ),
@@ -154,22 +155,22 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             const SizedBox(height: 24),
 
                             // CardContent - Email Input
-                            const _LabelWithIcon(icon: LucideIcons.smartphone, text: 'Email'),
+                            _LabelWithIcon(icon: LucideIcons.smartphone, text: AppLocalizations.of(context)!.emailLabel),
                             const SizedBox(height: 4),
                             Form(
                               key: _formKey,
                               child: TextFormField(
                                 controller: emailController,
                                 keyboardType: TextInputType.emailAddress,
-                                decoration: const InputDecoration(
-                                  hintText: 'you@example.com',
-                                  border: OutlineInputBorder(),
-                                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                                decoration: InputDecoration(
+                                  hintText: AppLocalizations.of(context)!.emailHint,
+                                  border: const OutlineInputBorder(),
+                                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                                 ),
                                 validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return 'Введіть email';
+                                  if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.emailEmptyError;
                                   final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                                  if (!emailRegex.hasMatch(v.trim())) return 'Неправильний формат email';
+                                  if (!emailRegex.hasMatch(v.trim())) return AppLocalizations.of(context)!.emailInvalidError;
                                   return null;
                                 },
                               ),
@@ -177,19 +178,19 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             const SizedBox(height: 16),
 
                             // CardContent - Password Input
-                            const _LabelWithIcon(icon: LucideIcons.lock, text: 'Пароль'),
+                            _LabelWithIcon(icon: LucideIcons.lock, text: AppLocalizations.of(context)!.passwordLabel),
                             const SizedBox(height: 4),
                             TextFormField(
                               controller: passwordController,
                               obscureText: true,
-                              decoration: const InputDecoration(
-                                hintText: 'Введіть пароль',
-                                border: OutlineInputBorder(),
-                                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                              decoration: InputDecoration(
+                                hintText: AppLocalizations.of(context)!.passwordHint,
+                                border: const OutlineInputBorder(),
+                                contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                               ),
                               validator: (v) {
-                                if (v == null || v.isEmpty) return 'Введіть пароль';
-                                if (v.length < 6) return 'Мінімум 6 символів';
+                                if (v == null || v.isEmpty) return AppLocalizations.of(context)!.passwordEmptyError;
+                                if (v.length < 6) return AppLocalizations.of(context)!.passwordLengthError;
                                 return null;
                               },
                             ),
@@ -214,9 +215,9 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                                         strokeWidth: 2,
                                       ),
                                     )
-                                  : const Text(
-                                      'Увійти',
-                                      style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+                                  : Text(
+                                      AppLocalizations.of(context)!.loginButton,
+                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
                                     ),
                             ),
                           ],
@@ -238,14 +239,14 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           ),
                         );
                       },
-                      child: const _FeaturesPreview(),
+                      child: _FeaturesPreview(),
                     ),
                     
                     // --- 5. Register Button (Залишаємо внизу для зручності) ---
                     const SizedBox(height: 16),
                     TextButton(
                       onPressed: widget.onRegister, // Використовуємо prop onRegister
-                      child: const Text('Немає аккаунта? Зареєструватися'),
+                      child: Text(AppLocalizations.of(context)!.noAccountRegister),
                     ),
                     
                     if (widget.error != null) ...[
@@ -304,10 +305,9 @@ class _LogoAndTitle extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 8),
-        const Text(
-          // t('') - імітація підзаголовка
-          'Ваша персональна система контролю води', 
-          style: TextStyle(fontSize: 14, color: Colors.grey),
+        Text(
+          AppLocalizations.of(context)!.appSubtitle,
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
         ),
       ],
     );
@@ -342,8 +342,8 @@ class _FeaturesPreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(top: 32.0),
+    return Padding(
+      padding: const EdgeInsets.only(top: 32.0),
       child: Column(
         children: [
           Row(
@@ -351,21 +351,21 @@ class _FeaturesPreview extends StatelessWidget {
             children: [
               _FeatureItem(
                 icon: LucideIcons.droplets,
-                text: 'Відстежування',
-                bgColor: Color(0xFFE0F7FF), // bg-sky-100
-                iconColor: Color(0xFF0284C7), // text-sky-600
+                text: AppLocalizations.of(context)!.featureTracking,
+                bgColor: const Color(0xFFE0F7FF), // bg-sky-100
+                iconColor: const Color(0xFF0284C7), // text-sky-600
               ),
               _FeatureItem(
                 icon: Icons.check_circle_outline,
-                text: 'Цілі',
-                bgColor: Color(0xFFF0FFF4), // bg-green-100 (імітація)
-                iconColor: Color(0xFF16A34A), // text-green-600 (імітація)
+                text: AppLocalizations.of(context)!.featureGoals,
+                bgColor: const Color(0xFFF0FFF4), // bg-green-100 (імітація)
+                iconColor: const Color(0xFF16A34A), // text-green-600 (імітація)
               ),
               _FeatureItem(
                 icon: Icons.notifications_none,
-                text: 'Нагадування',
-                bgColor: Color(0xFFFFF7ED), // bg-orange-100 (імітація)
-                iconColor: Color(0xFFEA580C), // text-orange-600 (імітація)
+                text: AppLocalizations.of(context)!.featureReminders,
+                bgColor: const Color(0xFFFFF7ED), // bg-orange-100 (імітація)
+                iconColor: const Color(0xFFEA580C), // text-orange-600 (імітація)
               ),
             ],
           ),

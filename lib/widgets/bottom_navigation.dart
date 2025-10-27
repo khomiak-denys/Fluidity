@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluidity/l10n/app_localizations.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky200 = Color(0xFFBAE6FD);
@@ -16,13 +17,7 @@ class BottomNavigation extends StatelessWidget {
     required this.onTabChange,
   });
 
-  // Дані вкладок, використовуючи іконки з Material Icons
-  static const _tabs = [
-    {'id': 'home', 'icon': Icons.home_rounded, 'label': 'Головна'},
-    {'id': 'statistics', 'icon': Icons.bar_chart_rounded, 'label': 'Статистика'},
-    {'id': 'reminders', 'icon': Icons.notifications_rounded, 'label': 'Нагадування'},
-    {'id': 'profile', 'icon': Icons.person_rounded, 'label': 'Профіль'},
-  ];
+  // Дані вкладок будуть створюватись у build з використанням локалізації
 
   @override
   Widget build(BuildContext context) {
@@ -48,7 +43,12 @@ class BottomNavigation extends StatelessWidget {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 crossAxisAlignment: CrossAxisAlignment.start,
-                children: _tabs.map((tab) {
+                children: ([
+                  {'id': 'home', 'icon': Icons.home_rounded, 'label': AppLocalizations.of(context)!.bottomNavHome},
+                  {'id': 'statistics', 'icon': Icons.bar_chart_rounded, 'label': AppLocalizations.of(context)!.bottomNavStats},
+                  {'id': 'reminders', 'icon': Icons.notifications_rounded, 'label': AppLocalizations.of(context)!.bottomNavReminders},
+                  {'id': 'profile', 'icon': Icons.person_rounded, 'label': AppLocalizations.of(context)!.bottomNavProfile},
+                ]).map((tab) {
                   final id = tab['id'] as String;
                   final isActive = activeTab == id;
                   final icon = tab['icon'] as IconData;
