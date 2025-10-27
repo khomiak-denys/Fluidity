@@ -1,13 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:lucide_icons/lucide_icons.dart';
+import 'package:fluidity/l10n/app_localizations.dart';
 
-// Визначення кольорів
-const Color sky50 = Color(0xFFF0F9FF);
-const Color cyan50 = Color(0xFFECFEFF);
-const Color sky500 = Color(0xFF0EA5E9);
-const Color cyan500 = Color(0xFF06B6D4);
-const Color sky700 = Color(0xFF0369A1);
-const Color sky200 = Color(0xFFBAE6FD);
+const Color _regSky50 = Color(0xFFF0F9FF);
+const Color _regCyan50 = Color(0xFFECFEFF);
+const Color _regSky500 = Color(0xFF0EA5E9);
+const Color _regCyan500 = Color(0xFF06B6D4);
+const Color _regSky700 = Color(0xFF0369A1);
+const Color _regSky200 = Color(0xFFBAE6FD);
 
 class RegisterScreen extends StatefulWidget {
   final void Function(BuildContext context, String firstName, String lastName, String email, String password)? onRegister;
@@ -20,7 +20,6 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-
 class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
   final _formKey = GlobalKey<FormState>();
   final _firstNameCtrl = TextEditingController();
@@ -28,7 +27,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
-  // Анімація для імітації motion.div
   late AnimationController _animationController;
   late Animation<double> _scaleAnimation;
   late Animation<double> _opacityAnimation;
@@ -36,18 +34,9 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   @override
   void initState() {
     super.initState();
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-
+    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
+    _scaleAnimation = Tween<double>(begin: 0.96, end: 1.0).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
+    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
     _animationController.forward();
   }
 
@@ -63,7 +52,6 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
 
   Future<void> _submit() async {
     if (_formKey.currentState?.validate() ?? false) {
-      // If an onRegister callback is provided, call it and handle result.
       final first = _firstNameCtrl.text.trim();
       final last = _lastNameCtrl.text.trim();
       final email = _emailCtrl.text.trim();
@@ -72,11 +60,8 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
       if (widget.onRegister != null) {
         widget.onRegister!(context, first, last, email, pass);
       } else {
-        // Fallback: local mock behaviour
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Реєстрація успішна (імітація)')),
-        );
-        Navigator.of(context).pop(); // Повернення на екран входу
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.registerButton)));
+        Navigator.of(context).pop();
       }
     }
   }
@@ -84,33 +69,22 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      // --- AppBar (Імітуємо відсутність AppBar як на екрані Login, але додаємо кнопку "Назад") ---
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        // Іконка для повернення назад, щоб не руйнувати градієнтний фон
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: sky700),
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        leading: IconButton(icon: const Icon(Icons.arrow_back, color: _regSky700), onPressed: () => Navigator.of(context).pop()),
       ),
-      extendBodyBehindAppBar: true, // Розтягуємо фон за AppBar
-
-      // --- Body з градієнтом ---
+      extendBodyBehindAppBar: true,
       body: Container(
         decoration: const BoxDecoration(
-          gradient: LinearGradient(
-            colors: [sky50, Colors.white, cyan50],
-            begin: Alignment.topLeft,
-            end: Alignment.bottomRight,
-          ),
+          gradient: LinearGradient(colors: [_regSky50, Colors.white, _regCyan50], begin: Alignment.topLeft, end: Alignment.bottomRight),
         ),
         alignment: Alignment.center,
         padding: const EdgeInsets.all(16),
         child: SingleChildScrollView(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400),
-            child: ScaleTransition( // Імітація motion.div
+            constraints: const BoxConstraints(maxWidth: 420),
+            child: ScaleTransition(
               scale: _scaleAnimation,
               child: FadeTransition(
                 opacity: _opacityAnimation,
@@ -118,147 +92,46 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // --- 1. Logo and Title ---
                     TweenAnimationBuilder<double>(
                       tween: Tween<double>(begin: 0, end: 1),
-                      duration: const Duration(milliseconds: 500),
+                      duration: const Duration(milliseconds: 400),
                       builder: (context, opacityValue, child) {
-                        return Opacity(
-                          opacity: opacityValue,
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 20 * (1 - opacityValue)),
-                            child: child,
-                          ),
-                        );
+                        return Opacity(opacity: opacityValue, child: Padding(padding: EdgeInsets.only(top: 18 * (1 - opacityValue)), child: child));
                       },
-                      child: const _LogoAndTitle(sky500: sky500, cyan500: cyan500, titleText: 'Реєстрація'),
+                      child: _RegisterLogoAndTitle(sky500: _regSky500, cyan500: _regCyan500, titleText: AppLocalizations.of(context)!.registerTitle),
                     ),
-
                     const SizedBox(height: 16),
-
-                    // --- 2. Card з формою ---
                     Card(
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: sky200, width: 1),
-                      ),
-                                   color: Colors.white.withAlpha((0.8 * 255).round()),
+                      elevation: 6,
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: _regSky200, width: 1)),
+                      color: Colors.white.withAlpha((0.92 * 255).round()),
                       child: Padding(
-                        padding: const EdgeInsets.all(24.0),
+                        padding: const EdgeInsets.all(20.0),
                         child: Form(
                           key: _formKey,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // CardHeader
-                              const Text(
-                                'Створення акаунту',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 24,
-                                  fontWeight: FontWeight.bold,
-                                  color: sky700,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              const Text(
-                                'Заповніть форму для початку відстеження води',
-                                textAlign: TextAlign.center,
-                                style: TextStyle(
-                                  fontSize: 13,
-                                  color: Colors.grey,
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-
-                              // --- Form Fields ---
-                              _buildInputField(
-                                controller: _firstNameCtrl,
-                                label: 'Ім\'я',
-                                icon: LucideIcons.user,
-                                validatorText: 'Введіть ім\'я',
-                              ),
-                              const SizedBox(height: 16),
-                              
-                              _buildInputField(
-                                controller: _lastNameCtrl,
-                                label: 'Прізвище',
-                                icon: LucideIcons.user,
-                                validatorText: 'Введіть прізвище',
-                              ),
-                              const SizedBox(height: 16),
-
-                              _buildInputField(
-                                controller: _emailCtrl,
-                                label: 'Email',
-                                icon: LucideIcons.smartphone,
-                                keyboardType: TextInputType.emailAddress,
-                                validatorText: 'Введіть email',
-                                validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return 'Введіть email';
-                                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                                  if (!emailRegex.hasMatch(v.trim())) return 'Неправильний формат email';
-                                  return null;
-                                },
-                              ),
-                              const SizedBox(height: 16),
-                              
-                              _buildInputField(
-                                controller: _passwordCtrl,
-                                label: 'Пароль',
-                                icon: LucideIcons.lock,
-                                obscureText: true,
-                                validatorText: 'Мінімум 6 символів',
-                                validator: (v) => (v == null || v.length < 6) ? 'Мінімум 6 символів' : null,
-                              ),
-                              
-                              const SizedBox(height: 24),
-
-                              // Register Button
-                              ElevatedButton(
-                                onPressed: _submit,
-                                style: ElevatedButton.styleFrom(
-                                  minimumSize: const Size.fromHeight(44),
-                                  padding: const EdgeInsets.symmetric(vertical: 12),
-                                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                  foregroundColor: Colors.white,
-                                  backgroundColor: sky500,
-                                ),
-                                child: const Text(
-                                  'Зареєструватися',
-                                  style: TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                                ),
-                              ),
-                              if (widget.error != null) ...[
-                                const SizedBox(height: 8),
-                                Text(
-                                  widget.error!,
-                                  style: const TextStyle(color: Colors.red),
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
+                              Text(AppLocalizations.of(context)!.createAccountTitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _regSky700)),
+                              const SizedBox(height: 6),
+                              Text(AppLocalizations.of(context)!.createAccountSubtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                              const SizedBox(height: 18),
+                              _buildInputField(controller: _firstNameCtrl, label: AppLocalizations.of(context)!.firstNameLabel, hint: AppLocalizations.of(context)!.firstNameHint, icon: LucideIcons.user, validatorText: AppLocalizations.of(context)!.firstNameEmptyError),
+                              const SizedBox(height: 12),
+                              _buildInputField(controller: _lastNameCtrl, label: AppLocalizations.of(context)!.lastNameLabel, hint: AppLocalizations.of(context)!.lastNameHint, icon: LucideIcons.user, validatorText: AppLocalizations.of(context)!.lastNameEmptyError),
+                              const SizedBox(height: 12),
+                              _buildInputField(controller: _emailCtrl, label: AppLocalizations.of(context)!.emailLabel, hint: AppLocalizations.of(context)!.emailHint, icon: LucideIcons.smartphone, keyboardType: TextInputType.emailAddress, validatorText: AppLocalizations.of(context)!.emailEmptyError, validator: (v) { if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.emailEmptyError; final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+'); if (!emailRegex.hasMatch(v.trim())) return AppLocalizations.of(context)!.emailInvalidError; return null; }),
+                              const SizedBox(height: 12),
+                              _buildInputField(controller: _passwordCtrl, label: AppLocalizations.of(context)!.passwordLabel, hint: AppLocalizations.of(context)!.passwordHint, icon: LucideIcons.lock, obscureText: true, validatorText: AppLocalizations.of(context)!.passwordEmptyError, validator: (v) => (v == null || v.length < 6) ? AppLocalizations.of(context)!.passwordLengthError : null),
+                              const SizedBox(height: 18),
+                              ElevatedButton(onPressed: widget.isLoading ? null : _submit, style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(46), padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), foregroundColor: Colors.white, backgroundColor: _regSky500), child: Text(AppLocalizations.of(context)!.registerButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                              if (widget.error != null) ...[const SizedBox(height: 10), Text(widget.error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)],
                             ],
                           ),
                         ),
                       ),
                     ),
-
-                    // --- Optional Features Preview (Можна прибрати, якщо він потрібен тільки на Login) ---
-                    TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: 1),
-                      duration: const Duration(milliseconds: 500),
-                      builder: (context, opacityValue, child) {
-                        return Opacity(
-                          opacity: opacityValue,
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 20 * (1 - opacityValue)),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: const _FeaturesPreview(),
-                    ),
+                    TweenAnimationBuilder<double>(tween: Tween<double>(begin: 0, end: 1), duration: const Duration(milliseconds: 400), builder: (context, opacityValue, child) { return Opacity(opacity: opacityValue, child: Padding(padding: EdgeInsets.only(top: 18 * (1 - opacityValue)), child: child)); }, child: const _RegisterFeaturesPreview()),
                   ],
                 ),
               ),
@@ -269,170 +142,75 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     );
   }
 
-  // Допоміжна функція для створення стилізованих полів вводу
-  Widget _buildInputField({
-    required TextEditingController controller,
-    required String label,
-    required IconData icon,
-    required String validatorText,
-    TextInputType keyboardType = TextInputType.text,
-    bool obscureText = false,
-    String? Function(String?)? validator,
-  }) {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        _LabelWithIcon(icon: icon, text: label),
-        const SizedBox(height: 4),
-        TextFormField(
-          controller: controller,
-          keyboardType: keyboardType,
-          obscureText: obscureText,
-          decoration: InputDecoration(
-            hintText: 'Введіть $label',
-            border: const OutlineInputBorder(),
-            contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-          ),
-          validator: validator ?? (v) => (v == null || v.trim().isEmpty) ? validatorText : null,
-        ),
-      ],
-    );
+  Widget _buildInputField({required TextEditingController controller, required String label, required String hint, required IconData icon, required String validatorText, TextInputType keyboardType = TextInputType.text, bool obscureText = false, String? Function(String?)? validator}) {
+    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+      _RegisterLabelWithIcon(icon: icon, text: label),
+      const SizedBox(height: 6),
+      TextFormField(controller: controller, keyboardType: keyboardType, obscureText: obscureText, decoration: InputDecoration(hintText: hint, border: const OutlineInputBorder(), contentPadding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12)), validator: validator ?? (v) => (v == null || v.trim().isEmpty) ? validatorText : null),
+    ]);
   }
 }
 
-// =========================================================================
-// WIDGETS SECTION (КОПІЇ З LOGIN_SCREEN.dart)
-// =========================================================================
-
-class _LogoAndTitle extends StatelessWidget {
+class _RegisterLogoAndTitle extends StatelessWidget {
   final Color sky500;
   final Color cyan500;
   final String titleText;
 
-  const _LogoAndTitle({required this.sky500, required this.cyan500, this.titleText = 'Fluidity'});
+  const _RegisterLogoAndTitle({required this.sky500, required this.cyan500, this.titleText = 'Fluidity'});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 64,
-          height: 64,
-          decoration: BoxDecoration(
-            gradient: LinearGradient(colors: [sky500, cyan500]),
-            borderRadius: BorderRadius.circular(32),
-          ),
-          child: const Icon(LucideIcons.droplets, color: Colors.white, size: 32),
-        ),
-        const SizedBox(height: 16),
-        Text(
-          titleText,
-          style: TextStyle(
-            fontSize: 32,
-            fontWeight: FontWeight.bold,
-            foreground: Paint()
-              ..shader = LinearGradient(
-                colors: [sky500.withAlpha((0.9 * 255).round()), cyan500.withAlpha((0.9 * 255).round())],
-              ).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 50.0)),
-          ),
-        ),
-        const SizedBox(height: 8),
-        const Text(
-          'Ваша персональна система контролю води', 
-          style: TextStyle(fontSize: 14, color: Colors.grey),
-        ),
-      ],
-    );
+    return Column(children: [
+      Container(width: 64, height: 64, decoration: BoxDecoration(gradient: LinearGradient(colors: [sky500, cyan500]), borderRadius: BorderRadius.circular(32)), child: const Icon(LucideIcons.droplets, color: Colors.white, size: 32)),
+      const SizedBox(height: 12),
+      Text(titleText, style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold, foreground: Paint()..shader = LinearGradient(colors: [sky500.withAlpha((0.9 * 255).round()), cyan500.withAlpha((0.9 * 255).round())]).createShader(const Rect.fromLTWH(0.0, 0.0, 200.0, 50.0)))),
+      const SizedBox(height: 6),
+      Text(AppLocalizations.of(context)!.appSubtitle, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+    ]);
   }
 }
 
-class _LabelWithIcon extends StatelessWidget {
+class _RegisterLabelWithIcon extends StatelessWidget {
   final IconData icon;
   final String text;
 
-  const _LabelWithIcon({required this.icon, required this.text});
+  const _RegisterLabelWithIcon({required this.icon, required this.text});
 
   @override
   Widget build(BuildContext context) {
-    return Row(
-      children: [
-  Icon(icon, size: 16, color: sky700.withAlpha((0.8 * 255).round())),
-        const SizedBox(width: 8),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87),
-        ),
-      ],
-    );
+    return Row(children: [Icon(icon, size: 16, color: _regSky700.withAlpha((0.85 * 255).round())), const SizedBox(width: 8), Text(text, style: const TextStyle(fontSize: 14, fontWeight: FontWeight.w500, color: Colors.black87))]);
   }
 }
 
-class _FeaturesPreview extends StatelessWidget {
-  const _FeaturesPreview();
+class _RegisterFeaturesPreview extends StatelessWidget {
+  const _RegisterFeaturesPreview();
 
   @override
   Widget build(BuildContext context) {
-    return const Padding(
-      padding: EdgeInsets.only(top: 32.0),
+    return Padding(
+      padding: const EdgeInsets.only(top: 26.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceAround,
         children: [
-          _FeatureItem(
-            icon: LucideIcons.droplets,
-            text: 'Відстежування',
-            bgColor: Color(0xFFE0F7FF),
-            iconColor: Color(0xFF0284C7),
-          ),
-          _FeatureItem(
-            icon: Icons.check_circle_outline,
-            text: 'Цілі',
-            bgColor: Color(0xFFF0FFF4),
-            iconColor: Color(0xFF16A34A),
-          ),
-          _FeatureItem(
-            icon: Icons.notifications_none,
-            text: 'Нагадування',
-            bgColor: Color(0xFFFFF7ED),
-            iconColor: Color(0xFFEA580C),
-          ),
+          _RegisterFeatureItem(icon: LucideIcons.droplets, text: AppLocalizations.of(context)!.featureTracking, bgColor: const Color(0xFFE0F7FF), iconColor: const Color(0xFF0284C7)),
+          _RegisterFeatureItem(icon: Icons.check_circle_outline, text: AppLocalizations.of(context)!.featureGoals, bgColor: const Color(0xFFF0FFF4), iconColor: const Color(0xFF16A34A)),
+          _RegisterFeatureItem(icon: Icons.notifications_none, text: AppLocalizations.of(context)!.featureReminders, bgColor: const Color(0xFFFFF7ED), iconColor: const Color(0xFFEA580C)),
         ],
       ),
     );
   }
 }
 
-class _FeatureItem extends StatelessWidget {
+class _RegisterFeatureItem extends StatelessWidget {
   final IconData icon;
   final String text;
   final Color bgColor;
   final Color iconColor;
 
-  const _FeatureItem({
-    required this.icon,
-    required this.text,
-    required this.bgColor,
-    required this.iconColor,
-  });
+  const _RegisterFeatureItem({required this.icon, required this.text, required this.bgColor, required this.iconColor});
 
   @override
   Widget build(BuildContext context) {
-    return Column(
-      children: [
-        Container(
-          width: 36,
-          height: 36,
-          decoration: BoxDecoration(
-            color: bgColor,
-            borderRadius: BorderRadius.circular(18),
-          ),
-          child: Icon(icon, color: iconColor, size: 20),
-        ),
-        const SizedBox(height: 4),
-        Text(
-          text,
-          style: const TextStyle(fontSize: 12, color: Colors.grey),
-        ),
-      ],
-    );
+    return Column(children: [Container(width: 36, height: 36, decoration: BoxDecoration(color: bgColor, borderRadius: BorderRadius.circular(18)), child: Icon(icon, color: iconColor, size: 20)), const SizedBox(height: 4), Text(text, style: const TextStyle(fontSize: 12, color: Colors.grey))]);
   }
 }

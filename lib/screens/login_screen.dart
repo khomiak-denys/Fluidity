@@ -137,7 +137,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                             Text(
                               AppLocalizations.of(context)!.loginTitle,
                               textAlign: TextAlign.center,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 24,
                                 fontWeight: FontWeight.bold,
                                 color: sky700,
@@ -239,7 +239,7 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
                           ),
                         );
                       },
-                      child: _FeaturesPreview(),
+                      child: const _FeaturesPreview(),
                     ),
                     
                     // --- 5. Register Button (Залишаємо внизу для зручності) ---

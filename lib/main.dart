@@ -49,9 +49,11 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
 
   final mockUser = {'uid': 'demo-user', 'phoneNumber': '+380 50 123 45 67'};
 
-  Future<void> handleLogin(BuildContext context, String email, String password) async {
+  Future<void> handleLogin(String email, String password) async {
     final error = await FirebaseService.instance.signInWithEmail(email.trim(), password);
     if (!mounted) return;
+
+    final messengerCtx = _navigatorKey.currentContext;
 
     if (error == null) {
       setState(() {
@@ -63,32 +65,43 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       setState(() {
         authError = error;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: Colors.red),
-      );
+      if (messengerCtx != null) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(messengerCtx).showSnackBar(
+          SnackBar(content: Text(error), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
-  Future<void> handleRegister(BuildContext context, String firstName, String lastName, String email, String password) async {
+  Future<void> handleRegister(String firstName, String lastName, String email, String password) async {
     final error = await FirebaseService.instance.registerWithEmail(firstName.trim(), lastName.trim(), email.trim(), password);
     if (!mounted) return;
 
+    final messengerCtx = _navigatorKey.currentContext;
+
     if (error == null) {
       // Show a message to the user to check their email
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Лист для підтвердження надіслано на вашу пошту.'),
-          backgroundColor: Colors.green,
-        ),
-      );
-      Navigator.of(context).pop(); // Go back to login screen
+      if (messengerCtx != null) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(messengerCtx).showSnackBar(
+          const SnackBar(
+            content: Text('Лист для підтвердження надіслано на вашу пошту.'),
+            backgroundColor: Colors.green,
+          ),
+        );
+      }
+      _navigatorKey.currentState?.pop(); // Go back to login screen
     } else {
       setState(() {
         authError = error;
       });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(error), backgroundColor: Colors.red),
-      );
+      if (messengerCtx != null) {
+        // ignore: use_build_context_synchronously
+        ScaffoldMessenger.of(messengerCtx).showSnackBar(
+          SnackBar(content: Text(error), backgroundColor: Colors.red),
+        );
+      }
     }
   }
 
@@ -151,7 +164,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       routes: {
         '/register': (context) => RegisterScreen(
               onRegister: (ctx, firstName, lastName, email, password) {
-                handleRegister(ctx, firstName, lastName, email, password);
+                handleRegister(firstName, lastName, email, password);
               },
               error: authError,
             ),
@@ -166,7 +179,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
             )
           : Builder(
               builder: (context) => LoginScreen(
-                onLogin: (ctx, email, password) => handleLogin(ctx, email, password),
+                onLogin: (ctx, email, password) => handleLogin(email, password),
                 onRegister: () => _navigatorKey.currentState?.pushNamed('/register'),
                 error: authError,
               ),

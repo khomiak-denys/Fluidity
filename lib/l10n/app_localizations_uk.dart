@@ -183,6 +183,74 @@ class AppLocalizationsUk extends AppLocalizations {
   String get bottomNavProfile => 'Профіль';
 
   @override
+  String get english => 'Англійська';
+
+  @override
+  String get ukrainian => 'Українська';
+
+  @override
+  String get remindersSubtitle => 'Встановіть нагадування випити води';
+
+  @override
+  String get reminderAdded => 'Нагадування додано!';
+
+  @override
+  String get reminderDeleted => 'Нагадування видалено!';
+
+  @override
+  String get addReminder => 'Додати нагадування';
+
+  @override
+  String get selectTime => 'Вибрати час';
+
+  @override
+  String get remindersEmpty => 'Наразі немає нагадувань. Додайте перше!';
+
+  @override
+  String get quickAddTitle => 'Додати';
+
+  @override
+  String waterAdded(Object amount) {
+    return 'Додано $amount мл води!';
+  }
+
+  @override
+  String get startTrackingTitle => 'Почніть відстеження!';
+
+  @override
+  String get startTrackingBody => 'Додайте свій перший запис води, натиснувши на кнопки вище або кнопку FAB';
+
+  @override
+  String get statisticsSubtitle => 'Слідкуйте за своїм прогресом';
+
+  @override
+  String get statisticsWeekly => 'Статистика за тиждень';
+
+  @override
+  String get hourlyDistribution => 'Розподіл за сьогодні';
+
+  @override
+  String get statsTodayTitle => 'Сьогодні випито';
+
+  @override
+  String get statsAverageTitle => 'В середньому за день';
+
+  @override
+  String get statsWeekTotalTitle => 'Загалом за тиждень';
+
+  @override
+  String get entryDeleted => 'Запис видалено';
+
+  @override
+  String get typeLabel => 'Тип';
+
+  @override
+  String get congratulations => 'Вітаємо!';
+
+  @override
+  String get goalReached => 'Ви досягли своєї денної цілі!';
+
+  @override
   String get emailValidatorEmpty => 'Будь ласка введіть ваш email';
 
   @override

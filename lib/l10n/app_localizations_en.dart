@@ -183,6 +183,74 @@ class AppLocalizationsEn extends AppLocalizations {
   String get bottomNavProfile => 'Profile';
 
   @override
+  String get english => 'English';
+
+  @override
+  String get ukrainian => 'Ukrainian';
+
+  @override
+  String get remindersSubtitle => 'Set reminders to drink water';
+
+  @override
+  String get reminderAdded => 'Reminder added!';
+
+  @override
+  String get reminderDeleted => 'Reminder deleted!';
+
+  @override
+  String get addReminder => 'Add Reminder';
+
+  @override
+  String get selectTime => 'Select time';
+
+  @override
+  String get remindersEmpty => 'No reminders yet. Add the first one!';
+
+  @override
+  String get quickAddTitle => 'Add';
+
+  @override
+  String waterAdded(Object amount) {
+    return 'Added $amount ml of water!';
+  }
+
+  @override
+  String get startTrackingTitle => 'Start tracking!';
+
+  @override
+  String get startTrackingBody => 'Add your first water entry using the buttons above or the FAB';
+
+  @override
+  String get statisticsSubtitle => 'Keep track of your progress';
+
+  @override
+  String get statisticsWeekly => 'Statistics for the week';
+
+  @override
+  String get hourlyDistribution => 'Hourly distribution (today)';
+
+  @override
+  String get statsTodayTitle => 'Today\'s intake';
+
+  @override
+  String get statsAverageTitle => 'Daily average';
+
+  @override
+  String get statsWeekTotalTitle => 'Weekly total';
+
+  @override
+  String get entryDeleted => 'Entry deleted';
+
+  @override
+  String get typeLabel => 'Type';
+
+  @override
+  String get congratulations => 'Congratulations!';
+
+  @override
+  String get goalReached => 'You\'ve reached your daily goal!';
+
+  @override
   String get emailValidatorEmpty => 'Please enter your email';
 
   @override

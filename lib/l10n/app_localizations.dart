@@ -443,6 +443,138 @@ abstract class AppLocalizations {
   /// **'Profile'**
   String get bottomNavProfile;
 
+  /// No description provided for @english.
+  ///
+  /// In en, this message translates to:
+  /// **'English'**
+  String get english;
+
+  /// No description provided for @ukrainian.
+  ///
+  /// In en, this message translates to:
+  /// **'Ukrainian'**
+  String get ukrainian;
+
+  /// No description provided for @remindersSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Set reminders to drink water'**
+  String get remindersSubtitle;
+
+  /// No description provided for @reminderAdded.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder added!'**
+  String get reminderAdded;
+
+  /// No description provided for @reminderDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Reminder deleted!'**
+  String get reminderDeleted;
+
+  /// No description provided for @addReminder.
+  ///
+  /// In en, this message translates to:
+  /// **'Add Reminder'**
+  String get addReminder;
+
+  /// No description provided for @selectTime.
+  ///
+  /// In en, this message translates to:
+  /// **'Select time'**
+  String get selectTime;
+
+  /// No description provided for @remindersEmpty.
+  ///
+  /// In en, this message translates to:
+  /// **'No reminders yet. Add the first one!'**
+  String get remindersEmpty;
+
+  /// No description provided for @quickAddTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Add'**
+  String get quickAddTitle;
+
+  /// Snackbar shown after adding water
+  ///
+  /// In en, this message translates to:
+  /// **'Added {amount} ml of water!'**
+  String waterAdded(Object amount);
+
+  /// No description provided for @startTrackingTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Start tracking!'**
+  String get startTrackingTitle;
+
+  /// No description provided for @startTrackingBody.
+  ///
+  /// In en, this message translates to:
+  /// **'Add your first water entry using the buttons above or the FAB'**
+  String get startTrackingBody;
+
+  /// No description provided for @statisticsSubtitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Keep track of your progress'**
+  String get statisticsSubtitle;
+
+  /// No description provided for @statisticsWeekly.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics for the week'**
+  String get statisticsWeekly;
+
+  /// No description provided for @hourlyDistribution.
+  ///
+  /// In en, this message translates to:
+  /// **'Hourly distribution (today)'**
+  String get hourlyDistribution;
+
+  /// No description provided for @statsTodayTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s intake'**
+  String get statsTodayTitle;
+
+  /// No description provided for @statsAverageTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily average'**
+  String get statsAverageTitle;
+
+  /// No description provided for @statsWeekTotalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Weekly total'**
+  String get statsWeekTotalTitle;
+
+  /// No description provided for @entryDeleted.
+  ///
+  /// In en, this message translates to:
+  /// **'Entry deleted'**
+  String get entryDeleted;
+
+  /// No description provided for @typeLabel.
+  ///
+  /// In en, this message translates to:
+  /// **'Type'**
+  String get typeLabel;
+
+  /// No description provided for @congratulations.
+  ///
+  /// In en, this message translates to:
+  /// **'Congratulations!'**
+  String get congratulations;
+
+  /// No description provided for @goalReached.
+  ///
+  /// In en, this message translates to:
+  /// **'You\'ve reached your daily goal!'**
+  String get goalReached;
+
   /// No description provided for @emailValidatorEmpty.
   ///
   /// In en, this message translates to:

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
@@ -54,33 +55,11 @@ class StatisticsScreen extends StatelessWidget {
     final weekTotal = weeklyData.fold<int>(0, (sum, d) => sum + (d['intake'] as int));
     final weekAverage = (weekTotal / 7).round();
 
-    final stats = [
-      {
-        'title': 'Сьогодні випито',
-        'value': '${todayIntake}ml',
-        'icon': Icons.opacity_rounded, // Droplets
-        'color': sky600,
-        'bgColor': sky100,
-      },
-      {
-        'title': 'В середньому за день',
-        'value': '${weekAverage}ml',
-        'icon': Icons.trending_up_rounded, // TrendingUp
-        'color': green600,
-        'bgColor': green100,
-      },
-      {
-        'title': 'Загалом за тиждень',
-        'value': '${(weekTotal / 1000).toStringAsFixed(1)}L',
-        'icon': Icons.calendar_month_rounded, // Calendar
-        'color': orange600,
-        'bgColor': orange100,
-      },
-    ];
-
     return {
       'weeklyData': weeklyData,
-      'stats': stats,
+      'todayIntake': todayIntake,
+      'weekAverage': weekAverage,
+      'weekTotal': weekTotal,
     };
   }
 
@@ -88,7 +67,33 @@ class StatisticsScreen extends StatelessWidget {
   Widget build(BuildContext context) {
   final data = _calculateStats();
   final weeklyData = data['weeklyData'] as List<Map<String, dynamic>>;
-  final stats = data['stats'] as List<Map<String, dynamic>>;
+  final todayIntake = data['todayIntake'] as int;
+  final weekAverage = data['weekAverage'] as int;
+  final weekTotal = data['weekTotal'] as int;
+
+  final stats = [
+    {
+      'title': AppLocalizations.of(context)!.statsTodayTitle,
+      'value': '${todayIntake}ml',
+      'icon': Icons.opacity_rounded,
+      'color': sky600,
+      'bgColor': sky100,
+    },
+    {
+      'title': AppLocalizations.of(context)!.statsAverageTitle,
+      'value': '${weekAverage}ml',
+      'icon': Icons.trending_up_rounded,
+      'color': green600,
+      'bgColor': green100,
+    },
+    {
+      'title': AppLocalizations.of(context)!.statsWeekTotalTitle,
+      'value': '${(weekTotal / 1000).toStringAsFixed(1)}L',
+      'icon': Icons.calendar_month_rounded,
+      'color': orange600,
+      'bgColor': orange100,
+    },
+  ];
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -105,8 +110,8 @@ class StatisticsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // --- Header ---
-              _buildHeader()
+        // --- Header ---
+        _buildHeader(context)
                   .animate()
                   .fadeIn(duration: 500.ms)
                   .slideY(begin: -0.2, end: 0),
@@ -122,7 +127,7 @@ class StatisticsScreen extends StatelessWidget {
               const SizedBox(height: 20), // space-y-4
 
               // --- Weekly Progress Chart ---
-              _buildWeeklyChartCard(weeklyData)
+        _buildWeeklyChartCard(context, weeklyData)
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 400.ms)
                   .slideY(begin: 0.2, end: 0),
@@ -131,7 +136,7 @@ class StatisticsScreen extends StatelessWidget {
 
               // --- Hourly Distribution (Today) ---
               if (entries.isNotEmpty)
-                _buildHourlyDistributionCard(entries)
+                _buildHourlyDistributionCard(context, entries)
                     .animate()
                     .fadeIn(duration: 500.ms, delay: 600.ms)
                     .slideY(begin: 0.2, end: 0),
@@ -143,21 +148,21 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   // --- Header Widget ---
-  Widget _buildHeader() {
-    return const Column(
+  Widget _buildHeader(BuildContext context) {
+    return Column(
       children: [
         Text(
-          'Статистика',
-          style: TextStyle(
+          AppLocalizations.of(context)!.statistics,
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: sky700,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
-          'Слідкуйте за своїм прогресом',
-          style: TextStyle(color: mutedForeground, fontSize: 13),
+          AppLocalizations.of(context)!.statisticsSubtitle,
+          style: const TextStyle(color: mutedForeground, fontSize: 13),
         ),
       ],
     );
@@ -224,7 +229,7 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   // --- Weekly Chart Card Widget ---
-  Widget _buildWeeklyChartCard(List<Map<String, dynamic>> weeklyData) {
+  Widget _buildWeeklyChartCard(BuildContext context, List<Map<String, dynamic>> weeklyData) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1,
@@ -233,11 +238,11 @@ class StatisticsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // CardHeader
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8), // pb-3
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8), // pb-3
             child: Text(
-              'Статистика за тиждень',
-              style: TextStyle(
+              AppLocalizations.of(context)!.statisticsWeekly,
+              style: const TextStyle(
                 color: sky700,
                 fontWeight: FontWeight.bold,
                 fontSize: 18, // text-base sm:text-lg
@@ -335,7 +340,7 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   // --- Hourly Distribution Card Widget ---
-  Widget _buildHourlyDistributionCard(List<WaterIntakeEntry> entries) {
+  Widget _buildHourlyDistributionCard(BuildContext context, List<WaterIntakeEntry> entries) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1,
@@ -344,11 +349,11 @@ class StatisticsScreen extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // CardHeader
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 8), // pb-3
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 8), // pb-3
             child: Text(
-              'Розподіл за сьогодні',
-              style: TextStyle(
+              AppLocalizations.of(context)!.hourlyDistribution,
+              style: const TextStyle(
                 color: sky700,
                 fontWeight: FontWeight.bold,
                 fontSize: 18,

@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:flutter/services.dart'; // Для TextInputType.number
 import 'package:fluidity/widgets/water_progress.dart';
 import '../models/water_intake.dart';
@@ -84,7 +85,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Імітація sonner toast.success
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Додано $amount ml води! 💧'), 
+        content: Text(AppLocalizations.of(context)!.waterAdded(amount)),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
@@ -110,7 +111,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     // Імітація sonner toast.success
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text('Додано $amount ml води! 💧'), 
+        content: Text(AppLocalizations.of(context)!.waterAdded(amount)),
         duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
@@ -122,9 +123,9 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
       entries.removeWhere((e) => e.id == id);
     });
     ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(
-        content: Text('Запис видалено'), 
-        duration: Duration(seconds: 2),
+      SnackBar(
+        content: Text(AppLocalizations.of(context)!.entryDeleted),
+        duration: const Duration(seconds: 2),
         behavior: SnackBarBehavior.floating,
       ),
     );
@@ -294,7 +295,7 @@ class _AnimatedHomeHeader extends StatelessWidget {
             ),
             // p (text-muted-foreground)
             Text(
-              'Сьогодні випито: $totalIntake мл',
+              '${AppLocalizations.of(context)!.statsTodayTitle}: $totalIntake ml',
               style: const TextStyle(fontSize: 14, color: Colors.grey), // text-sm text-muted-foreground
             ),
           ],
@@ -326,17 +327,17 @@ class _AnimatedGoalCard extends StatelessWidget {
           ),
           // bg-gradient-to-r from-green-50 to-emerald-50
           color: green50, // Використовуємо один колір для простоти емуляції градієнта
-          child: const Padding(
-            padding: EdgeInsets.all(16.0), // p-4
-            child: Column(
-              children: [
-                Text('🎉', style: TextStyle(fontSize: 24)), // text-2xl mb-2
-                SizedBox(height: 4), // mb-1
-                Text('Вітаємо!', style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: green700)), // font-semibold text-green-700
-                Text('Ви досягли своєї денної цілі!', style: TextStyle(fontSize: 13, color: green600)), // text-sm text-green-600
-              ],
+          child: Padding(
+              padding: const EdgeInsets.all(16.0), // p-4
+              child: Column(
+                children: [
+                  const Text('🎉', style: TextStyle(fontSize: 24)), // text-2xl mb-2
+                  const SizedBox(height: 4), // mb-1
+                  Text(AppLocalizations.of(context)!.congratulations, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: green700)), // font-semibold text-green-700
+                  Text(AppLocalizations.of(context)!.goalReached, style: const TextStyle(fontSize: 13, color: green600)), // text-sm text-green-600
+                ],
+              ),
             ),
-          ),
         ),
       ),
     );
@@ -364,11 +365,11 @@ class _QuickAddSection extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           // CardHeader className="pb-3"
-          const Padding(
-            padding: EdgeInsets.fromLTRB(16, 16, 16, 12), // Емуляція CardHeader з pb-3
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12), // Емуляція CardHeader з pb-3
             child: Text(
-              'Додати',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700), // CardTitle text-sky-700 text-base sm:text-lg
+              AppLocalizations.of(context)!.quickAddTitle,
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700), // CardTitle text-sky-700 text-base sm:text-lg
             ),
           ),
           // CardContent className="pt-0"
@@ -467,18 +468,18 @@ class _EmptyStateCard extends StatelessWidget {
         // border-dashed border-2 border-sky-200
         side: const BorderSide(color: sky200, style: BorderStyle.solid, width: 2), 
       ),
-      child: const Padding(
-        padding: EdgeInsets.all(32.0), 
+      child: Padding(
+        padding: const EdgeInsets.all(32.0), 
         child: Column(
           children: [
-            Text('💧', style: TextStyle(fontSize: 40)), 
-            SizedBox(height: 16), // mb-2
-            Text('Почніть відстеження!', style: TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: sky700)), // font-medium text-sky-700
-            SizedBox(height: 8), 
+            const Text('💧', style: TextStyle(fontSize: 40)), 
+            const SizedBox(height: 16), // mb-2
+            Text(AppLocalizations.of(context)!.startTrackingTitle, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: sky700)), // font-medium text-sky-700
+            const SizedBox(height: 8), 
             Text(
-              'Додайте свій перший запис води, натиснувши на кнопки вище або FAB кнопку', 
+              AppLocalizations.of(context)!.startTrackingBody, 
               textAlign: TextAlign.center, 
-              style: TextStyle(fontSize: 14, color: Colors.grey), // text-sm text-muted-foreground
+              style: const TextStyle(fontSize: 14, color: Colors.grey), // text-sm text-muted-foreground
             ),
           ],
         ),
@@ -546,8 +547,8 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
       contentPadding: EdgeInsets.zero,
       titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       
-      // DialogHeader
-      title: const Text('Додати води', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // text-base sm:text-lg
+  // DialogHeader
+  title: Text(AppLocalizations.of(context)!.addWater, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // text-base sm:text-lg
       
       // DialogContent
       content: Padding(
@@ -557,14 +558,14 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Amount Input
-            const Text('Кількість (мл)', style: TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
+            Text('${AppLocalizations.of(context)!.amount} (ml)', style: const TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
             const SizedBox(height: 4),
             TextField(
               controller: _amountController,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(
-                hintText: 'Введіть кількість в мл',
+                hintText: null,
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               ),
@@ -573,7 +574,7 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
             const SizedBox(height: 16), // space-y-4
             
             // Type Select
-            const Text('Тип посуду', style: TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
+            Text(AppLocalizations.of(context)!.typeLabel, style: const TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
             const SizedBox(height: 4),
             DropdownButtonFormField<String>(
               initialValue: _selectedType,
@@ -593,7 +594,7 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
             const SizedBox(height: 16),
             
             // Comment Textarea
-            const Text('Коментар (опціонально)', style: TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
+            Text(AppLocalizations.of(context)!.comment, style: const TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
             const SizedBox(height: 4),
             TextField(
               maxLines: 2, // rows={2}
@@ -611,7 +612,7 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
               children: [
                 Expanded(
                   child: AppButton(
-                    text: 'Скасувати',
+                    text: AppLocalizations.of(context)!.cancel,
                     onPressed: () {
                       Navigator.of(context).pop();
                       widget.onClose(); // Повідомити, що діалог закрито
@@ -623,7 +624,7 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
                 const SizedBox(width: 8), // gap-2
                 Expanded(
                   child: AppButton(
-                    text: 'Зберегти',
+                    text: AppLocalizations.of(context)!.save,
                     onPressed: isDisabled ? null : () => widget.onAdd(amount, _selectedType, _comment.isEmpty ? null : _comment),
                     variant: ButtonVariant.primary,
                     size: ButtonSize.medium, // min-h-[44px]

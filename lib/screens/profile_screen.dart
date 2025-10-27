@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import '../services/firebase_service.dart';
+import 'package:fluidity/l10n/app_localizations.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -59,7 +60,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showGoalDialog() {
-    _goalController.text = widget.dailyGoal.toString();
+  _goalController.text = widget.dailyGoal.toString();
     showDialog(
       context: context,
       builder: (ctx) => _GoalSettingDialog(
@@ -67,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onSave: (newGoal) {
           widget.onDailyGoalChange(newGoal);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text("Ціль встановлено на $newGoal мл"), behavior: SnackBarBehavior.floating),
+            SnackBar(content: Text('${AppLocalizations.of(context)!.dailyGoal}: $newGoal мл'), behavior: SnackBarBehavior.floating),
           );
         },
       ),
@@ -77,25 +78,25 @@ class _ProfileScreenState extends State<ProfileScreen> {
   // --- Налаштування секцій (як у React-коді) ---
   List<Map<String, dynamic>> get _profileSections => [
         {
-          'title': "Налаштування",
+          'title': AppLocalizations.of(context)!.settings,
           'icon': Icons.settings,
           'items': [
             {
-              'label': "Ціль на день",
+              'label': AppLocalizations.of(context)!.dailyGoal,
               'value': "${widget.dailyGoal} мл",
               'action': _showGoalDialog,
               'icon': Icons.flag_outlined,
             },
             {
-              'label': "Сповіщення",
+              'label': AppLocalizations.of(context)!.notifications,
               'value': widget.notificationsEnabled,
               'action': widget.onNotificationsToggle,
               'icon': Icons.notifications_none_outlined,
               'isSwitch': true,
             },
             {
-              'label': "Мова",
-              'value': widget.language == "en" ? "English" : "Українська",
+              'label': AppLocalizations.of(context)!.language,
+              'value': widget.language == "en" ? AppLocalizations.of(context)!.english : AppLocalizations.of(context)!.ukrainian,
               'action': () => widget.onLanguageChange(
                     widget.language == "en" ? "uk" : "en",
                   ),
@@ -166,20 +167,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   Widget _buildHeader(BuildContext context) {
-    return const Column(
+    return Column(
       children: [
         Text(
-          "Профіль",
-          style: TextStyle(
+          AppLocalizations.of(context)!.profileTitle,
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: sky700, // text-sky-700
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
-          "Налаштуйте Fluidity для себе",
-          style: TextStyle(color: mutedForeground, fontSize: 13), // text-muted-foreground
+          AppLocalizations.of(context)!.profileSubtitle,
+          style: const TextStyle(color: mutedForeground, fontSize: 13), // text-muted-foreground
         ),
       ],
     );
@@ -217,7 +218,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(displayName ?? 'Вітаю!', style: const TextStyle(fontWeight: FontWeight.w600, color: sky700)), // font-semibold text-sky-700
+                Text(displayName ?? AppLocalizations.of(context)!.greeting, style: const TextStyle(fontWeight: FontWeight.w600, color: sky700)), // font-semibold text-sky-700
                 if (email.isNotEmpty) Text(email, style: const TextStyle(color: mutedForeground, fontSize: 13)),
                 if (email.isEmpty) Text(userPhone, style: const TextStyle(color: mutedForeground, fontSize: 13)), // text-sm text-muted-foreground
                 const SizedBox(height: 4),
@@ -228,9 +229,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     color: green100, // bg-green-100
                     borderRadius: BorderRadius.circular(12),
                   ),
-                  child: const Text(
-                    "Демо користувач",
-                    style: TextStyle(fontSize: 11, color: green700, fontWeight: FontWeight.w500), // text-xs text-green-700
+                  child: Text(
+                    AppLocalizations.of(context)!.demoUser,
+                    style: const TextStyle(fontSize: 11, color: green700, fontWeight: FontWeight.w500), // text-xs text-green-700
                   ),
                 ),
               ],
@@ -388,17 +389,17 @@ class _ProfileScreenState extends State<ProfileScreen> {
             minimumSize: const Size(double.infinity, 56), // w-full h-12 sm:h-14
             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
-          child: const Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Icon(Icons.logout, size: 20), // w-4 h-4 mr-2
-              SizedBox(width: 8),
-              Text(
-                "Вийти з акаунту",
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-              ),
-            ],
-          ),
+          child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                const Icon(Icons.logout, size: 20), // w-4 h-4 mr-2
+                const SizedBox(width: 8),
+                Text(
+                  AppLocalizations.of(context)!.signOut,
+                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                ),
+              ],
+            ),
         ),
         const SizedBox(height: 12),
         ElevatedButton(
@@ -408,7 +409,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             FirebaseService.instance.forceCrash();
           },
           style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-          child: const Text('Тестувати Crashlytics', style: TextStyle(color: Colors.white)),
+          child: Text(AppLocalizations.of(context)!.testCrashlytics, style: const TextStyle(color: Colors.white)),
         ),
       ],
     );
@@ -464,8 +465,8 @@ class _GoalSettingDialogState extends State<_GoalSettingDialog> {
       contentPadding: EdgeInsets.zero,
       titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       
-      // DialogHeader
-      title: const Text('Встановити ціль', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), 
+  // DialogHeader
+  title: Text(AppLocalizations.of(context)!.setGoal, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), 
       
       // DialogContent
       content: Padding(
@@ -475,22 +476,22 @@ class _GoalSettingDialogState extends State<_GoalSettingDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Amount Input
-            const Text('Ціль на день (мл)', style: TextStyle(fontSize: 14, color: mutedForeground)), // Label text-sm
+            Text(AppLocalizations.of(context)!.dailyGoalMl, style: const TextStyle(fontSize: 14, color: mutedForeground)), // Label text-sm
             const SizedBox(height: 4),
             TextField(
               controller: _controller,
               keyboardType: TextInputType.number,
               inputFormatters: [FilteringTextInputFormatter.digitsOnly],
               decoration: const InputDecoration(
-                hintText: 'Введіть кількість в мл',
+                hintText: null,
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               ),
             ),
             const SizedBox(height: 4),
-            const Text(
-              "Рекомендовано 2000-3000 мл за день",
-              style: TextStyle(fontSize: 11, color: mutedForeground), // text-xs text-muted-foreground
+            Text(
+              AppLocalizations.of(context)!.recommendedGoal,
+              style: const TextStyle(fontSize: 11, color: mutedForeground), // text-xs text-muted-foreground
             ),
             const SizedBox(height: 24),
 
@@ -501,7 +502,7 @@ class _GoalSettingDialogState extends State<_GoalSettingDialog> {
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(minimumSize: const Size(0, 44)), // min-h-[44px]
-                    child: const Text('Скасувати', style: TextStyle(fontSize: 16)),
+                    child: Text(AppLocalizations.of(context)!.cancel, style: const TextStyle(fontSize: 16)),
                   ),
                 ),
                 const SizedBox(width: 8), 
@@ -513,7 +514,7 @@ class _GoalSettingDialogState extends State<_GoalSettingDialog> {
                       backgroundColor: sky600,
                       foregroundColor: Colors.white,
                     ),
-                    child: const Text('Зберегти', style: TextStyle(fontSize: 16)),
+                    child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(fontSize: 16)),
                   ),
                 ),
               ],

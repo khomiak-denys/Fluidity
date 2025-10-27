@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
+import 'package:fluidity/l10n/app_localizations.dart';
 import '../models/reminder.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
@@ -48,7 +49,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
       // Сортуємо за часом для коректного відображення
       _reminders.sort((a, b) => a.time.compareTo(b.time));
     });
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Нагадування додано! 🔔"), behavior: SnackBarBehavior.floating));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.reminderAdded), behavior: SnackBarBehavior.floating));
   }
 
   void _toggleReminder(String id) {
@@ -63,7 +64,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   void _deleteReminder(String id) {
     setState(() => _reminders.removeWhere((r) => r.id == id));
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Нагадування видалено!"), behavior: SnackBarBehavior.floating));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.reminderDeleted), behavior: SnackBarBehavior.floating));
   }
 
   void _showAddReminderDialog() {
@@ -120,20 +121,20 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _buildHeader() {
-    return const Column(
+    return Column(
       children: [
         Text(
-          "Нагадування",
-          style: TextStyle(
+          AppLocalizations.of(context)!.reminders,
+          style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
             color: sky700,
           ),
         ),
-        SizedBox(height: 4),
+        const SizedBox(height: 4),
         Text(
-          "Встановіть нагадування випити води",
-          style: TextStyle(color: mutedForeground, fontSize: 13),
+          AppLocalizations.of(context)!.remindersSubtitle,
+          style: const TextStyle(color: mutedForeground, fontSize: 13),
         ),
       ],
     );
@@ -143,7 +144,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     // Button className="w-full h-12 bg-gradient-to-r from-sky-500 to-cyan-500"
     return ElevatedButton.icon(
       icon: const Icon(Icons.add, size: 20, color: Colors.white),
-      label: const Text("Додати", style: TextStyle(fontSize: 16, color: Colors.white)),
+  label: Text(AppLocalizations.of(context)!.addReminder, style: const TextStyle(fontSize: 16, color: Colors.white)),
       style: ElevatedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 16),
         minimumSize: const Size(double.infinity, 48), // h-12
@@ -160,8 +161,8 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
   Widget _buildReminderList() {
     if (_reminders.isEmpty) {
-      return const Center(
-        child: Text("Наразі немає нагадувань. Додайте перше!"),
+      return Center(
+        child: Text(AppLocalizations.of(context)!.remindersEmpty),
       );
     }
     return Column(
@@ -301,7 +302,7 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
 
   // Форматуємо TimeOfDay у рядок "HH:mm" для відображення та збереження
   String get _formattedTime {
-    if (_selectedTime == null) return "Вибрати час";
+    if (_selectedTime == null) return AppLocalizations.of(context)!.selectTime;
     final now = DateTime.now();
     final dt = DateTime(
         now.year, now.month, now.day, _selectedTime!.hour, _selectedTime!.minute);
@@ -341,7 +342,7 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
       titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
       
       // DialogHeader
-      title: const Text('Додати нагадування', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), 
+  title: Text(AppLocalizations.of(context)!.addReminder, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), 
       
       // DialogContent
       content: Padding(
@@ -351,7 +352,7 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Time Picker Button
-            const Text('Час', style: TextStyle(fontSize: 14, color: mutedForeground)),
+            Text(AppLocalizations.of(context)!.selectTime, style: const TextStyle(fontSize: 14, color: mutedForeground)),
             const SizedBox(height: 4),
             OutlinedButton.icon(
               icon: const Icon(Icons.access_time),
@@ -366,13 +367,13 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
             const SizedBox(height: 16),
             
             // Label Input
-            const Text('Коментар', style: TextStyle(fontSize: 14, color: mutedForeground)),
+            Text(AppLocalizations.of(context)!.comment, style: const TextStyle(fontSize: 14, color: mutedForeground)),
             const SizedBox(height: 4),
             TextField(
               controller: _labelController,
               onChanged: (_) => setState(() {}),
               decoration: const InputDecoration(
-                hintText: 'Наприклад, "Ранкова доза"',
+                hintText: null,
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               ),
@@ -386,7 +387,7 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: TextButton.styleFrom(minimumSize: const Size(0, 44)), // min-h-[44px]
-                    child: const Text('Скасувати', style: TextStyle(fontSize: 16)),
+                    child: Text(AppLocalizations.of(context)!.cancel, style: const TextStyle(fontSize: 16)),
                   ),
                 ),
                 const SizedBox(width: 8), 
@@ -398,7 +399,7 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
                       backgroundColor: sky500,
                       foregroundColor: Colors.white,
                     ),
-                    child: const Text('Зберегти', style: TextStyle(fontSize: 16)),
+                      child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(fontSize: 16)),
                   ),
                 ),
               ],
