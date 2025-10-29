@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'blocs/water/water_bloc.dart';
+import 'blocs/water/water_event.dart';
 // ignore_for_file: use_build_context_synchronously
 import 'l10n/app_localizations.dart';
 import 'screens/home_screen.dart';
@@ -84,12 +87,9 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
     if (error == null) {
       // Show a message to the user to check their email
       if (messengerCtx != null) {
-          final msg = language == 'uk' ? 'Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення.' : 'A verification email has been sent to your address. Please check your inbox.';
+        final msg = AppLocalizations.of(messengerCtx)!.auth_verification_email_sent;
         ScaffoldMessenger.of(messengerCtx).showSnackBar(
-          SnackBar(
-            content: Text(msg),
-            backgroundColor: Colors.green,
-          ),
+          SnackBar(content: Text(msg), backgroundColor: Colors.green),
         );
       }
       _navigatorKey.currentState?.pop(); // Go back to login screen
@@ -113,25 +113,26 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
   }
 
   String _localizeAuthMessage(BuildContext ctx, String code) {
-    // Fallback localization until gen-l10n regenerates generated getters.
-    // Use the app-wide `language` state to choose a localized string.
-    final isUk = language == 'uk';
+    // Use generated AppLocalizations getters to localize auth error codes.
+    final loc = AppLocalizations.of(ctx)!;
     switch (code) {
       case 'auth.email_not_verified':
-        return isUk ? 'Будь ласка, підтвердіть вашу електронну пошту перед входом.' : 'Please verify your email before signing in.';
+        return loc.auth_email_not_verified;
       case 'auth.invalid_credentials':
-        return isUk ? 'Неправильний email або пароль.' : 'Incorrect email or password.';
+        return loc.auth_invalid_credentials;
       case 'auth.invalid_email':
-        return isUk ? 'Неправильний формат email.' : 'Invalid email format.';
+        return loc.auth_invalid_email;
       case 'auth.weak_password':
-        return isUk ? 'Пароль занадто слабкий.' : 'The password is too weak.';
+        return loc.auth_weak_password;
       case 'auth.email_already_in_use':
-        return isUk ? 'Цей email вже зареєстровано.' : 'This email is already registered.';
+        return loc.auth_email_already_in_use;
       case 'auth.registration_error':
-        return isUk ? 'Помилка реєстрації. Спробуйте пізніше.' : 'Registration failed. Please try again later.';
+        return loc.auth_registration_error;
+      case 'auth.verification_email_sent':
+        return loc.auth_verification_email_sent;
       case 'auth.unknown_error':
       default:
-        return isUk ? 'Сталася невідома помилка. Спробуйте пізніше.' : 'An unknown error occurred. Please try again later.';
+        return loc.auth_unknown_error;
     }
   }
 
@@ -179,7 +180,11 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider<WaterBloc>(create: (_) => WaterBloc()..add(LoadWaterEvent())),
+      ],
+      child: MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: Locale(language),
@@ -208,6 +213,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
                 error: authError != null ? _localizeAuthMessage(context, authError!) : null,
               ),
             ),
+      ),
     );
   }
 }

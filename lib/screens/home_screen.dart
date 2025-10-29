@@ -5,6 +5,11 @@ import 'package:fluidity/widgets/water_progress.dart';
 import '../models/water_intake.dart';
 import '../widgets/water_intake.dart';
 import 'package:fluidity/ui/button.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/water/water_bloc.dart';
+import '../blocs/water/water_event.dart';
+import '../blocs/water/water_state.dart';
+import 'water_entry_detail.dart';
 
 const Color sky50 = Color(0xFFF0F9FF);
 const Color cyan50 = Color(0xFFECFEFF);
@@ -33,8 +38,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
-  // Припускаємо, що WaterIntakeEntry - це клас, визначений у water_intake.dart
-  List<WaterIntakeEntry> entries = [];
+  // Data is managed by WaterBloc; local entries list removed
 
   // Анімаційні контролери для імітації motion.div
   late AnimationController _headerController;
@@ -73,15 +77,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void handleQuickAdd(int amount, String type) {
     final now = TimeOfDay.now();
-    setState(() {
-      entries.add(WaterIntakeEntry(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        amount: amount,
-        time: now.format(context),
-        type: type,
-        comment: '$amount ml $type'
-      ));
-    });
+    final entry = WaterIntakeEntry(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      amount: amount,
+      time: now.format(context),
+      type: type,
+      comment: '$amount ml $type',
+    );
+    context.read<WaterBloc>().add(AddWaterEntryEvent(entry));
     // Імітація sonner toast.success
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -94,19 +97,16 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   void handleCustomAdd(int amount, String type, String? comment) {
     final now = TimeOfDay.now();
-    setState(() {
-      entries.add(WaterIntakeEntry(
-        id: DateTime.now().millisecondsSinceEpoch.toString(),
-        amount: amount,
-        time: now.format(context),
-        type: type,
-        comment: comment ?? '',
-      ));
-    });
-  // Закриття діалогу
-  Navigator.of(context).pop(); 
-  // Оновлення UI
-  setState(() {});
+    final entry = WaterIntakeEntry(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      amount: amount,
+      time: now.format(context),
+      type: type,
+      comment: comment ?? '',
+    );
+    context.read<WaterBloc>().add(AddWaterEntryEvent(entry));
+    // Закриття діалогу
+    Navigator.of(context).pop();
     
     // Імітація sonner toast.success
     ScaffoldMessenger.of(context).showSnackBar(
@@ -119,9 +119,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
   }
 
   void handleDelete(String id) {
-    setState(() {
-      entries.removeWhere((e) => e.id == id);
-    });
+    context.read<WaterBloc>().add(DeleteWaterEntryEvent(id));
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text(AppLocalizations.of(context)!.entryDeleted),
@@ -131,7 +129,7 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
     );
   }
 
-  int get totalIntake => entries.fold(0, (sum, e) => sum + e.amount);
+  int _sumIntake(List<WaterIntakeEntry> entries) => entries.fold(0, (sum, e) => sum + e.amount);
 
   void _showCustomAddDialog(BuildContext context) {
   setState(() {});
@@ -148,9 +146,14 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 
   @override
   Widget build(BuildContext context) {
-    final bool isGoalAchieved = totalIntake >= widget.dailyGoal;
-    
+    // Read current water state from bloc
+    final waterState = context.watch<WaterBloc>().state;
+    final List<WaterIntakeEntry> entries =
+        waterState is WaterLoaded ? waterState.data : (waterState is WaterLoading ? waterState.data : (waterState is WaterError ? waterState.data : <WaterIntakeEntry>[]));
+    final int totalIntake = _sumIntake(entries);
+
     // Запуск анімації досягнення цілі
+    final bool isGoalAchieved = totalIntake >= widget.dailyGoal;
     if (isGoalAchieved) {
       if (mounted) _goalController.forward();
     } else {
@@ -424,31 +427,46 @@ class _EntriesListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: EdgeInsets.zero,
-      elevation: 2,
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          // CardHeader
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12), // pb-3
-            child: Text(
-              'Сьогоднішні записи (${entries.length})',
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700),
-            ),
+          margin: EdgeInsets.zero,
+          elevation: 2,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // CardHeader
+              Padding(
+                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12), // pb-3
+                child: Text(
+                  'Сьогоднішні записи (${entries.length})',
+                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700),
+                ),
+              ),
+              // CardContent (use ListView.builder so it's a proper list)
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: ListView.builder(
+                  shrinkWrap: true,
+                  physics: const NeverScrollableScrollPhysics(),
+                  itemCount: entries.length,
+                  itemBuilder: (context, index) {
+                    final entry = entries[index];
+                    return InkWell(
+                      borderRadius: BorderRadius.circular(12),
+                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => WaterEntryDetailScreen(entry: entry))),
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(vertical: 0.0),
+                        child: WaterIntakeCard(
+                          entry: entry,
+                          onDelete: onDelete,
+                        ),
+                      ),
+                    );
+                  },
+                ),
+              ),
+              const SizedBox(height: 16), // Додаємо відступ знизу, як space-y-
+            ],
           ),
-          // CardContent (space-y-2)
-          ...entries.map((entry) => Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16),
-            child: WaterIntakeCard( // Припускаємо, що WaterIntakeCard обробляє свій Divider
-              entry: entry,
-              onDelete: onDelete,
-            ),
-          )).toList(),
-          const SizedBox(height: 16), // Додаємо відступ знизу, як space-y-
-        ],
-      ),
     );
   }
 }
