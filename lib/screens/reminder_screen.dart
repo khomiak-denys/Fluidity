@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
 import 'package:fluidity/l10n/app_localizations.dart';
 import '../models/reminder.dart';
+import 'reminder_detail.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -168,17 +169,20 @@ class _RemindersScreenState extends State<RemindersScreen> {
     return Column(
       children: _reminders.asMap().entries.map((e) {
         final i = e.key;
-        final reminder = e.value;
+  final reminder = e.value;
         return Padding(
           padding: const EdgeInsets.only(bottom: 12), // space-y-3
-          child: _ReminderCard(
-            reminder: reminder,
-            onToggle: _toggleReminder,
-            onDelete: _deleteReminder,
-          )
-              .animate()
-              .fadeIn(duration: 500.ms, delay: (300 + i * 100).ms)
-              .slideX(begin: -0.1, end: 0),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReminderDetailScreen(reminder: reminder)));
+            },
+            child: _ReminderCard(
+              reminder: reminder,
+              onToggle: _toggleReminder,
+              onDelete: _deleteReminder,
+            ),
+          ).animate().fadeIn(duration: 500.ms, delay: (300 + i * 100).ms).slideX(begin: -0.1, end: 0),
         );
       }).toList(),
     );

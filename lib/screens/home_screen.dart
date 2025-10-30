@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:flutter/services.dart'; // Для TextInputType.number
 import 'package:fluidity/widgets/water_progress.dart';
@@ -120,7 +121,9 @@ class _HomeScreenState extends State<HomeScreen> {
     // Determine whether goal is achieved (no animations)
     final bool isGoalAchieved = totalIntake >= widget.dailyGoal;
 
-    return Scaffold(
+    return BlocListener<WaterBloc, WaterState>(
+      listener: (context, state) {}, // keep listener for future hooks; inline error UI shows the error
+      child: Scaffold(
       // AppBar приховано, оскільки Header тепер є частиною скролінгу, як у React
       appBar: AppBar(
         toolbarHeight: 0,
@@ -158,8 +161,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
             const SizedBox(height: 16),
             
-            // --- Today's Entries / Empty State ---
-            if (entries.isNotEmpty)
+            // --- Today's Entries / Empty State / Error State ---
+            if (waterState is WaterError)
+              _ErrorStateCard(message: waterState.error.toString())
+            else if (entries.isNotEmpty)
               _EntriesListCard(entries: entries, onDelete: handleDelete)
             else
               const _EmptyStateCard(),
@@ -168,10 +173,26 @@ class _HomeScreenState extends State<HomeScreen> {
       ),
       
       // Floating Action Button
-      floatingActionButton: _FloatingActionButton(
-        onPressed: () => _showCustomAddDialog(context),
+      floatingActionButton: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (kDebugMode)
+            Padding(
+              padding: const EdgeInsets.only(bottom: 8.0),
+              child: FloatingActionButton.small(
+                heroTag: 'simulate_error',
+                onPressed: () => context.read<WaterBloc>().add(SimulateErrorEvent()),
+                backgroundColor: Colors.redAccent,
+                child: const Icon(Icons.bug_report, size: 18),
+              ),
+            ),
+          _FloatingActionButton(
+            onPressed: () => _showCustomAddDialog(context),
+          ),
+        ],
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+      ),
     );
   }
 }
@@ -548,6 +569,45 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
                   ),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Error State Card (shows inline where the list would be)
+class _ErrorStateCard extends StatelessWidget {
+  final String message;
+
+  const _ErrorStateCard({required this.message});
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: sky200, style: BorderStyle.solid, width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            const Text('⚠️', style: TextStyle(fontSize: 36)),
+            const SizedBox(height: 12),
+            Text('Error loading entries', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
+            const SizedBox(height: 8),
+            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+            const SizedBox(height: 16),
+            AppButton(
+              text: 'Retry',
+              onPressed: () => context.read<WaterBloc>().add(RefreshWaterEvent()),
+              variant: ButtonVariant.primary,
+              size: ButtonSize.medium,
             ),
           ],
         ),
