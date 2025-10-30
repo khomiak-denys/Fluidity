@@ -104,12 +104,10 @@ class _TabItem extends StatelessWidget {
           // Активний фон (motion.div layoutId="activeTab")
           if (isActive)
             Positioned.fill(
-              child: AnimatedContainer(
-                duration: const Duration(milliseconds: 300), // Імітація 'spring'
-                curve: Curves.easeOut,
+              child: Container(
                 decoration: BoxDecoration(
-                  color: sky100, // bg-sky-100
-                  borderRadius: BorderRadius.circular(8), // rounded-lg
+                  color: sky100,
+                  borderRadius: BorderRadius.circular(8),
                 ),
               ),
             ),

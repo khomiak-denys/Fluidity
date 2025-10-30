@@ -20,29 +20,15 @@ class RegisterScreen extends StatefulWidget {
   State<RegisterScreen> createState() => _RegisterScreenState();
 }
 
-class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProviderStateMixin {
+class _RegisterScreenState extends State<RegisterScreen> {
   final _formKey = GlobalKey<FormState>();
   final _firstNameCtrl = TextEditingController();
   final _lastNameCtrl = TextEditingController();
   final _emailCtrl = TextEditingController();
   final _passwordCtrl = TextEditingController();
 
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    _animationController = AnimationController(vsync: this, duration: const Duration(milliseconds: 420));
-    _scaleAnimation = Tween<double>(begin: 0.96, end: 1.0).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(CurvedAnimation(parent: _animationController, curve: Curves.easeOut));
-    _animationController.forward();
-  }
-
   @override
   void dispose() {
-    _animationController.dispose();
     _firstNameCtrl.dispose();
     _lastNameCtrl.dispose();
     _emailCtrl.dispose();
@@ -50,90 +36,65 @@ class _RegisterScreenState extends State<RegisterScreen> with SingleTickerProvid
     super.dispose();
   }
 
-  Future<void> _submit() async {
-    if (_formKey.currentState?.validate() ?? false) {
-      final first = _firstNameCtrl.text.trim();
-      final last = _lastNameCtrl.text.trim();
-      final email = _emailCtrl.text.trim();
-      final pass = _passwordCtrl.text;
-
-      if (widget.onRegister != null) {
-        widget.onRegister!(context, first, last, email, pass);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.registerButton)));
-        Navigator.of(context).pop();
-      }
+  void _submit() {
+    if ((_formKey.currentState?.validate() ?? false)) {
+      widget.onRegister?.call(context, _firstNameCtrl.text.trim(), _lastNameCtrl.text.trim(), _emailCtrl.text.trim(), _passwordCtrl.text);
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(icon: const Icon(Icons.arrow_back, color: _regSky700), onPressed: () => Navigator.of(context).pop()),
-      ),
-      extendBodyBehindAppBar: true,
       body: Container(
         decoration: const BoxDecoration(
+          // use the module-level constants for colors so they are referenced
           gradient: LinearGradient(colors: [_regSky50, Colors.white, _regCyan50], begin: Alignment.topLeft, end: Alignment.bottomRight),
         ),
         alignment: Alignment.center,
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
+        child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 420),
-            child: ScaleTransition(
-              scale: _scaleAnimation,
-              child: FadeTransition(
-                opacity: _opacityAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: 1),
-                      duration: const Duration(milliseconds: 400),
-                      builder: (context, opacityValue, child) {
-                        return Opacity(opacity: opacityValue, child: Padding(padding: EdgeInsets.only(top: 18 * (1 - opacityValue)), child: child));
-                      },
-                      child: _RegisterLogoAndTitle(sky500: _regSky500, cyan500: _regCyan500, titleText: AppLocalizations.of(context)!.registerTitle),
-                    ),
-                    const SizedBox(height: 16),
-                    Card(
-                      elevation: 6,
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: _regSky200, width: 1)),
-                      color: Colors.white.withAlpha((0.92 * 255).round()),
-                      child: Padding(
-                        padding: const EdgeInsets.all(20.0),
-                        child: Form(
-                          key: _formKey,
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.stretch,
-                            children: [
-                              Text(AppLocalizations.of(context)!.createAccountTitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _regSky700)),
-                              const SizedBox(height: 6),
-                              Text(AppLocalizations.of(context)!.createAccountSubtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: Colors.grey)),
-                              const SizedBox(height: 18),
-                              _buildInputField(controller: _firstNameCtrl, label: AppLocalizations.of(context)!.firstNameLabel, hint: AppLocalizations.of(context)!.firstNameHint, icon: LucideIcons.user, validatorText: AppLocalizations.of(context)!.firstNameEmptyError),
-                              const SizedBox(height: 12),
-                              _buildInputField(controller: _lastNameCtrl, label: AppLocalizations.of(context)!.lastNameLabel, hint: AppLocalizations.of(context)!.lastNameHint, icon: LucideIcons.user, validatorText: AppLocalizations.of(context)!.lastNameEmptyError),
-                              const SizedBox(height: 12),
-                              _buildInputField(controller: _emailCtrl, label: AppLocalizations.of(context)!.emailLabel, hint: AppLocalizations.of(context)!.emailHint, icon: LucideIcons.smartphone, keyboardType: TextInputType.emailAddress, validatorText: AppLocalizations.of(context)!.emailEmptyError, validator: (v) { if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.emailEmptyError; final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+'); if (!emailRegex.hasMatch(v.trim())) return AppLocalizations.of(context)!.emailInvalidError; return null; }),
-                              const SizedBox(height: 12),
-                              _buildInputField(controller: _passwordCtrl, label: AppLocalizations.of(context)!.passwordLabel, hint: AppLocalizations.of(context)!.passwordHint, icon: LucideIcons.lock, obscureText: true, validatorText: AppLocalizations.of(context)!.passwordEmptyError, validator: (v) => (v == null || v.length < 6) ? AppLocalizations.of(context)!.passwordLengthError : null),
-                              const SizedBox(height: 18),
-                              ElevatedButton(onPressed: widget.isLoading ? null : _submit, style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(46), padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), foregroundColor: Colors.white, backgroundColor: _regSky500), child: Text(AppLocalizations.of(context)!.registerButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
-                              if (widget.error != null) ...[const SizedBox(height: 10), Text(widget.error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)],
-                            ],
-                          ),
+            constraints: const BoxConstraints(maxWidth: 480),
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  _RegisterLogoAndTitle(sky500: _regSky500, cyan500: _regCyan500, titleText: AppLocalizations.of(context)!.registerTitle),
+                  const SizedBox(height: 16),
+
+                  Card(
+                    elevation: 6,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12), side: const BorderSide(color: _regSky200, width: 1)),
+                    color: Colors.white.withAlpha((0.92 * 255).round()),
+                    child: Padding(
+                      padding: const EdgeInsets.all(20.0),
+                      child: Form(
+                        key: _formKey,
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.stretch,
+                          children: [
+                            Text(AppLocalizations.of(context)!.createAccountTitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _regSky700)),
+                            const SizedBox(height: 6),
+                            Text(AppLocalizations.of(context)!.createAccountSubtitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 13, color: Colors.grey)),
+                            const SizedBox(height: 18),
+                            _buildInputField(controller: _firstNameCtrl, label: AppLocalizations.of(context)!.firstNameLabel, hint: AppLocalizations.of(context)!.firstNameHint, icon: LucideIcons.user, validatorText: AppLocalizations.of(context)!.firstNameEmptyError),
+                            const SizedBox(height: 12),
+                            _buildInputField(controller: _lastNameCtrl, label: AppLocalizations.of(context)!.lastNameLabel, hint: AppLocalizations.of(context)!.lastNameHint, icon: LucideIcons.user, validatorText: AppLocalizations.of(context)!.lastNameEmptyError),
+                            const SizedBox(height: 12),
+                            _buildInputField(controller: _emailCtrl, label: AppLocalizations.of(context)!.emailLabel, hint: AppLocalizations.of(context)!.emailHint, icon: LucideIcons.smartphone, keyboardType: TextInputType.emailAddress, validatorText: AppLocalizations.of(context)!.emailEmptyError, validator: (v) { if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.emailEmptyError; final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+'); if (!emailRegex.hasMatch(v.trim())) return AppLocalizations.of(context)!.emailInvalidError; return null; }),
+                            const SizedBox(height: 12),
+                            _buildInputField(controller: _passwordCtrl, label: AppLocalizations.of(context)!.passwordLabel, hint: AppLocalizations.of(context)!.passwordHint, icon: LucideIcons.lock, obscureText: true, validatorText: AppLocalizations.of(context)!.passwordEmptyError, validator: (v) => (v == null || v.length < 6) ? AppLocalizations.of(context)!.passwordLengthError : null),
+                            const SizedBox(height: 18),
+                            ElevatedButton(onPressed: widget.isLoading ? null : _submit, style: ElevatedButton.styleFrom(minimumSize: const Size.fromHeight(46), padding: const EdgeInsets.symmetric(vertical: 12), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)), foregroundColor: Colors.white, backgroundColor: _regSky500), child: Text(AppLocalizations.of(context)!.registerButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600))),
+                            if (widget.error != null) ...[const SizedBox(height: 10), Text(widget.error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center)],
+                          ],
                         ),
                       ),
                     ),
-                    TweenAnimationBuilder<double>(tween: Tween<double>(begin: 0, end: 1), duration: const Duration(milliseconds: 400), builder: (context, opacityValue, child) { return Opacity(opacity: opacityValue, child: Padding(padding: EdgeInsets.only(top: 18 * (1 - opacityValue)), child: child)); }, child: const _RegisterFeaturesPreview()),
-                  ],
-                ),
+                  ),
+
+                  const _RegisterFeaturesPreview(),
+                ],
               ),
             ),
           ),

@@ -37,43 +37,8 @@ class HomeScreen extends StatefulWidget {
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
+class _HomeScreenState extends State<HomeScreen> {
   // Data is managed by WaterBloc; local entries list removed
-
-  // Анімаційні контролери для імітації motion.div
-  late AnimationController _headerController;
-  late AnimationController _goalController;
-  late AnimationController _progressController;
-  late AnimationController _quickAddController;
-  late AnimationController _entriesController;
-
-  @override
-  void initState() {
-    super.initState();
-    // Налаштування контролерів для послідовних анімацій (delay 0.0, 0.2, 0.4, 0.6)
-    _headerController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
-    _goalController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
-    _progressController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
-    _quickAddController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
-    _entriesController = AnimationController(vsync: this, duration: const Duration(milliseconds: 500));
-
-  // Запуск анімацій з затримкою — перевіряємо `mounted` перед forward(),
-  // бо delayed callbacks можуть виконатись після dispose.
-  if (mounted) _headerController.forward();
-  Future.delayed(const Duration(milliseconds: 200), () { if (!mounted) return; _progressController.forward(); });
-  Future.delayed(const Duration(milliseconds: 400), () { if (!mounted) return; _quickAddController.forward(); });
-  Future.delayed(const Duration(milliseconds: 600), () { if (!mounted) return; _entriesController.forward(); });
-  }
-
-  @override
-  void dispose() {
-    _headerController.dispose();
-    _goalController.dispose();
-    _progressController.dispose();
-    _quickAddController.dispose();
-    _entriesController.dispose();
-    super.dispose();
-  }
 
   void handleQuickAdd(int amount, String type) {
     final now = TimeOfDay.now();
@@ -152,13 +117,8 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         waterState is WaterLoaded ? waterState.data : (waterState is WaterLoading ? waterState.data : (waterState is WaterError ? waterState.data : <WaterIntakeEntry>[]));
     final int totalIntake = _sumIntake(entries);
 
-    // Запуск анімації досягнення цілі
+    // Determine whether goal is achieved (no animations)
     final bool isGoalAchieved = totalIntake >= widget.dailyGoal;
-    if (isGoalAchieved) {
-      if (mounted) _goalController.forward();
-    } else {
-      if (mounted) _goalController.reverse();
-    }
 
     return Scaffold(
       // AppBar приховано, оскільки Header тепер є частиною скролінгу, як у React
@@ -178,50 +138,31 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            // --- Header (motion.div) ---
-            _AnimatedHomeHeader(controller: _headerController, totalIntake: totalIntake),
+            // --- Header ---
+            _HomeHeader(totalIntake: totalIntake),
             
             const SizedBox(height: 16), // space-y-4/6
 
             // --- Goal Achievement Celebration ---
-            if (isGoalAchieved)
-              _AnimatedGoalCard(controller: _goalController),
+            if (isGoalAchieved) const _GoalCard(),
             
             if (isGoalAchieved) const SizedBox(height: 16),
             
-            // --- Progress Ring (motion.div) ---
-            FadeTransition(
-              opacity: Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: _progressController, curve: Curves.easeOut)),
-              child: ScaleTransition(
-                scale: Tween<double>(begin: 0.9, end: 1).animate(CurvedAnimation(parent: _progressController, curve: Curves.easeOut)),
-                child: WaterProgress(current: totalIntake.toDouble(), goal: widget.dailyGoal.toDouble()),
-              ),
-            ),
+            // --- Progress Ring ---
+            WaterProgress(current: totalIntake.toDouble(), goal: widget.dailyGoal.toDouble()),
             
             const SizedBox(height: 16),
             
-            // --- Quick Add Section (motion.div) ---
-            _AnimatedSection(
-              controller: _quickAddController,
-              delay: 0.4,
-              child: _QuickAddSection(onAdd: handleQuickAdd),
-            ),
+            // --- Quick Add Section ---
+            _QuickAddSection(onAdd: handleQuickAdd),
 
             const SizedBox(height: 16),
             
-            // --- Today's Entries / Empty State (motion.div) ---
+            // --- Today's Entries / Empty State ---
             if (entries.isNotEmpty)
-              _AnimatedSection(
-                controller: _entriesController,
-                delay: 0.6,
-                child: _EntriesListCard(entries: entries, onDelete: handleDelete),
-              )
+              _EntriesListCard(entries: entries, onDelete: handleDelete)
             else
-              _AnimatedSection(
-                controller: _entriesController,
-                delay: 0.6,
-                child: const _EmptyStateCard(),
-              ),
+              const _EmptyStateCard(),
           ],
         ),
       ),
@@ -239,108 +180,66 @@ class _HomeScreenState extends State<HomeScreen> with TickerProviderStateMixin {
 // ДОПОМІЖНІ ВІДЖЕТИ
 // =========================================================================
 
-// Загальний віджет для імітації motion.div (fade + slide up)
-class _AnimatedSection extends StatelessWidget {
-  final AnimationController controller;
-  final double delay; // Не використовується для запуску, але для структури
-  final Widget child;
-
-  const _AnimatedSection({required this.controller, required this.delay, required this.child});
-
-  @override
-  Widget build(BuildContext context) {
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
-      child: SlideTransition(
-        position: Tween<Offset>(begin: const Offset(0, 0.1), end: Offset.zero)
-            .animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
-        child: child,
-      ),
-    );
-  }
-}
-
-// Header (імітує Header motion.div)
-class _AnimatedHomeHeader extends StatelessWidget {
-  final AnimationController controller;
+// Static Header (no animations)
+class _HomeHeader extends StatelessWidget {
   final int totalIntake;
 
-  const _AnimatedHomeHeader({required this.controller, required this.totalIntake});
+  const _HomeHeader({required this.totalIntake});
 
   @override
   Widget build(BuildContext context) {
-    // Емулюємо Fade + Slide Down (y: -20)
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
-      child: SlideTransition(
-        position: Tween<Offset>(begin: const Offset(0, -0.2), end: Offset.zero)
-            .animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            // h1 (bg-clip-text text-transparent)
-            ShaderMask(
-              shaderCallback: (Rect bounds) {
-                return const LinearGradient(
-                  colors: [sky600, cyan600],
-                  begin: Alignment.centerLeft,
-                  end: Alignment.centerRight,
-                ).createShader(bounds);
-              },
-              child: const Text(
-                'Fluidity',
-                style: TextStyle(
-                  fontSize: 22, // text-xl sm:text-2xl
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white, // Потрібен для ShaderMask
-                ),
-              ),
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        ShaderMask(
+          shaderCallback: (Rect bounds) {
+            return const LinearGradient(
+              colors: [sky600, cyan600],
+              begin: Alignment.centerLeft,
+              end: Alignment.centerRight,
+            ).createShader(bounds);
+          },
+          child: const Text(
+            'Fluidity',
+            style: TextStyle(
+              fontSize: 22,
+              fontWeight: FontWeight.bold,
+              color: Colors.white,
             ),
-            // p (text-muted-foreground)
-            Text(
-              '${AppLocalizations.of(context)!.statsTodayTitle}: $totalIntake ml',
-              style: const TextStyle(fontSize: 14, color: Colors.grey), // text-sm text-muted-foreground
-            ),
-          ],
+          ),
         ),
-      ),
+        Text(
+          '${AppLocalizations.of(context)!.statsTodayTitle}: $totalIntake ml',
+          style: const TextStyle(fontSize: 14, color: Colors.grey),
+        ),
+      ],
     );
   }
 }
 
-// Goal Achievement Card (імітує motion.div)
-class _AnimatedGoalCard extends StatelessWidget {
-  final AnimationController controller;
-
-  const _AnimatedGoalCard({required this.controller});
+// Static Goal Card (no animations)
+class _GoalCard extends StatelessWidget {
+  const _GoalCard();
 
   @override
   Widget build(BuildContext context) {
-    // Емулюємо Fade + Scale (scale: 0.9)
-    return FadeTransition(
-      opacity: Tween<double>(begin: 0, end: 1).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
-      child: ScaleTransition(
-        scale: Tween<double>(begin: 0.9, end: 1).animate(CurvedAnimation(parent: controller, curve: Curves.easeOut)),
-        child: Card(
-          margin: EdgeInsets.zero,
-          elevation: 4,
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(12),
-            side: const BorderSide(color: green200, width: 1), // border-green-200
-          ),
-          // bg-gradient-to-r from-green-50 to-emerald-50
-          color: green50, // Використовуємо один колір для простоти емуляції градієнта
-          child: Padding(
-              padding: const EdgeInsets.all(16.0), // p-4
-              child: Column(
-                children: [
-                  const Text('🎉', style: TextStyle(fontSize: 24)), // text-2xl mb-2
-                  const SizedBox(height: 4), // mb-1
-                  Text(AppLocalizations.of(context)!.congratulations, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: green700)), // font-semibold text-green-700
-                  Text(AppLocalizations.of(context)!.goalReached, style: const TextStyle(fontSize: 13, color: green600)), // text-sm text-green-600
-                ],
-              ),
-            ),
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 4,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: green200, width: 1),
+      ),
+      color: green50,
+      child: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            const Text('🎉', style: TextStyle(fontSize: 24)),
+            const SizedBox(height: 4),
+            Text(AppLocalizations.of(context)!.congratulations, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: green700)),
+            Text(AppLocalizations.of(context)!.goalReached, style: const TextStyle(fontSize: 13, color: green600)),
+          ],
         ),
       ),
     );

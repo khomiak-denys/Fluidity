@@ -1,6 +1,5 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
-import 'package:flutter_animate/flutter_animate.dart';
 
 class WaterProgress extends StatelessWidget {
   final double current;
@@ -38,38 +37,32 @@ class WaterProgress extends StatelessWidget {
             Column(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-                Animate(
-                  effects: [
-                    const ScaleEffect(begin: Offset(0.8, 0.8), end: Offset(1, 1)),
-                    FadeEffect(begin: 0, end: 1, delay: 500.ms, duration: 500.ms),
-                  ],
-                  child: Column(
-                    children: [
-                      Text(
-                        '${current.toInt()} $unit',
-                        style: Theme.of(context).textTheme.headlineSmall?.copyWith(
-                              color: Colors.lightBlue[600],
-                              fontWeight: FontWeight.w600,
-                            ),
-                      ),
-                      Text(
-                        'of ${goal.toInt()}$unit',
-                        style: Theme.of(context)
-                            .textTheme
-                            .bodySmall
-                            ?.copyWith(color: Colors.grey[600]),
-                      ),
-                      Text(
-                        '${(percentage * 100).round()}%',
-                        style: TextStyle(
-                          color: Colors.lightBlue[500],
-                          fontSize: 12,
-                          fontWeight: FontWeight.w500,
+                    Column(
+                      children: [
+                        Text(
+                          '${current.toInt()} $unit',
+                          style: Theme.of(context).textTheme.headlineSmall?.copyWith(
+                                color: Colors.lightBlue[600],
+                                fontWeight: FontWeight.w600,
+                              ),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
+                        Text(
+                          'of ${goal.toInt()}$unit',
+                          style: Theme.of(context)
+                              .textTheme
+                              .bodySmall
+                              ?.copyWith(color: Colors.grey[600]),
+                        ),
+                        Text(
+                          '${(percentage * 100).round()}%',
+                          style: TextStyle(
+                            color: Colors.lightBlue[500],
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
               ],
             ),
           ],

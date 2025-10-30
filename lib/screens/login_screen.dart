@@ -22,38 +22,13 @@ class LoginScreen extends StatefulWidget {
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
-class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStateMixin {
+class _LoginScreenState extends State<LoginScreen> {
   final emailController = TextEditingController();
   final passwordController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
-  // Імітація анімації motion.div за допомогою контролера
-  late AnimationController _animationController;
-  late Animation<double> _scaleAnimation;
-  late Animation<double> _opacityAnimation;
-
-  @override
-  void initState() {
-    super.initState();
-    // Контролер для анімації входу (duration: 0.5)
-    _animationController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 500),
-    );
-
-    _scaleAnimation = Tween<double>(begin: 0.9, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-    _opacityAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
-      CurvedAnimation(parent: _animationController, curve: Curves.easeOut),
-    );
-
-    _animationController.forward();
-  }
-
   @override
   void dispose() {
-    _animationController.dispose();
     emailController.dispose();
     passwordController.dispose();
     super.dispose();
@@ -68,16 +43,15 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
 
   @override
   Widget build(BuildContext context) {
-    // Визначення кольорів
+    // Define colors used across the screen
     const Color sky50 = Color(0xFFF0F9FF);
     const Color cyan50 = Color(0xFFECFEFF);
     const Color sky500 = Color(0xFF0EA5E9);
     const Color cyan500 = Color(0xFF06B6D4);
-    const Color sky700 = Color(0xFF0369A1); // Приблизно для CardTitle
-    const Color sky200 = Color(0xFFBAE6FD); // Приблизно для border-sky-200
+    const Color sky700 = Color(0xFF0369A1);
+    const Color sky200 = Color(0xFFBAE6FD);
 
     return Scaffold(
-      // 1. Градієнт фону (bg-gradient-to-br from-sky-50 via-white to-cyan-50)
       body: Container(
         decoration: const BoxDecoration(
           gradient: LinearGradient(
@@ -86,179 +60,110 @@ class _LoginScreenState extends State<LoginScreen> with SingleTickerProviderStat
             end: Alignment.bottomRight,
           ),
         ),
-        alignment: Alignment.center,
         padding: const EdgeInsets.all(16),
-        child: SingleChildScrollView(
+        alignment: Alignment.center,
+        child: Center(
           child: ConstrainedBox(
-            constraints: const BoxConstraints(maxWidth: 400), // max-w-sm mx-auto
-            child: ScaleTransition( // Імітація motion.div (initial={{ opacity: 0, scale: 0.9 }})
-              scale: _scaleAnimation,
-              child: FadeTransition(
-                opacity: _opacityAnimation,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    // --- 2. Logo and Title ---
-                    // Використовуємо AnimatedOpacity для імітації затримки (delay: 0.2)
-                    TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: 1),
-                      duration: const Duration(milliseconds: 500),
-                      
-                      builder: (context, opacityValue, child) {
-                        return Opacity(
-                          opacity: opacityValue,
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 20 * (1 - opacityValue)),
-                            child: child,
-                          ),
-                        );
-                      },
-                      child: const _LogoAndTitle(sky500: sky500, cyan500: cyan500),
+            constraints: const BoxConstraints(maxWidth: 400),
+            child: SingleChildScrollView(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  const _LogoAndTitle(sky500: sky500, cyan500: cyan500),
+                  const SizedBox(height: 16),
+
+                  Card(
+                    elevation: 8,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      side: const BorderSide(color: sky200, width: 1),
                     ),
+                    color: Colors.white.withAlpha((0.8 * 255).round()),
+                    child: Padding(
+                      padding: const EdgeInsets.all(24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
+                        children: [
+                          Text(
+                            AppLocalizations.of(context)!.loginTitle,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: sky700),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            AppLocalizations.of(context)!.loginSubtitle,
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(fontSize: 13, color: Colors.grey),
+                          ),
+                          const SizedBox(height: 24),
 
-                    const SizedBox(height: 16),
-
-                    // --- 3. Card ---
-                    // bg-white/80 backdrop-blur-sm border-sky-200 shadow-xl
-                    Card(
-                      elevation: 8,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                        side: const BorderSide(color: sky200, width: 1),
-                      ),
-                      color: Colors.white.withAlpha((0.8 * 255).round()), // bg-white/80
-                      child: Padding(
-                        padding: const EdgeInsets.all(24.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.stretch,
-                          children: [
-                            // CardHeader
-                            Text(
-                              AppLocalizations.of(context)!.loginTitle,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 24,
-                                fontWeight: FontWeight.bold,
-                                color: sky700,
-                              ),
-                            ),
-                            const SizedBox(height: 4),
-                            Text(
-                              AppLocalizations.of(context)!.loginSubtitle,
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 13,
-                                color: Colors.grey, // text-muted-foreground
-                              ),
-                            ),
-                            const SizedBox(height: 24),
-
-                            // CardContent - Email Input
-                            _LabelWithIcon(icon: LucideIcons.smartphone, text: AppLocalizations.of(context)!.emailLabel),
-                            const SizedBox(height: 4),
-                            Form(
-                              key: _formKey,
-                              child: TextFormField(
-                                controller: emailController,
-                                keyboardType: TextInputType.emailAddress,
-                                decoration: InputDecoration(
-                                  hintText: AppLocalizations.of(context)!.emailHint,
-                                  border: const OutlineInputBorder(),
-                                  contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
-                                ),
-                                validator: (v) {
-                                  if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.emailEmptyError;
-                                  final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
-                                  if (!emailRegex.hasMatch(v.trim())) return AppLocalizations.of(context)!.emailInvalidError;
-                                  return null;
-                                },
-                              ),
-                            ),
-                            const SizedBox(height: 16),
-
-                            // CardContent - Password Input
-                            _LabelWithIcon(icon: LucideIcons.lock, text: AppLocalizations.of(context)!.passwordLabel),
-                            const SizedBox(height: 4),
-                            TextFormField(
-                              controller: passwordController,
-                              obscureText: true,
+                          _LabelWithIcon(icon: LucideIcons.smartphone, text: AppLocalizations.of(context)!.emailLabel),
+                          const SizedBox(height: 4),
+                          Form(
+                            key: _formKey,
+                            child: TextFormField(
+                              controller: emailController,
+                              keyboardType: TextInputType.emailAddress,
                               decoration: InputDecoration(
-                                hintText: AppLocalizations.of(context)!.passwordHint,
+                                hintText: AppLocalizations.of(context)!.emailHint,
                                 border: const OutlineInputBorder(),
                                 contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
                               ),
                               validator: (v) {
-                                if (v == null || v.isEmpty) return AppLocalizations.of(context)!.passwordEmptyError;
-                                if (v.length < 6) return AppLocalizations.of(context)!.passwordLengthError;
+                                if (v == null || v.trim().isEmpty) return AppLocalizations.of(context)!.emailEmptyError;
+                                final emailRegex = RegExp(r'^[^@]+@[^@]+\.[^@]+');
+                                if (!emailRegex.hasMatch(v.trim())) return AppLocalizations.of(context)!.emailInvalidError;
                                 return null;
                               },
                             ),
-                            const SizedBox(height: 24),
-
-                            ElevatedButton(
-                              onPressed: widget.isLoading ? null : handleSubmit,
-                              style: ElevatedButton.styleFrom(
-                                minimumSize: const Size.fromHeight(44),
-                                padding: const EdgeInsets.symmetric(vertical: 12),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                // bg-gradient-to-r from-sky-500 to-cyan-500
-                                foregroundColor: Colors.white,
-                                backgroundColor: sky500, // Базовий колір для градієнта
-                              ),
-                              child: widget.isLoading
-                                  ? const SizedBox(
-                                      width: 20,
-                                      height: 20,
-                                      child: CircularProgressIndicator(
-                                        color: Colors.white,
-                                        strokeWidth: 2,
-                                      ),
-                                    )
-                                  : Text(
-                                      AppLocalizations.of(context)!.loginButton,
-                                      style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
-                                    ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-
-                    // --- 4. Features Preview (Імітація motion.div з delay: 0.6) ---
-                    TweenAnimationBuilder<double>(
-                      tween: Tween<double>(begin: 0, end: 1),
-                      duration: const Duration(milliseconds: 500),
-                      
-                      builder: (context, opacityValue, child) {
-                        return Opacity(
-                          opacity: opacityValue,
-                          child: Padding(
-                            padding: EdgeInsets.only(top: 20 * (1 - opacityValue)),
-                            child: child,
                           ),
-                        );
-                      },
-                      child: const _FeaturesPreview(),
-                    ),
-                    
-                    // --- 5. Register Button (Залишаємо внизу для зручності) ---
-                    const SizedBox(height: 16),
-                    TextButton(
-                      onPressed: widget.onRegister, // Використовуємо prop onRegister
-                      child: Text(AppLocalizations.of(context)!.noAccountRegister),
-                    ),
-                    
-                    if (widget.error != null) ...[
-                      const SizedBox(height: 8),
-                      Text(
-                        widget.error!,
-                        style: const TextStyle(color: Colors.red),
-                        textAlign: TextAlign.center,
+
+                          const SizedBox(height: 16),
+                          _LabelWithIcon(icon: LucideIcons.lock, text: AppLocalizations.of(context)!.passwordLabel),
+                          const SizedBox(height: 4),
+                          TextFormField(
+                            controller: passwordController,
+                            obscureText: true,
+                            decoration: InputDecoration(
+                              hintText: AppLocalizations.of(context)!.passwordHint,
+                              border: const OutlineInputBorder(),
+                              contentPadding: const EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                            ),
+                            validator: (v) {
+                              if (v == null || v.isEmpty) return AppLocalizations.of(context)!.passwordEmptyError;
+                              if (v.length < 6) return AppLocalizations.of(context)!.passwordLengthError;
+                              return null;
+                            },
+                          ),
+
+                          const SizedBox(height: 24),
+                          ElevatedButton(
+                            onPressed: widget.isLoading ? null : handleSubmit,
+                            style: ElevatedButton.styleFrom(
+                              minimumSize: const Size.fromHeight(44),
+                              padding: const EdgeInsets.symmetric(vertical: 12),
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
+                              foregroundColor: Colors.white,
+                              backgroundColor: sky500,
+                            ),
+                            child: widget.isLoading
+                                ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                                : Text(AppLocalizations.of(context)!.loginButton, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600)),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
+                  ),
+
+                  const _FeaturesPreview(),
+                  const SizedBox(height: 16),
+                  TextButton(onPressed: widget.onRegister, child: Text(AppLocalizations.of(context)!.noAccountRegister)),
+                  if (widget.error != null) ...[
+                    const SizedBox(height: 8),
+                    Text(widget.error!, style: const TextStyle(color: Colors.red), textAlign: TextAlign.center),
                   ],
-                ),
+                ],
               ),
             ),
           ),

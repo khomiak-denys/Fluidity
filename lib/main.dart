@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'blocs/water/water_bloc.dart';
 import 'blocs/water/water_event.dart';
@@ -14,15 +15,22 @@ import 'services/firebase_service.dart';
 import 'widgets/bottom_navigation.dart';
 import 'screens/register_screen.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // Initialize Firebase
   await FirebaseService.instance.init();
-  runApp(const WaterTrackerApp());
+
+  // Load saved language from SharedPreferences (default 'en')
+  final prefs = await SharedPreferences.getInstance();
+  final savedLang = prefs.getString('language') ?? 'en';
+
+  runApp(WaterTrackerApp(initialLanguage: savedLang));
 }
 
 class WaterTrackerApp extends StatefulWidget {
-  const WaterTrackerApp({super.key});
+  final String initialLanguage;
+
+  const WaterTrackerApp({super.key, this.initialLanguage = 'en'});
 
   @override
   State<WaterTrackerApp> createState() => _WaterTrackerAppState();
@@ -49,9 +57,26 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
     {'id': '3', 'time': '16:00', 'enabled': false, 'label': 'Afternoon boost'},
   ];
 
-  String language = 'en';
+  late String language = widget.initialLanguage;
 
   final mockUser = {'uid': 'demo-user', 'phoneNumber': '+380 50 123 45 67'};
+
+  @override
+  void initState() {
+    super.initState();
+    // Restore authentication state from FirebaseAuth if a user is already signed in.
+    // FirebaseAuth persists the session across app restarts by default, so we
+    // can rely on FirebaseService.instance.auth.currentUser to determine logged-in state.
+    try {
+      final fbUser = FirebaseService.instance.auth.currentUser;
+      if (fbUser != null) {
+        isAuthenticated = true;
+      }
+    } catch (_) {
+      // If anything goes wrong, leave isAuthenticated as false.
+      isAuthenticated = false;
+    }
+  }
 
   Future<void> handleLogin(String email, String password) async {
     final error = await FirebaseService.instance.signInWithEmail(email.trim(), password);
@@ -106,9 +131,28 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
     }
   }
 
-  void handleSignOut() {
+  Future<void> handleSignOut() async {
+    // Sign out from Firebase to clear persisted session
+    try {
+      await FirebaseService.instance.signOut();
+    } catch (_) {
+      // ignore errors from sign out -- still attempt to clear local data
+    }
+
+    // Remove any stored user-related keys (if any were saved previously)
+    try {
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.remove('user_uid');
+      await prefs.remove('user_email');
+      // keep language preference
+    } catch (_) {
+      // ignore prefs errors
+    }
+
+    if (!mounted) return;
     setState(() {
       isAuthenticated = false;
+      authError = null;
     });
   }
 
@@ -171,7 +215,12 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
           onSignOut: handleSignOut,
           user: userMap,
           language: language,
-          onLanguageChange: (l) => setState(() => language = l),
+          onLanguageChange: (l) async {
+            // update state and persist selection
+            setState(() => language = l);
+            final prefs = await SharedPreferences.getInstance();
+            await prefs.setString('language', l);
+          },
         );
       default:
         return const SizedBox.shrink();
