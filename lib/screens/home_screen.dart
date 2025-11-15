@@ -176,16 +176,6 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (kDebugMode)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: FloatingActionButton.small(
-                heroTag: 'simulate_error',
-                onPressed: () => context.read<WaterBloc>().add(SimulateErrorEvent()),
-                backgroundColor: Colors.redAccent,
-                child: const Icon(Icons.bug_report, size: 18),
-              ),
-            ),
           _FloatingActionButton(
             onPressed: () => _showCustomAddDialog(context),
           ),

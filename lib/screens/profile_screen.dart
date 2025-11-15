@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../services/firebase_service.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
@@ -400,16 +399,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 ),
               ],
             ),
-        ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          onPressed: () {
-            // Log an event and force a crash for testing Crashlytics
-            FirebaseService.instance.logEvent('profile_test_crash', {'source': 'profile_screen'});
-            FirebaseService.instance.forceCrash();
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-          child: Text(AppLocalizations.of(context)!.testCrashlytics, style: const TextStyle(color: Colors.white)),
         ),
       ],
     );
