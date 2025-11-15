@@ -164,7 +164,10 @@ class _RemindersScreenState extends State<RemindersScreen> {
       return const Center(child: CircularProgressIndicator());
     }
     if (state is ReminderError) {
-      return Center(child: Text(state.error.toString()));
+      return _ReminderErrorCard(error: state.error.toString())
+          .animate()
+          .fadeIn(duration: 500.ms)
+          .slideY(begin: 0.2, end: 0);
     }
     final reminders = state is ReminderLoaded ? state.data : state is ReminderLoading ? state.data : <ReminderSetting>[];
     if (reminders.isEmpty) {
@@ -422,6 +425,52 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
                   ),
                 ),
               ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ReminderErrorCard extends StatelessWidget {
+  final String error;
+  const _ReminderErrorCard({required this.error});
+
+  @override
+  Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final friendly = error.contains('permission_denied')
+        ? l10n.errorPermissionDenied
+        : l10n.errorGeneric;
+    return Card(
+      margin: EdgeInsets.zero,
+      elevation: 0,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(12),
+        side: const BorderSide(color: sky200, width: 2),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            const Text('⚠️', style: TextStyle(fontSize: 40)),
+            const SizedBox(height: 12),
+            Text(l10n.errorLoadingReminders, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: sky700)),
+            const SizedBox(height: 8),
+            Text(friendly, textAlign: TextAlign.center, style: const TextStyle(color: mutedForeground)),
+            const SizedBox(height: 16),
+            ElevatedButton.icon(
+              onPressed: () => context.read<ReminderBloc>().add(RefreshRemindersEvent()),
+              icon: const Icon(Icons.refresh, size: 18),
+              label: Text(l10n.retry),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sky600,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 44),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
           ],
         ),

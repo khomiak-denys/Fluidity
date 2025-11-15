@@ -245,6 +245,18 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsWeekTotalTitle => 'Weekly total';
 
   @override
+  String get statsMonthTotalTitle => 'Monthly total';
+
+  @override
+  String get errorLoadingEntries => 'Error loading entries';
+  @override
+  String get errorLoadingReminders => 'Error loading reminders';
+  @override
+  String get errorPermissionDenied => 'Permission denied. Please check your access and try again.';
+  @override
+  String get errorGeneric => 'Something went wrong. Please try again.';
+
+  @override
   String get entryDeleted => 'Entry deleted';
 
   @override

@@ -245,6 +245,18 @@ class AppLocalizationsUk extends AppLocalizations {
   String get statsWeekTotalTitle => 'Загалом за тиждень';
 
   @override
+  String get statsMonthTotalTitle => 'Загалом за місяць';
+
+  @override
+  String get errorLoadingEntries => 'Помилка завантаження записів';
+  @override
+  String get errorLoadingReminders => 'Помилка завантаження нагадувань';
+  @override
+  String get errorPermissionDenied => 'Доступ заборонено. Перевірте права або виконайте повторний вхід.';
+  @override
+  String get errorGeneric => 'Щось пішло не так. Спробуйте ще раз.';
+
+  @override
   String get entryDeleted => 'Запис видалено';
 
   @override

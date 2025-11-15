@@ -54,6 +54,12 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     List<WaterEntry> filtered;
     List<Map<String, dynamic>> bars = [];
 
+    // Pre-calc week and month ranges for cross-period summaries
+    final startOfWeek = dayStart(now).subtract(Duration(days: now.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 7));
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    final endOfMonth = DateTime(now.year, now.month + 1, 1);
+
     switch (_period) {
       case StatsPeriod.day:
         final start = dayStart(now);
@@ -64,9 +70,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         bars = [];
         break;
       case StatsPeriod.week:
-        // Start week on Monday consistently (Mon=1..Sun=7 => subtract weekday-1)
-        final startOfWeek = dayStart(now).subtract(Duration(days: now.weekday - 1));
-        final endOfWeek = startOfWeek.add(const Duration(days: 7));
+        // Use pre-calculated Monday-start week
         filtered = allEntries.where((e) => e.timestamp.isAfter(startOfWeek.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfWeek)).toList();
         // Build 7-day bars Mon..Sun with localized labels
         final labels = [
@@ -85,12 +89,10 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         });
         break;
       case StatsPeriod.month:
-        final start = DateTime(now.year, now.month, 1);
-        final end = DateTime(now.year, now.month + 1, 1);
-        filtered = allEntries.where((e) => e.timestamp.isAfter(start.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(end)).toList();
-        final daysInMonth = end.difference(start).inDays;
+        filtered = allEntries.where((e) => e.timestamp.isAfter(startOfMonth.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfMonth)).toList();
+        final daysInMonth = endOfMonth.difference(startOfMonth).inDays;
         bars = List.generate(daysInMonth, (i) {
-          final day = start.add(Duration(days: i));
+          final day = startOfMonth.add(Duration(days: i));
           final total = filtered.where((e) => isSameDay(e.timestamp, day)).fold<int>(0, (s, e) => s + e.amountMl);
           return {'label': '${i + 1}', 'intake': total};
         });
@@ -104,12 +106,22 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         .where((e) => isSameDay(e.timestamp, now))
         .fold<int>(0, (sum, e) => sum + e.amountMl);
 
+    // Cross-period totals for cards (always Monday-start week, current month)
+    final weekTotal = allEntries
+        .where((e) => e.timestamp.isAfter(startOfWeek.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfWeek))
+        .fold<int>(0, (s, e) => s + e.amountMl);
+    final monthTotal = allEntries
+        .where((e) => e.timestamp.isAfter(startOfMonth.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfMonth))
+        .fold<int>(0, (s, e) => s + e.amountMl);
+
     return {
       'bars': bars,
       'filtered': filtered,
       'todayIntake': todayTotal,
       'periodAverage': periodAverage,
       'periodTotal': periodTotal,
+      'weekTotal': weekTotal,
+      'monthTotal': monthTotal,
     };
   }
 
@@ -130,30 +142,53 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   final todayIntake = data['todayIntake'] as int;
   final periodAverage = data['periodAverage'] as int;
   final periodTotal = data['periodTotal'] as int;
+  // final weekTotal = data['weekTotal'] as int; // no longer used directly
+  // final monthTotal = data['monthTotal'] as int; // not directly used; periodTotal covers month when selected
 
-  final stats = [
-    {
+  final List<Map<String, dynamic>> stats = [];
+
+  if (_period == StatsPeriod.day) {
+    // Day: show only today's intake
+    stats.add({
       'title': AppLocalizations.of(context)!.statsTodayTitle,
       'value': '${todayIntake}ml',
       'icon': Icons.opacity_rounded,
       'color': sky600,
       'bgColor': sky100,
-    },
-    {
+    });
+  } else if (_period == StatsPeriod.week) {
+    // Week: average + weekly total (no today's intake)
+    stats.add({
       'title': AppLocalizations.of(context)!.statsAverageTitle,
       'value': '${periodAverage}ml',
       'icon': Icons.trending_up_rounded,
       'color': green600,
       'bgColor': green100,
-    },
-    {
+    });
+    stats.add({
       'title': AppLocalizations.of(context)!.statsWeekTotalTitle,
       'value': '${(periodTotal / 1000).toStringAsFixed(1)}L',
       'icon': Icons.calendar_month_rounded,
       'color': orange600,
       'bgColor': orange100,
-    },
-  ];
+    });
+  } else {
+    // Month: average + monthly total (no today's intake)
+    stats.add({
+      'title': AppLocalizations.of(context)!.statsAverageTitle,
+      'value': '${periodAverage}ml',
+      'icon': Icons.trending_up_rounded,
+      'color': green600,
+      'bgColor': green100,
+    });
+    stats.add({
+      'title': AppLocalizations.of(context)!.statsMonthTotalTitle,
+      'value': '${(periodTotal / 1000).toStringAsFixed(1)}L',
+      'icon': Icons.calendar_month_rounded,
+      'color': orange600,
+      'bgColor': orange100,
+    });
+  }
 
   final headerText = _period == StatsPeriod.day
     ? AppLocalizations.of(context)!.statisticsDaily
@@ -198,7 +233,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               const SizedBox(height: 20), // space-y-4
 
               // --- Progress Chart (Week/Month) ---
-      if (_period != StatsPeriod.day) _buildPeriodChartCard(context, bars)
+  if (_period != StatsPeriod.day) _buildPeriodChartCard(context, bars)
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 400.ms)
                   .slideY(begin: 0.2, end: 0),
@@ -338,7 +373,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8), // pb-3
             child: Text(
-              AppLocalizations.of(context)!.statisticsWeekly,
+              _period == StatsPeriod.week
+                  ? AppLocalizations.of(context)!.statisticsWeekly
+                  : AppLocalizations.of(context)!.statisticsMonthly,
               style: const TextStyle(
                 color: sky700,
                 fontWeight: FontWeight.bold,

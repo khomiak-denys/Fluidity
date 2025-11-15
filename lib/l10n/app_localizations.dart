@@ -553,6 +553,35 @@ abstract class AppLocalizations {
   /// **'Weekly total'**
   String get statsWeekTotalTitle;
 
+  /// No description provided for @statsMonthTotalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly total'**
+  String get statsMonthTotalTitle;
+
+  /// No description provided for @errorLoadingEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading entries'**
+  String get errorLoadingEntries;
+  /// No description provided for @errorLoadingReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Error loading reminders'**
+  String get errorLoadingReminders;
+
+  /// No description provided for @errorPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied. Please check your access and try again.'**
+  String get errorPermissionDenied;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get errorGeneric;
+
   /// No description provided for @entryDeleted.
   ///
   /// In en, this message translates to:

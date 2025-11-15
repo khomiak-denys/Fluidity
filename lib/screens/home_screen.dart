@@ -25,6 +25,7 @@ const Color green50 = Color(0xFFF0FDF4); // from-green-50
 const Color emerald50 = Color(0xFFF0FDF8); // to-emerald-50, використаємо F0FDF4 для емуляції градієнта
 const Color green200 = Color(0xFFBBF7D0);
 const Color primaryColor = Color(0xFF0EA5E9); // Для FAB
+const Color mutedForeground = Color(0xFF6B7280); // text-muted-foreground (match reminder screen)
 
 // =========================================================================
 // ОСНОВНИЙ ВІДЖЕТ
@@ -622,17 +623,29 @@ class _ErrorStateCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text('⚠️', style: TextStyle(fontSize: 36)),
+            const Text('⚠️', style: TextStyle(fontSize: 40)),
             const SizedBox(height: 12),
-            Text('Error loading entries', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
+            Text(AppLocalizations.of(context)!.errorLoadingEntries, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: sky700)),
             const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+            Builder(builder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              final raw = message;
+              final friendly = raw.contains('permission_denied')
+                  ? l10n.errorPermissionDenied
+                  : l10n.errorGeneric;
+              return Text(friendly, textAlign: TextAlign.center, style: const TextStyle(color: mutedForeground));
+            }),
             const SizedBox(height: 16),
-            AppButton(
-              text: AppLocalizations.of(context)!.retry,
+            ElevatedButton.icon(
               onPressed: () => context.read<WaterBloc>().add(RefreshWaterEvent()),
-              variant: ButtonVariant.primary,
-              size: ButtonSize.medium,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: Text(AppLocalizations.of(context)!.retry),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sky600,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 44),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
           ],
         ),
