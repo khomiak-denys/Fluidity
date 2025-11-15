@@ -492,7 +492,12 @@ class _GoalSettingDialogState extends State<_GoalSettingDialog> {
                       backgroundColor: sky600,
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(fontSize: 16)),
+                    child: Text(
+                      AppLocalizations.of(context)!.save,
+                      style: const TextStyle(fontSize: 16),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],

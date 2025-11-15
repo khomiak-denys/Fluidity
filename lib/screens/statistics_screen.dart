@@ -68,11 +68,19 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
         final startOfWeek = dayStart(now).subtract(Duration(days: now.weekday - 1));
         final endOfWeek = startOfWeek.add(const Duration(days: 7));
         filtered = allEntries.where((e) => e.timestamp.isAfter(startOfWeek.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfWeek)).toList();
-        // Build 7-day bars Mon..Sun
+        // Build 7-day bars Mon..Sun with localized labels
+        final labels = [
+          AppLocalizations.of(context)!.weekdayMonShort,
+          AppLocalizations.of(context)!.weekdayTueShort,
+          AppLocalizations.of(context)!.weekdayWedShort,
+          AppLocalizations.of(context)!.weekdayThuShort,
+          AppLocalizations.of(context)!.weekdayFriShort,
+          AppLocalizations.of(context)!.weekdaySatShort,
+          AppLocalizations.of(context)!.weekdaySunShort,
+        ];
         bars = List.generate(7, (i) {
           final day = startOfWeek.add(Duration(days: i));
           final total = filtered.where((e) => isSameDay(e.timestamp, day)).fold<int>(0, (s, e) => s + e.amountMl);
-          final labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
           return {'label': labels[i], 'intake': total};
         });
         break;
@@ -147,7 +155,13 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
     },
   ];
 
-    return Scaffold(
+  final headerText = _period == StatsPeriod.day
+    ? AppLocalizations.of(context)!.statisticsDaily
+    : _period == StatsPeriod.week
+      ? AppLocalizations.of(context)!.statisticsWeekly
+      : AppLocalizations.of(context)!.statisticsMonthly;
+
+  return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         toolbarHeight: 0,
@@ -162,8 +176,8 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-        // --- Header ---
-        _buildHeader(context)
+  // --- Header ---
+  _buildHeader(context, headerText)
                   .animate()
                   .fadeIn(duration: 500.ms)
                   .slideY(begin: -0.2, end: 0),
@@ -214,28 +228,28 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             side: BorderSide(color: selected ? sky600 : borderGray),
             backgroundColor: selected ? sky50 : Colors.white,
           ),
-          child: Text(label, style: TextStyle(color: selected ? sky700 : mutedForeground)),
+          child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: selected ? sky700 : mutedForeground)),
         ),
       );
     }
 
     return Row(
       children: [
-        buildButton('Day', StatsPeriod.day),
+  buildButton(AppLocalizations.of(context)!.periodDay, StatsPeriod.day),
         const SizedBox(width: 8),
-        buildButton('Week', StatsPeriod.week),
+  buildButton(AppLocalizations.of(context)!.periodWeek, StatsPeriod.week),
         const SizedBox(width: 8),
-        buildButton('Month', StatsPeriod.month),
+  buildButton(AppLocalizations.of(context)!.periodMonth, StatsPeriod.month),
       ],
     );
   }
 
   // --- Header Widget ---
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String headerText) {
     return Column(
       children: [
         Text(
-          AppLocalizations.of(context)!.statistics,
+          headerText,
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -341,7 +355,18 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
                   maxY: widget.dailyGoal * 1.2, // Максимальне значення на осі Y
-                  barTouchData: const BarTouchData(enabled: true),
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final value = rod.toY.toInt();
+                        return BarTooltipItem(
+                          '${value}ml',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        );
+                      },
+                    ),
+                  ),
                   titlesData: FlTitlesData(
                     show: true,
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),

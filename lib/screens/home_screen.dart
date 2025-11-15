@@ -562,8 +562,8 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
             TextField(
               maxLines: 2, // rows={2}
               onChanged: (v) => _comment = v,
-              decoration: const InputDecoration(
-                hintText: 'Додайте коментар...',
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.addCommentHint,
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               ),
@@ -629,7 +629,7 @@ class _ErrorStateCard extends StatelessWidget {
             Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
             const SizedBox(height: 16),
             AppButton(
-              text: 'Retry',
+              text: AppLocalizations.of(context)!.retry,
               onPressed: () => context.read<WaterBloc>().add(RefreshWaterEvent()),
               variant: ButtonVariant.primary,
               size: ButtonSize.medium,

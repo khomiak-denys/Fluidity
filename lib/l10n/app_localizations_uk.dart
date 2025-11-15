@@ -227,6 +227,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get statisticsWeekly => 'Статистика за тиждень';
 
   @override
+  String get statisticsDaily => 'Статистика за день';
+
+  @override
+  String get statisticsMonthly => 'Статистика за місяць';
+
+  @override
   String get hourlyDistribution => 'Розподіл за сьогодні';
 
   @override
@@ -288,4 +294,40 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get auth_verification_email_sent => 'Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення.';
+
+  @override
+  String get periodDay => 'День';
+
+  @override
+  String get periodWeek => 'Тиждень';
+
+  @override
+  String get periodMonth => 'Місяць';
+
+  @override
+  String get weekdayMonShort => 'Пн';
+
+  @override
+  String get weekdayTueShort => 'Вт';
+
+  @override
+  String get weekdayWedShort => 'Ср';
+
+  @override
+  String get weekdayThuShort => 'Чт';
+
+  @override
+  String get weekdayFriShort => 'Пт';
+
+  @override
+  String get weekdaySatShort => 'Сб';
+
+  @override
+  String get weekdaySunShort => 'Нд';
+
+  @override
+  String get retry => 'Повторити';
+
+  @override
+  String get addCommentHint => 'Додайте коментар...';
 }

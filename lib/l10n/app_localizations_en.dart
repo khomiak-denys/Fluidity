@@ -227,6 +227,12 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statisticsWeekly => 'Statistics for the week';
 
   @override
+  String get statisticsDaily => 'Statistics for the day';
+
+  @override
+  String get statisticsMonthly => 'Statistics for the month';
+
+  @override
   String get hourlyDistribution => 'Hourly distribution (today)';
 
   @override
@@ -288,4 +294,40 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auth_verification_email_sent => 'A verification email has been sent to your address. Please check your inbox.';
+
+  @override
+  String get periodDay => 'Day';
+
+  @override
+  String get periodWeek => 'Week';
+
+  @override
+  String get periodMonth => 'Month';
+
+  @override
+  String get weekdayMonShort => 'Mon';
+
+  @override
+  String get weekdayTueShort => 'Tue';
+
+  @override
+  String get weekdayWedShort => 'Wed';
+
+  @override
+  String get weekdayThuShort => 'Thu';
+
+  @override
+  String get weekdayFriShort => 'Fri';
+
+  @override
+  String get weekdaySatShort => 'Sat';
+
+  @override
+  String get weekdaySunShort => 'Sun';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get addCommentHint => 'Add a comment...';
 }

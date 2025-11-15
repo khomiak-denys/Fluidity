@@ -78,6 +78,8 @@
     "startTrackingBody": "Add your first water entry using the buttons above or the FAB",
     "statisticsSubtitle": "Keep track of your progress",
     "statisticsWeekly": "Statistics for the week",
+    "statisticsDaily": "Statistics for the day",
+    "statisticsMonthly": "Statistics for the month",
     "hourlyDistribution": "Hourly distribution (today)",
     "statsTodayTitle": "Today's intake",
     "statsAverageTitle": "Daily average",
@@ -101,4 +103,17 @@
     "auth_unknown_error": "An unknown error occurred. Please try again later."
     ,
     "auth_verification_email_sent": "A verification email has been sent to your address. Please check your inbox."
+    ,
+    "periodDay": "Day",
+    "periodWeek": "Week",
+    "periodMonth": "Month",
+    "weekdayMonShort": "Mon",
+    "weekdayTueShort": "Tue",
+    "weekdayWedShort": "Wed",
+    "weekdayThuShort": "Thu",
+    "weekdayFriShort": "Fri",
+    "weekdaySatShort": "Sat",
+    "weekdaySunShort": "Sun",
+    "retry": "Retry",
+    "addCommentHint": "Add a comment..."
 }

@@ -413,7 +413,12 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
                       backgroundColor: sky500,
                       foregroundColor: Colors.white,
                     ),
-                      child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(fontSize: 16)),
+                      child: Text(
+                        AppLocalizations.of(context)!.save,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(fontSize: 16),
+                      ),
                   ),
                 ),
               ],

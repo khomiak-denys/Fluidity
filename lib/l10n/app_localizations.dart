@@ -526,6 +526,8 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Statistics for the week'**
   String get statisticsWeekly;
+  String get statisticsDaily;
+  String get statisticsMonthly;
 
   /// No description provided for @hourlyDistribution.
   ///
@@ -652,6 +654,20 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A verification email has been sent to your address. Please check your inbox.'**
   String get auth_verification_email_sent;
+
+  // New: period and misc labels
+  String get periodDay;
+  String get periodWeek;
+  String get periodMonth;
+  String get weekdayMonShort;
+  String get weekdayTueShort;
+  String get weekdayWedShort;
+  String get weekdayThuShort;
+  String get weekdayFriShort;
+  String get weekdaySatShort;
+  String get weekdaySunShort;
+  String get retry;
+  String get addCommentHint;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {
