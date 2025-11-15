@@ -4,6 +4,9 @@ import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
 import '../models/water_entry.dart'; // WaterEntry model
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../blocs/water/water_bloc.dart';
+import '../blocs/water/water_state.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -25,17 +28,15 @@ const Color borderGray = Color(0xFFE5E7EB); // border-gray-200 / border-sky-200
 // =========================================================================
 
 class StatisticsScreen extends StatelessWidget {
-  final List<WaterEntry> entries;
   final int dailyGoal;
 
   const StatisticsScreen({
     super.key,
-    required this.entries,
     required this.dailyGoal,
   });
 
   // Логіка для розрахунку статистики
-  Map<String, dynamic> _calculateStats() {
+  Map<String, dynamic> _calculateStats(List<WaterEntry> entries) {
     final todayIntake = entries.fold<int>(0, (sum, e) => sum + e.amountMl);
 
     final weeklyData = [
@@ -65,11 +66,21 @@ class StatisticsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-  final data = _calculateStats();
-  final weeklyData = data['weeklyData'] as List<Map<String, dynamic>>;
-  final todayIntake = data['todayIntake'] as int;
-  final weekAverage = data['weekAverage'] as int;
-  final weekTotal = data['weekTotal'] as int;
+    // Read entries from WaterBloc state
+    final state = context.watch<WaterBloc>().state;
+    final List<WaterEntry> entries = state is WaterLoaded
+        ? state.data
+        : state is WaterLoading
+            ? state.data
+            : state is WaterError
+                ? state.data
+                : const <WaterEntry>[];
+
+    final data = _calculateStats(entries);
+    final weeklyData = data['weeklyData'] as List<Map<String, dynamic>>;
+    final todayIntake = data['todayIntake'] as int;
+    final weekAverage = data['weekAverage'] as int;
+    final weekTotal = data['weekTotal'] as int;
 
   final stats = [
     {

@@ -221,18 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (email.isNotEmpty) Text(email, style: const TextStyle(color: mutedForeground, fontSize: 13)),
                 if (email.isEmpty) Text(userPhone, style: const TextStyle(color: mutedForeground, fontSize: 13)), // text-sm text-muted-foreground
                 const SizedBox(height: 4),
-                // Demo User Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: green100, // bg-green-100
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context)!.demoUser,
-                    style: const TextStyle(fontSize: 11, color: green700, fontWeight: FontWeight.w500), // text-xs text-green-700
-                  ),
-                ),
+                // Removed demo user badge per request
               ],
             ),
           ],

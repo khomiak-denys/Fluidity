@@ -31,21 +31,8 @@ class RemindersScreen extends StatefulWidget {
 }
 
 class _RemindersScreenState extends State<RemindersScreen> {
-  // Початкові дані для прикладу
-  final List<ReminderSetting> _reminders = (() {
-    DateTime _parseHHmmToDateTime(String hhmm) {
-      final parts = hhmm.split(':');
-      final now = DateTime.now();
-      final h = int.tryParse(parts.elementAt(0)) ?? 0;
-      final m = int.tryParse(parts.elementAt(1)) ?? 0;
-      return DateTime(now.year, now.month, now.day, h, m);
-    }
-    return [
-      ReminderSetting(id: '1', scheduledTime: _parseHHmmToDateTime('08:00'), comment: 'Ранкова доза', isActive: true),
-      ReminderSetting(id: '2', scheduledTime: _parseHHmmToDateTime('13:00'), comment: 'Після обіду', isActive: false),
-      ReminderSetting(id: '3', scheduledTime: _parseHHmmToDateTime('18:30'), comment: 'Вечірній келих', isActive: true),
-    ];
-  })();
+  // Порожній початковий список (без хардкоду)
+  final List<ReminderSetting> _reminders = [];
 
   void _addReminder(String time, String label) {
     DateTime _parseHHmmToDateTime(String hhmm) {

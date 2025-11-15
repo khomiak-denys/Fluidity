@@ -10,7 +10,6 @@ import 'screens/login_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/reminder_screen.dart';
 import 'screens/profile_screen.dart';
-import 'models/water_entry.dart';
 import 'services/firebase_service.dart';
 import 'widgets/bottom_navigation.dart';
 import 'screens/register_screen.dart';
@@ -44,21 +43,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
   int dailyGoal = 2000;
   bool notificationsEnabled = true;
 
-  // Mock data
-  List<WaterEntry> entries = (() {
-    final now = DateTime.now();
-    return [
-      WaterEntry(id: '1', amountMl: 250, timestamp: DateTime(now.year, now.month, now.day, 9, 30), drinkType: 'glass', comment: ''),
-      WaterEntry(id: '2', amountMl: 500, timestamp: DateTime(now.year, now.month, now.day, 12, 15), drinkType: 'bottle', comment: ''),
-      WaterEntry(id: '3', amountMl: 350, timestamp: DateTime(now.year, now.month, now.day, 15, 45), drinkType: 'cup', comment: ''),
-    ];
-  })();
-
-  List reminders = [
-    {'id': '1', 'time': '08:00', 'enabled': true, 'label': 'Morning hydration'},
-    {'id': '2', 'time': '12:00', 'enabled': true, 'label': 'Lunch break'},
-    {'id': '3', 'time': '16:00', 'enabled': false, 'label': 'Afternoon boost'},
-  ];
+  // Removed hardcoded mock entries and reminders
 
   late String language = widget.initialLanguage;
 
@@ -197,7 +182,6 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
         );
       case 'statistics':
         return StatisticsScreen(
-          entries: entries,
           dailyGoal: dailyGoal,
         );
       case 'reminders':
