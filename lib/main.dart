@@ -13,6 +13,9 @@ import 'screens/profile_screen.dart';
 import 'services/firebase_service.dart';
 import 'widgets/bottom_navigation.dart';
 import 'screens/register_screen.dart';
+import 'repositories/water_entry_repository.dart';
+import 'repositories/user_profile_repository.dart';
+import 'models/user_profile.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -78,6 +81,29 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
         authError = null;
       });
       FirebaseService.instance.logEvent('login', {'method': 'email'});
+      // Ensure user profile exists in Firestore
+      try {
+        final fbUser = FirebaseService.instance.auth.currentUser;
+        if (fbUser != null) {
+          final repo = UserProfileRepository();
+          final existing = await repo.getById(fbUser.uid);
+          if (existing == null) {
+            final display = fbUser.displayName ?? '';
+            final parts = display.trim().split(' ');
+            final first = parts.isNotEmpty ? parts.first : '';
+            final last = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+            final profile = UserProfile(
+              id: fbUser.uid,
+              firstName: first,
+              lastName: last,
+              email: fbUser.email ?? '',
+              targetWaterAmount: dailyGoal,
+              registrationDate: DateTime.now(),
+            );
+            await repo.upsert(profile);
+          }
+        }
+      } catch (_) {}
     } else {
       setState(() {
         authError = error;
@@ -216,11 +242,11 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<WaterBloc>(create: (_) => WaterBloc()..add(LoadWaterEvent())),
-      ],
-      child: MaterialApp(
+    final fbUser = FirebaseService.instance.auth.currentUser;
+    final uid = (isAuthenticated && fbUser != null) ? fbUser.uid : '';
+    final waterRepo = WaterEntryRepository();
+
+    return MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: Locale(language),
@@ -235,11 +261,14 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
             ),
       },
       home: isAuthenticated
-          ? Scaffold(
-              body: renderScreen(),
-              bottomNavigationBar: BottomNavigation(
-                activeTab: activeTab,
-                onTabChange: setTab,
+          ? BlocProvider<WaterBloc>(
+              create: (_) => WaterBloc(repo: waterRepo, userId: uid)..add(LoadWaterEvent()),
+              child: Scaffold(
+                body: renderScreen(),
+                bottomNavigationBar: BottomNavigation(
+                  activeTab: activeTab,
+                  onTabChange: setTab,
+                ),
               ),
             )
           : Builder(
@@ -249,7 +278,6 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
                 error: authError != null ? _localizeAuthMessage(context, authError!) : null,
               ),
             ),
-      ),
     );
   }
 }
