@@ -5,8 +5,8 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
 import '../models/water_entry.dart'; // WaterEntry model
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/water/water_bloc.dart';
-import '../blocs/water/water_state.dart';
+import '../bloc/water/water_bloc.dart';
+import '../bloc/water/water_state.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);

@@ -24,12 +24,10 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
     final currentData = state is WaterLoaded ? (state as WaterLoaded).data : <WaterEntry>[];
     emit(WaterLoading(data: currentData));
     await Future.delayed(const Duration(milliseconds: 100));
-    // If userId is empty, keep empty state (unauthenticated)
     if (userId.isEmpty) {
       emit(WaterLoaded(data: const []));
       return;
     }
-    // Subscribe to Firestore stream
     await _subscription?.cancel();
     _subscription = repo.watchAll(userId).listen(
       (entries) => add(_WaterStreamUpdated(entries)),

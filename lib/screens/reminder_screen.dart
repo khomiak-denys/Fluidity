@@ -3,8 +3,10 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
 import 'package:fluidity/l10n/app_localizations.dart';
 import '../models/reminder_setting.dart';
-import '../services/firebase_service.dart';
-import '../repositories/reminder_setting_repository.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/reminder/reminder_bloc.dart';
+import '../bloc/reminder/reminder_event.dart';
+import '../bloc/reminder/reminder_state.dart';
 import 'reminder_detail.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
@@ -33,16 +35,7 @@ class RemindersScreen extends StatefulWidget {
 }
 
 class _RemindersScreenState extends State<RemindersScreen> {
-  final ReminderSettingRepository _repo = ReminderSettingRepository();
-
-  Future<void> _addReminder(String time, String label) async {
-    final uid = FirebaseService.instance.auth.currentUser?.uid;
-    if (uid == null || uid.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(AppLocalizations.of(context)!.auth_unknown_error), behavior: SnackBarBehavior.floating),
-      );
-      return;
-    }
+  void _addReminder(String time, String label) {
     DateTime _parseHHmmToDateTime(String hhmm) {
       final parts = hhmm.split(':');
       final now = DateTime.now();
@@ -56,61 +49,21 @@ class _RemindersScreenState extends State<RemindersScreen> {
       comment: label,
       isActive: true,
     );
-    try {
-      await _repo.add(uid, newReminder);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.reminderAdded), behavior: SnackBarBehavior.floating),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
-        );
-      }
-    }
+    context.read<ReminderBloc>().add(AddReminderEvent(newReminder));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.reminderAdded), behavior: SnackBarBehavior.floating),
+    );
   }
 
-  Future<void> _toggleReminder(ReminderSetting r) async {
-    final uid = FirebaseService.instance.auth.currentUser?.uid;
-    if (uid == null || uid.isEmpty) return;
-    try {
-      await _repo.update(
-        uid,
-        ReminderSetting(
-          id: r.id,
-          scheduledTime: r.scheduledTime,
-          comment: r.comment,
-          isActive: !r.isActive,
-        ),
-      );
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
-        );
-      }
-    }
+  void _toggleReminder(ReminderSetting r) {
+    context.read<ReminderBloc>().add(ToggleReminderEvent(r.id));
   }
 
-  Future<void> _deleteReminder(String id) async {
-    final uid = FirebaseService.instance.auth.currentUser?.uid;
-    if (uid == null || uid.isEmpty) return;
-    try {
-      await _repo.delete(uid, id);
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(AppLocalizations.of(context)!.reminderDeleted), behavior: SnackBarBehavior.floating),
-        );
-      }
-    } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(e.toString()), backgroundColor: Colors.red, behavior: SnackBarBehavior.floating),
-        );
-      }
-    }
+  void _deleteReminder(String id) {
+    context.read<ReminderBloc>().add(DeleteReminderEvent(id));
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(content: Text(AppLocalizations.of(context)!.reminderDeleted), behavior: SnackBarBehavior.floating),
+    );
   }
 
   void _showAddReminderDialog() {
@@ -206,44 +159,36 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _buildReminderList() {
-    final uid = FirebaseService.instance.auth.currentUser?.uid;
-    if (uid == null || uid.isEmpty) {
+    final state = context.watch<ReminderBloc>().state;
+    if (state is ReminderLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (state is ReminderError) {
+      return Center(child: Text(state.error.toString()));
+    }
+    final reminders = state is ReminderLoaded ? state.data : state is ReminderLoading ? state.data : <ReminderSetting>[];
+    if (reminders.isEmpty) {
       return Center(child: Text(AppLocalizations.of(context)!.remindersEmpty));
     }
-    return StreamBuilder<List<ReminderSetting>>(
-      stream: _repo.watchAll(uid),
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return const Center(child: CircularProgressIndicator());
-        }
-        if (snapshot.hasError) {
-          return Center(child: Text(snapshot.error.toString()));
-        }
-        final reminders = snapshot.data ?? const <ReminderSetting>[];
-        if (reminders.isEmpty) {
-          return Center(child: Text(AppLocalizations.of(context)!.remindersEmpty));
-        }
-        return Column(
-          children: reminders.asMap().entries.map((e) {
-            final i = e.key;
-            final reminder = e.value;
-            return Padding(
-              padding: const EdgeInsets.only(bottom: 12),
-              child: InkWell(
-                borderRadius: BorderRadius.circular(12),
-                onTap: () {
-                  Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReminderDetailScreen(reminder: reminder)));
-                },
-                child: _ReminderCard(
-                  reminder: reminder,
-                  onToggle: (_) => _toggleReminder(reminder),
-                  onDelete: _deleteReminder,
-                ),
-              ).animate().fadeIn(duration: 500.ms, delay: (300 + i * 100).ms).slideX(begin: -0.1, end: 0),
-            );
-          }).toList(),
+    return Column(
+      children: reminders.asMap().entries.map((e) {
+        final i = e.key;
+        final reminder = e.value;
+        return Padding(
+          padding: const EdgeInsets.only(bottom: 12),
+          child: InkWell(
+            borderRadius: BorderRadius.circular(12),
+            onTap: () {
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReminderDetailScreen(reminder: reminder)));
+            },
+            child: _ReminderCard(
+              reminder: reminder,
+              onToggle: (_) => _toggleReminder(reminder),
+              onDelete: _deleteReminder,
+            ),
+          ).animate().fadeIn(duration: 500.ms, delay: (300 + i * 100).ms).slideX(begin: -0.1, end: 0),
         );
-      },
+      }).toList(),
     );
   }
 }

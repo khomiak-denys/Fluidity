@@ -2,8 +2,10 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
-import 'blocs/water/water_bloc.dart';
-import 'blocs/water/water_event.dart';
+import 'bloc/water/water_bloc.dart';
+import 'bloc/water/water_event.dart';
+import 'bloc/reminder/reminder_bloc.dart';
+import 'bloc/reminder/reminder_event.dart';
 // ignore_for_file: use_build_context_synchronously
 import 'l10n/app_localizations.dart';
 import 'screens/home_screen.dart';
@@ -16,6 +18,7 @@ import 'widgets/bottom_navigation.dart';
 import 'screens/register_screen.dart';
 import 'repositories/water_entry_repository.dart';
 import 'repositories/user_profile_repository.dart';
+import 'repositories/reminder_setting_repository.dart';
 import 'models/user_profile.dart';
 
 Future<void> main() async {
@@ -291,8 +294,15 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
             ),
       },
       home: isAuthenticated
-          ? BlocProvider<WaterBloc>(
-              create: (_) => WaterBloc(repo: waterRepo, userId: uid)..add(LoadWaterEvent()),
+          ? MultiBlocProvider(
+              providers: [
+                BlocProvider<WaterBloc>(
+                  create: (_) => WaterBloc(repo: waterRepo, userId: uid)..add(LoadWaterEvent()),
+                ),
+                BlocProvider<ReminderBloc>(
+                  create: (_) => ReminderBloc(repo: ReminderSettingRepository(), userId: uid)..add(LoadRemindersEvent()),
+                ),
+              ],
               child: Scaffold(
                 body: renderScreen(),
                 bottomNavigationBar: BottomNavigation(

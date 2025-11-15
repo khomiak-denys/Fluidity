@@ -7,9 +7,9 @@ import '../models/water_entry.dart';
 import '../widgets/water_intake.dart';
 import 'package:fluidity/ui/button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/water/water_bloc.dart';
-import '../blocs/water/water_event.dart';
-import '../blocs/water/water_state.dart';
+import '../bloc/water/water_bloc.dart';
+import '../bloc/water/water_event.dart';
+import '../bloc/water/water_state.dart';
 import 'water_entry_detail.dart';
 
 const Color sky50 = Color(0xFFF0F9FF);
