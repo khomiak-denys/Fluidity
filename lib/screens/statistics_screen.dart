@@ -27,7 +27,9 @@ const Color borderGray = Color(0xFFE5E7EB); // border-gray-200 / border-sky-200
 // ОСНОВНИЙ ВІДЖЕТ
 // =========================================================================
 
-class StatisticsScreen extends StatelessWidget {
+enum StatsPeriod { day, week, month }
+
+class StatisticsScreen extends StatefulWidget {
   final int dailyGoal;
 
   const StatisticsScreen({
@@ -35,39 +37,78 @@ class StatisticsScreen extends StatelessWidget {
     required this.dailyGoal,
   });
 
+  @override
+  State<StatisticsScreen> createState() => _StatisticsScreenState();
+}
+
+class _StatisticsScreenState extends State<StatisticsScreen> {
+  StatsPeriod _period = StatsPeriod.week;
+
   // Логіка для розрахунку статистики
-  Map<String, dynamic> _calculateStats(List<WaterEntry> entries) {
-    final todayIntake = entries.fold<int>(0, (sum, e) => sum + e.amountMl);
+  Map<String, dynamic> _calculateStats(List<WaterEntry> allEntries) {
+    final now = DateTime.now();
+    DateTime dayStart(DateTime d) => DateTime(d.year, d.month, d.day);
+    bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 
-    final weeklyData = [
-      {'day': 'Пн', 'intake': 1800, 'goal': dailyGoal},
-      {'day': 'Вт', 'intake': 2200, 'goal': dailyGoal},
-      {'day': 'Ср', 'intake': 1900, 'goal': dailyGoal},
-      {'day': 'Чт', 'intake': 2400, 'goal': dailyGoal},
-      {'day': 'Пт', 'intake': 2100, 'goal': dailyGoal},
-      {'day': 'Сб', 'intake': 1700, 'goal': dailyGoal},
-      {
-        'day': 'Нд',
-        'intake': todayIntake,
-        'goal': dailyGoal,
-      },
-    ];
+    // Filter entries by selected period
+    List<WaterEntry> filtered;
+    List<Map<String, dynamic>> bars = [];
 
-    final weekTotal = weeklyData.fold<int>(0, (sum, d) => sum + (d['intake'] as int));
-    final weekAverage = (weekTotal / 7).round();
+    switch (_period) {
+      case StatsPeriod.day:
+        final start = dayStart(now);
+        final end = start.add(const Duration(days: 1));
+        filtered = allEntries.where((e) => e.timestamp.isAfter(start.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(end)).toList();
+        // For chart we can show last 7 hours distribution or skip; keep weekly chart area hidden for day
+        // We'll use hourly distribution card below.
+        bars = [];
+        break;
+      case StatsPeriod.week:
+        // Start week on Monday consistently (Mon=1..Sun=7 => subtract weekday-1)
+        final startOfWeek = dayStart(now).subtract(Duration(days: now.weekday - 1));
+        final endOfWeek = startOfWeek.add(const Duration(days: 7));
+        filtered = allEntries.where((e) => e.timestamp.isAfter(startOfWeek.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfWeek)).toList();
+        // Build 7-day bars Mon..Sun
+        bars = List.generate(7, (i) {
+          final day = startOfWeek.add(Duration(days: i));
+          final total = filtered.where((e) => isSameDay(e.timestamp, day)).fold<int>(0, (s, e) => s + e.amountMl);
+          final labels = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+          return {'label': labels[i], 'intake': total};
+        });
+        break;
+      case StatsPeriod.month:
+        final start = DateTime(now.year, now.month, 1);
+        final end = DateTime(now.year, now.month + 1, 1);
+        filtered = allEntries.where((e) => e.timestamp.isAfter(start.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(end)).toList();
+        final daysInMonth = end.difference(start).inDays;
+        bars = List.generate(daysInMonth, (i) {
+          final day = start.add(Duration(days: i));
+          final total = filtered.where((e) => isSameDay(e.timestamp, day)).fold<int>(0, (s, e) => s + e.amountMl);
+          return {'label': '${i + 1}', 'intake': total};
+        });
+        break;
+    }
+
+    final periodTotal = filtered.fold<int>(0, (sum, e) => sum + e.amountMl);
+    final periodLen = _period == StatsPeriod.day ? 1 : (_period == StatsPeriod.week ? 7 : bars.length);
+    final periodAverage = (periodTotal / periodLen).round();
+    final todayTotal = allEntries
+        .where((e) => isSameDay(e.timestamp, now))
+        .fold<int>(0, (sum, e) => sum + e.amountMl);
 
     return {
-      'weeklyData': weeklyData,
-      'todayIntake': todayIntake,
-      'weekAverage': weekAverage,
-      'weekTotal': weekTotal,
+      'bars': bars,
+      'filtered': filtered,
+      'todayIntake': todayTotal,
+      'periodAverage': periodAverage,
+      'periodTotal': periodTotal,
     };
   }
 
   @override
   Widget build(BuildContext context) {
     // Read entries from WaterBloc state
-    final state = context.watch<WaterBloc>().state;
+  final state = context.watch<WaterBloc>().state;
     final List<WaterEntry> entries = state is WaterLoaded
         ? state.data
         : state is WaterLoading
@@ -76,11 +117,11 @@ class StatisticsScreen extends StatelessWidget {
                 ? state.data
                 : const <WaterEntry>[];
 
-    final data = _calculateStats(entries);
-    final weeklyData = data['weeklyData'] as List<Map<String, dynamic>>;
-    final todayIntake = data['todayIntake'] as int;
-    final weekAverage = data['weekAverage'] as int;
-    final weekTotal = data['weekTotal'] as int;
+  final data = _calculateStats(entries);
+  final bars = data['bars'] as List<Map<String, dynamic>>;
+  final todayIntake = data['todayIntake'] as int;
+  final periodAverage = data['periodAverage'] as int;
+  final periodTotal = data['periodTotal'] as int;
 
   final stats = [
     {
@@ -92,14 +133,14 @@ class StatisticsScreen extends StatelessWidget {
     },
     {
       'title': AppLocalizations.of(context)!.statsAverageTitle,
-      'value': '${weekAverage}ml',
+      'value': '${periodAverage}ml',
       'icon': Icons.trending_up_rounded,
       'color': green600,
       'bgColor': green100,
     },
     {
       'title': AppLocalizations.of(context)!.statsWeekTotalTitle,
-      'value': '${(weekTotal / 1000).toStringAsFixed(1)}L',
+      'value': '${(periodTotal / 1000).toStringAsFixed(1)}L',
       'icon': Icons.calendar_month_rounded,
       'color': orange600,
       'bgColor': orange100,
@@ -129,6 +170,11 @@ class StatisticsScreen extends StatelessWidget {
 
               const SizedBox(height: 20), // space-y-4
 
+              // --- Period Selector ---
+              _buildPeriodSelector(),
+
+              const SizedBox(height: 12),
+
               // --- Stats Cards ---
               _buildStatsCards(stats)
                   .animate()
@@ -137,8 +183,8 @@ class StatisticsScreen extends StatelessWidget {
 
               const SizedBox(height: 20), // space-y-4
 
-              // --- Weekly Progress Chart ---
-      _buildWeeklyChartCard(context, weeklyData)
+              // --- Progress Chart (Week/Month) ---
+      if (_period != StatsPeriod.day) _buildPeriodChartCard(context, bars)
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 400.ms)
                   .slideY(begin: 0.2, end: 0),
@@ -146,7 +192,7 @@ class StatisticsScreen extends StatelessWidget {
               const SizedBox(height: 20), // space-y-4
 
               // --- Hourly Distribution (Today) ---
-              if (entries.isNotEmpty)
+              if (_period == StatsPeriod.day && entries.isNotEmpty)
                 _buildHourlyDistributionCard(context, entries)
                     .animate()
                     .fadeIn(duration: 500.ms, delay: 600.ms)
@@ -155,6 +201,32 @@ class StatisticsScreen extends StatelessWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildPeriodSelector() {
+    Widget buildButton(String label, StatsPeriod p) {
+      final selected = _period == p;
+      return Expanded(
+        child: OutlinedButton(
+          onPressed: () => setState(() => _period = p),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: selected ? sky600 : borderGray),
+            backgroundColor: selected ? sky50 : Colors.white,
+          ),
+          child: Text(label, style: TextStyle(color: selected ? sky700 : mutedForeground)),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+        buildButton('Day', StatsPeriod.day),
+        const SizedBox(width: 8),
+        buildButton('Week', StatsPeriod.week),
+        const SizedBox(width: 8),
+        buildButton('Month', StatsPeriod.month),
+      ],
     );
   }
 
@@ -240,7 +312,7 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   // --- Weekly Chart Card Widget ---
-  Widget _buildWeeklyChartCard(BuildContext context, List<Map<String, dynamic>> weeklyData) {
+  Widget _buildPeriodChartCard(BuildContext context, List<Map<String, dynamic>> data) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1,
@@ -268,7 +340,7 @@ class StatisticsScreen extends StatelessWidget {
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: dailyGoal * 1.2, // Максимальне значення на осі Y
+                  maxY: widget.dailyGoal * 1.2, // Максимальне значення на осі Y
                   barTouchData: const BarTouchData(enabled: true),
                   titlesData: FlTitlesData(
                     show: true,
@@ -280,7 +352,7 @@ class StatisticsScreen extends StatelessWidget {
                         reservedSize: 32,
                         getTitlesWidget: (value, meta) {
                           if (value == 0) return const Text('0', style: TextStyle(fontSize: 10, color: mutedForeground));
-                          if (value == dailyGoal.toDouble()) return Text('${dailyGoal}ml', style: const TextStyle(fontSize: 10, color: green600));
+                          if (value == widget.dailyGoal.toDouble()) return Text('${widget.dailyGoal}ml', style: const TextStyle(fontSize: 10, color: green600));
                           return const SizedBox.shrink();
                         },
                       ),
@@ -290,11 +362,11 @@ class StatisticsScreen extends StatelessWidget {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           final raw = value.toInt();
-                          if (weeklyData.isEmpty) return const SizedBox.shrink();
-                          final index = raw.clamp(0, weeklyData.length - 1);
+                          if (data.isEmpty) return const SizedBox.shrink();
+                          final index = raw.clamp(0, data.length - 1);
                           return Padding(
                             padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(weeklyData[index]['day'] as String,
+                            child: Text(data[index]['label'] as String,
                                 style: const TextStyle(fontSize: 10, color: mutedForeground)),
                           );
                         },
@@ -305,7 +377,7 @@ class StatisticsScreen extends StatelessWidget {
                     show: true,
                     drawVerticalLine: false,
                     getDrawingHorizontalLine: (value) {
-                      if (value == dailyGoal) {
+                      if (value == widget.dailyGoal) {
                         // Імітація лінії цілі (goal)
                         return FlLine(
                           color: green600.withAlpha((0.7 * 255).round()),
@@ -321,7 +393,7 @@ class StatisticsScreen extends StatelessWidget {
                     },
                   ),
                   borderData: FlBorderData(show: false),
-                  barGroups: weeklyData.asMap().entries.map((entry) {
+                  barGroups: data.asMap().entries.map((entry) {
                     int index = entry.key;
                     final data = entry.value;
                     return BarChartGroupData(
@@ -376,7 +448,12 @@ class StatisticsScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // pt-0
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: entries.map((entry) {
+                children: entries
+                    .where((e) {
+                      final n = DateTime.now();
+                      return e.timestamp.year == n.year && e.timestamp.month == n.month && e.timestamp.day == n.day;
+                    })
+                    .map((entry) {
                   String _fmt(DateTime dt) {
                     final hh = dt.hour.toString().padLeft(2, '0');
                     final mm = dt.minute.toString().padLeft(2, '0');

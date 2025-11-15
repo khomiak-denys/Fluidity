@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:flutter/services.dart'; // Для TextInputType.number
@@ -40,6 +41,31 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // Data is managed by WaterBloc; local entries list removed
+  Timer? _midnightTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleMidnightTick();
+  }
+
+  @override
+  void dispose() {
+    _midnightTimer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleMidnightTick() {
+    _midnightTimer?.cancel();
+    final now = DateTime.now();
+    final nextMidnight = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    final duration = nextMidnight.difference(now);
+    _midnightTimer = Timer(duration, () {
+      if (!mounted) return;
+      setState(() {}); // rebuild to apply today-filter and clear list for new day
+      _scheduleMidnightTick(); // reschedule for the following day
+    });
+  }
 
   void handleQuickAdd(int amount, String type) {
     final now = DateTime.now();
@@ -114,9 +140,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // Read current water state from bloc
     final waterState = context.watch<WaterBloc>().state;
-  final List<WaterEntry> entries =
-    waterState is WaterLoaded ? waterState.data : (waterState is WaterLoading ? waterState.data : (waterState is WaterError ? waterState.data : <WaterEntry>[]));
-    final int totalIntake = _sumIntake(entries);
+    final allEntries = waterState is WaterLoaded
+        ? waterState.data
+        : waterState is WaterLoading
+            ? waterState.data
+            : waterState is WaterError
+                ? waterState.data
+                : <WaterEntry>[];
+
+    bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+    final now = DateTime.now();
+    final List<WaterEntry> todayEntries = allEntries.where((e) => _isSameDay(e.timestamp, now)).toList();
+    final int totalIntake = _sumIntake(todayEntries);
 
     // Determine whether goal is achieved (no animations)
     final bool isGoalAchieved = totalIntake >= widget.dailyGoal;
@@ -164,8 +199,8 @@ class _HomeScreenState extends State<HomeScreen> {
             // --- Today's Entries / Empty State / Error State ---
             if (waterState is WaterError)
               _ErrorStateCard(message: waterState.error.toString())
-            else if (entries.isNotEmpty)
-              _EntriesListCard(entries: entries, onDelete: handleDelete)
+            else if (todayEntries.isNotEmpty)
+              _EntriesListCard(entries: todayEntries, onDelete: handleDelete)
             else
               const _EmptyStateCard(),
           ],
