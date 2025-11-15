@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:flutter/services.dart'; // Для TextInputType.number
 import 'package:fluidity/widgets/water_progress.dart';
-import '../models/water_intake.dart';
+import '../models/water_entry.dart';
 import '../widgets/water_intake.dart';
 import 'package:fluidity/ui/button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -42,12 +42,12 @@ class _HomeScreenState extends State<HomeScreen> {
   // Data is managed by WaterBloc; local entries list removed
 
   void handleQuickAdd(int amount, String type) {
-    final now = TimeOfDay.now();
-    final entry = WaterIntakeEntry(
+    final now = DateTime.now();
+    final entry = WaterEntry(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      amount: amount,
-      time: now.format(context),
-      type: type,
+      amountMl: amount,
+      timestamp: now,
+      drinkType: type,
       comment: '$amount ml $type',
     );
     context.read<WaterBloc>().add(AddWaterEntryEvent(entry));
@@ -62,12 +62,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void handleCustomAdd(int amount, String type, String? comment) {
-    final now = TimeOfDay.now();
-    final entry = WaterIntakeEntry(
+    final now = DateTime.now();
+    final entry = WaterEntry(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      amount: amount,
-      time: now.format(context),
-      type: type,
+      amountMl: amount,
+      timestamp: now,
+      drinkType: type,
       comment: comment ?? '',
     );
     context.read<WaterBloc>().add(AddWaterEntryEvent(entry));
@@ -95,7 +95,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  int _sumIntake(List<WaterIntakeEntry> entries) => entries.fold(0, (sum, e) => sum + e.amount);
+  int _sumIntake(List<WaterEntry> entries) => entries.fold(0, (sum, e) => sum + e.amountMl);
 
   void _showCustomAddDialog(BuildContext context) {
   setState(() {});
@@ -114,8 +114,8 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // Read current water state from bloc
     final waterState = context.watch<WaterBloc>().state;
-    final List<WaterIntakeEntry> entries =
-        waterState is WaterLoaded ? waterState.data : (waterState is WaterLoading ? waterState.data : (waterState is WaterError ? waterState.data : <WaterIntakeEntry>[]));
+  final List<WaterEntry> entries =
+    waterState is WaterLoaded ? waterState.data : (waterState is WaterLoading ? waterState.data : (waterState is WaterError ? waterState.data : <WaterEntry>[]));
     final int totalIntake = _sumIntake(entries);
 
     // Determine whether goal is achieved (no animations)
@@ -339,7 +339,7 @@ class _QuickAddSection extends StatelessWidget {
 
 // Entries List Card (містить CardHeader та CardContent з WaterIntakeCard)
 class _EntriesListCard extends StatelessWidget {
-  final List<WaterIntakeEntry> entries;
+  final List<WaterEntry> entries;
   final void Function(String id) onDelete;
 
   const _EntriesListCard({required this.entries, required this.onDelete});

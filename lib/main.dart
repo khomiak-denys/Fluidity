@@ -10,7 +10,7 @@ import 'screens/login_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/reminder_screen.dart';
 import 'screens/profile_screen.dart';
-import 'models/water_intake.dart';
+import 'models/water_entry.dart';
 import 'services/firebase_service.dart';
 import 'widgets/bottom_navigation.dart';
 import 'screens/register_screen.dart';
@@ -45,11 +45,14 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
   bool notificationsEnabled = true;
 
   // Mock data
-  List<WaterIntakeEntry> entries = [
-    WaterIntakeEntry(id: '1', amount: 250, time: '09:30', type: 'glass', comment: ''),
-    WaterIntakeEntry(id: '2', amount: 500, time: '12:15', type: 'bottle', comment: ''),
-    WaterIntakeEntry(id: '3', amount: 350, time: '15:45', type: 'cup', comment: ''),
-  ];
+  List<WaterEntry> entries = (() {
+    final now = DateTime.now();
+    return [
+      WaterEntry(id: '1', amountMl: 250, timestamp: DateTime(now.year, now.month, now.day, 9, 30), drinkType: 'glass', comment: ''),
+      WaterEntry(id: '2', amountMl: 500, timestamp: DateTime(now.year, now.month, now.day, 12, 15), drinkType: 'bottle', comment: ''),
+      WaterEntry(id: '3', amountMl: 350, timestamp: DateTime(now.year, now.month, now.day, 15, 45), drinkType: 'cup', comment: ''),
+    ];
+  })();
 
   List reminders = [
     {'id': '1', 'time': '08:00', 'enabled': true, 'label': 'Morning hydration'},

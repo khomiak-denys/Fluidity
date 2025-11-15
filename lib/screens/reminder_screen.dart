@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
 import 'package:fluidity/l10n/app_localizations.dart';
-import '../models/reminder.dart';
+import '../models/reminder_setting.dart';
 import 'reminder_detail.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
@@ -32,23 +32,39 @@ class RemindersScreen extends StatefulWidget {
 
 class _RemindersScreenState extends State<RemindersScreen> {
   // Початкові дані для прикладу
-  final List<Reminder> _reminders = [
-    Reminder(id: '1', time: '08:00', label: 'Ранкова доза', enabled: true),
-    Reminder(id: '2', time: '13:00', label: 'Після обіду', enabled: false),
-    Reminder(id: '3', time: '18:30', label: 'Вечірній келих', enabled: true),
-  ];
+  final List<ReminderSetting> _reminders = (() {
+    DateTime _parseHHmmToDateTime(String hhmm) {
+      final parts = hhmm.split(':');
+      final now = DateTime.now();
+      final h = int.tryParse(parts.elementAt(0)) ?? 0;
+      final m = int.tryParse(parts.elementAt(1)) ?? 0;
+      return DateTime(now.year, now.month, now.day, h, m);
+    }
+    return [
+      ReminderSetting(id: '1', scheduledTime: _parseHHmmToDateTime('08:00'), comment: 'Ранкова доза', isActive: true),
+      ReminderSetting(id: '2', scheduledTime: _parseHHmmToDateTime('13:00'), comment: 'Після обіду', isActive: false),
+      ReminderSetting(id: '3', scheduledTime: _parseHHmmToDateTime('18:30'), comment: 'Вечірній келих', isActive: true),
+    ];
+  })();
 
   void _addReminder(String time, String label) {
-    final newReminder = Reminder(
+    DateTime _parseHHmmToDateTime(String hhmm) {
+      final parts = hhmm.split(':');
+      final now = DateTime.now();
+      final h = int.tryParse(parts.elementAt(0)) ?? 0;
+      final m = int.tryParse(parts.elementAt(1)) ?? 0;
+      return DateTime(now.year, now.month, now.day, h, m);
+    }
+    final newReminder = ReminderSetting(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      time: time,
-      label: label,
-      enabled: true,
+      scheduledTime: _parseHHmmToDateTime(time),
+      comment: label,
+      isActive: true,
     );
     setState(() {
       _reminders.add(newReminder);
       // Сортуємо за часом для коректного відображення
-      _reminders.sort((a, b) => a.time.compareTo(b.time));
+      _reminders.sort((a, b) => a.scheduledTime.compareTo(b.scheduledTime));
     });
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.reminderAdded), behavior: SnackBarBehavior.floating));
   }
@@ -57,8 +73,13 @@ class _RemindersScreenState extends State<RemindersScreen> {
     setState(() {
       final index = _reminders.indexWhere((r) => r.id == id);
       if (index != -1) {
-        _reminders[index] =
-            _reminders[index].copyWith(enabled: !_reminders[index].enabled);
+        final r = _reminders[index];
+        _reminders[index] = ReminderSetting(
+          id: r.id,
+          scheduledTime: r.scheduledTime,
+          comment: r.comment,
+          isActive: !r.isActive,
+        );
       }
     });
   }
@@ -169,7 +190,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     return Column(
       children: _reminders.asMap().entries.map((e) {
         final i = e.key;
-  final reminder = e.value;
+        final reminder = e.value;
         return Padding(
           padding: const EdgeInsets.only(bottom: 12), // space-y-3
           child: InkWell(
@@ -194,7 +215,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
 // =========================================================================
 
 class _ReminderCard extends StatelessWidget {
-  final Reminder reminder;
+  final ReminderSetting reminder;
   final Function(String) onToggle;
   final Function(String) onDelete;
 
@@ -206,7 +227,7 @@ class _ReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool enabled = reminder.enabled;
+    final bool enabled = reminder.isActive;
 
     // bg-gradient-to-r from-sky-50 to-cyan-50 border-sky-200 : bg-gray-50 border-gray-200
     final Color bgColor = enabled ? sky50 : gray50;
@@ -246,7 +267,7 @@ class _ReminderCard extends StatelessWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
-                      reminder.time,
+                      _formatTime(reminder.scheduledTime),
                       style: TextStyle(
                         fontWeight: FontWeight.w500, // font-medium
                         fontSize: 16,
@@ -255,7 +276,7 @@ class _ReminderCard extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      reminder.label,
+                      reminder.comment,
                       style: TextStyle(
                         fontSize: 14, // text-sm
                         color: labelColor,
@@ -288,6 +309,12 @@ class _ReminderCard extends StatelessWidget {
         ),
       ),
     );
+  }
+
+  String _formatTime(DateTime dt) {
+    final hh = dt.hour.toString().padLeft(2, '0');
+    final mm = dt.minute.toString().padLeft(2, '0');
+    return '$hh:$mm';
   }
 }
 

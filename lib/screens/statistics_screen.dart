@@ -3,7 +3,7 @@ import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
-import '../models/water_intake.dart'; // WaterIntakeEntry model
+import '../models/water_entry.dart'; // WaterEntry model
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -25,7 +25,7 @@ const Color borderGray = Color(0xFFE5E7EB); // border-gray-200 / border-sky-200
 // =========================================================================
 
 class StatisticsScreen extends StatelessWidget {
-  final List<WaterIntakeEntry> entries;
+  final List<WaterEntry> entries;
   final int dailyGoal;
 
   const StatisticsScreen({
@@ -36,7 +36,7 @@ class StatisticsScreen extends StatelessWidget {
 
   // Логіка для розрахунку статистики
   Map<String, dynamic> _calculateStats() {
-    final todayIntake = entries.fold<int>(0, (sum, e) => sum + e.amount);
+    final todayIntake = entries.fold<int>(0, (sum, e) => sum + e.amountMl);
 
     final weeklyData = [
       {'day': 'Пн', 'intake': 1800, 'goal': dailyGoal},
@@ -127,7 +127,7 @@ class StatisticsScreen extends StatelessWidget {
               const SizedBox(height: 20), // space-y-4
 
               // --- Weekly Progress Chart ---
-        _buildWeeklyChartCard(context, weeklyData)
+      _buildWeeklyChartCard(context, weeklyData)
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 400.ms)
                   .slideY(begin: 0.2, end: 0),
@@ -340,7 +340,7 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   // --- Hourly Distribution Card Widget ---
-  Widget _buildHourlyDistributionCard(BuildContext context, List<WaterIntakeEntry> entries) {
+  Widget _buildHourlyDistributionCard(BuildContext context, List<WaterEntry> entries) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1,
@@ -365,7 +365,12 @@ class StatisticsScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // pt-0
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: entries.map((entry) {
+                children: entries.map((entry) {
+                  String _fmt(DateTime dt) {
+                    final hh = dt.hour.toString().padLeft(2, '0');
+                    final mm = dt.minute.toString().padLeft(2, '0');
+                    return '$hh:$mm';
+                  }
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8), // space-y-2
                   child: Container(
@@ -391,13 +396,13 @@ class StatisticsScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 8), // gap-2
                             Text(
-                              entry.time,
+                              _fmt(entry.timestamp),
                               style: const TextStyle(fontSize: 13, color: mutedForeground), // text-xs sm:text-sm text-muted-foreground
                             ),
                           ],
                         ),
                         Text(
-                          '${entry.amount}ml',
+                          '${entry.amountMl}ml',
                           style: const TextStyle(
                             fontWeight: FontWeight.w500, // font-medium
                             color: sky700,
