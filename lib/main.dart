@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'dart:async';
 import 'blocs/water/water_bloc.dart';
 import 'blocs/water/water_event.dart';
 // ignore_for_file: use_build_context_synchronously
@@ -45,6 +46,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
   String activeTab = 'home';
   int dailyGoal = 2000;
   bool notificationsEnabled = true;
+  StreamSubscription<UserProfile?>? _profileSub;
 
   // Removed hardcoded mock entries and reminders
 
@@ -62,11 +64,28 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       final fbUser = FirebaseService.instance.auth.currentUser;
       if (fbUser != null) {
         isAuthenticated = true;
+        _attachProfileStream();
       }
     } catch (_) {
       // If anything goes wrong, leave isAuthenticated as false.
       isAuthenticated = false;
     }
+  }
+
+  void _attachProfileStream() {
+    final fbUser = FirebaseService.instance.auth.currentUser;
+    final uid = fbUser?.uid;
+    _profileSub?.cancel();
+    if (uid == null || uid.isEmpty) return;
+    final repo = UserProfileRepository();
+    _profileSub = repo.watchById(uid).listen((profile) {
+      if (!mounted) return;
+      if (profile != null) {
+        setState(() {
+          dailyGoal = profile.targetWaterAmount;
+        });
+      }
+    });
   }
 
   Future<void> handleLogin(String email, String password) async {
@@ -104,6 +123,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
           }
         }
       } catch (_) {}
+      _attachProfileStream();
     } else {
       setState(() {
         authError = error;
@@ -167,7 +187,9 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
     setState(() {
       isAuthenticated = false;
       authError = null;
+      dailyGoal = 2000;
     });
+    await _profileSub?.cancel();
   }
 
   String _localizeAuthMessage(BuildContext ctx, String code) {
@@ -222,7 +244,15 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
         };
         return ProfileScreen(
           dailyGoal: dailyGoal,
-          onDailyGoalChange: (g) => setState(() => dailyGoal = g),
+          onDailyGoalChange: (g) async {
+            setState(() => dailyGoal = g);
+            final uid = fbUser?.uid;
+            if (uid != null && uid.isNotEmpty) {
+              try {
+                await UserProfileRepository().updateGoal(uid, g);
+              } catch (_) {}
+            }
+          },
           notificationsEnabled: notificationsEnabled,
           onNotificationsToggle: () => setState(() => notificationsEnabled = !notificationsEnabled),
           onSignOut: handleSignOut,

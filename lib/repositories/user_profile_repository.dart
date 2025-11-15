@@ -34,4 +34,8 @@ class UserProfileRepository {
   Future<void> upsert(UserProfile profile) async {
     await _userDoc(profile.id).set(profile.toMap(), SetOptions(merge: true));
   }
+
+  Future<void> updateGoal(String userId, int targetWaterAmount) async {
+    await _userDoc(userId).set({'targetWaterAmount': targetWaterAmount}, SetOptions(merge: true));
+  }
 }
