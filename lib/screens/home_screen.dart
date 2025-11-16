@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:flutter/services.dart'; // Для TextInputType.number
 import 'package:fluidity/widgets/water_progress.dart';
-import '../models/water_intake.dart';
+import '../models/water_entry.dart';
 import '../widgets/water_intake.dart';
 import 'package:fluidity/ui/button.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import '../blocs/water/water_bloc.dart';
-import '../blocs/water/water_event.dart';
-import '../blocs/water/water_state.dart';
+import '../bloc/water/water_bloc.dart';
+import '../bloc/water/water_event.dart';
+import '../bloc/water/water_state.dart';
 import 'water_entry_detail.dart';
 
 const Color sky50 = Color(0xFFF0F9FF);
@@ -24,6 +25,7 @@ const Color green50 = Color(0xFFF0FDF4); // from-green-50
 const Color emerald50 = Color(0xFFF0FDF8); // to-emerald-50, використаємо F0FDF4 для емуляції градієнта
 const Color green200 = Color(0xFFBBF7D0);
 const Color primaryColor = Color(0xFF0EA5E9); // Для FAB
+const Color mutedForeground = Color(0xFF6B7280); // text-muted-foreground (match reminder screen)
 
 // =========================================================================
 // ОСНОВНИЙ ВІДЖЕТ
@@ -40,14 +42,39 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   // Data is managed by WaterBloc; local entries list removed
+  Timer? _midnightTimer;
+
+  @override
+  void initState() {
+    super.initState();
+    _scheduleMidnightTick();
+  }
+
+  @override
+  void dispose() {
+    _midnightTimer?.cancel();
+    super.dispose();
+  }
+
+  void _scheduleMidnightTick() {
+    _midnightTimer?.cancel();
+    final now = DateTime.now();
+    final nextMidnight = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    final duration = nextMidnight.difference(now);
+    _midnightTimer = Timer(duration, () {
+      if (!mounted) return;
+      setState(() {}); // rebuild to apply today-filter and clear list for new day
+      _scheduleMidnightTick(); // reschedule for the following day
+    });
+  }
 
   void handleQuickAdd(int amount, String type) {
-    final now = TimeOfDay.now();
-    final entry = WaterIntakeEntry(
+    final now = DateTime.now();
+    final entry = WaterEntry(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      amount: amount,
-      time: now.format(context),
-      type: type,
+      amountMl: amount,
+      timestamp: now,
+      drinkType: type,
       comment: '$amount ml $type',
     );
     context.read<WaterBloc>().add(AddWaterEntryEvent(entry));
@@ -62,12 +89,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void handleCustomAdd(int amount, String type, String? comment) {
-    final now = TimeOfDay.now();
-    final entry = WaterIntakeEntry(
+    final now = DateTime.now();
+    final entry = WaterEntry(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      amount: amount,
-      time: now.format(context),
-      type: type,
+      amountMl: amount,
+      timestamp: now,
+      drinkType: type,
       comment: comment ?? '',
     );
     context.read<WaterBloc>().add(AddWaterEntryEvent(entry));
@@ -95,7 +122,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  int _sumIntake(List<WaterIntakeEntry> entries) => entries.fold(0, (sum, e) => sum + e.amount);
+  int _sumIntake(List<WaterEntry> entries) => entries.fold(0, (sum, e) => sum + e.amountMl);
 
   void _showCustomAddDialog(BuildContext context) {
   setState(() {});
@@ -114,9 +141,18 @@ class _HomeScreenState extends State<HomeScreen> {
   Widget build(BuildContext context) {
     // Read current water state from bloc
     final waterState = context.watch<WaterBloc>().state;
-    final List<WaterIntakeEntry> entries =
-        waterState is WaterLoaded ? waterState.data : (waterState is WaterLoading ? waterState.data : (waterState is WaterError ? waterState.data : <WaterIntakeEntry>[]));
-    final int totalIntake = _sumIntake(entries);
+    final allEntries = waterState is WaterLoaded
+        ? waterState.data
+        : waterState is WaterLoading
+            ? waterState.data
+            : waterState is WaterError
+                ? waterState.data
+                : <WaterEntry>[];
+
+    bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
+    final now = DateTime.now();
+    final List<WaterEntry> todayEntries = allEntries.where((e) => _isSameDay(e.timestamp, now)).toList();
+    final int totalIntake = _sumIntake(todayEntries);
 
     // Determine whether goal is achieved (no animations)
     final bool isGoalAchieved = totalIntake >= widget.dailyGoal;
@@ -164,8 +200,8 @@ class _HomeScreenState extends State<HomeScreen> {
             // --- Today's Entries / Empty State / Error State ---
             if (waterState is WaterError)
               _ErrorStateCard(message: waterState.error.toString())
-            else if (entries.isNotEmpty)
-              _EntriesListCard(entries: entries, onDelete: handleDelete)
+            else if (todayEntries.isNotEmpty)
+              _EntriesListCard(entries: todayEntries, onDelete: handleDelete)
             else
               const _EmptyStateCard(),
           ],
@@ -176,16 +212,6 @@ class _HomeScreenState extends State<HomeScreen> {
       floatingActionButton: Column(
         mainAxisSize: MainAxisSize.min,
         children: [
-          if (kDebugMode)
-            Padding(
-              padding: const EdgeInsets.only(bottom: 8.0),
-              child: FloatingActionButton.small(
-                heroTag: 'simulate_error',
-                onPressed: () => context.read<WaterBloc>().add(SimulateErrorEvent()),
-                backgroundColor: Colors.redAccent,
-                child: const Icon(Icons.bug_report, size: 18),
-              ),
-            ),
           _FloatingActionButton(
             onPressed: () => _showCustomAddDialog(context),
           ),
@@ -339,7 +365,7 @@ class _QuickAddSection extends StatelessWidget {
 
 // Entries List Card (містить CardHeader та CardContent з WaterIntakeCard)
 class _EntriesListCard extends StatelessWidget {
-  final List<WaterIntakeEntry> entries;
+  final List<WaterEntry> entries;
   final void Function(String id) onDelete;
 
   const _EntriesListCard({required this.entries, required this.onDelete});
@@ -537,8 +563,8 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
             TextField(
               maxLines: 2, // rows={2}
               onChanged: (v) => _comment = v,
-              decoration: const InputDecoration(
-                hintText: 'Додайте коментар...',
+              decoration: InputDecoration(
+                hintText: AppLocalizations.of(context)!.addCommentHint,
                 border: OutlineInputBorder(),
                 contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               ),
@@ -597,17 +623,29 @@ class _ErrorStateCard extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
-            const Text('⚠️', style: TextStyle(fontSize: 36)),
+            const Text('⚠️', style: TextStyle(fontSize: 40)),
             const SizedBox(height: 12),
-            Text('Error loading entries', style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: Colors.black87)),
+            Text(AppLocalizations.of(context)!.errorLoadingEntries, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: sky700)),
             const SizedBox(height: 8),
-            Text(message, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+            Builder(builder: (context) {
+              final l10n = AppLocalizations.of(context)!;
+              final raw = message;
+              final friendly = raw.contains('permission_denied')
+                  ? l10n.errorPermissionDenied
+                  : l10n.errorGeneric;
+              return Text(friendly, textAlign: TextAlign.center, style: const TextStyle(color: mutedForeground));
+            }),
             const SizedBox(height: 16),
-            AppButton(
-              text: 'Retry',
+            ElevatedButton.icon(
               onPressed: () => context.read<WaterBloc>().add(RefreshWaterEvent()),
-              variant: ButtonVariant.primary,
-              size: ButtonSize.medium,
+              icon: const Icon(Icons.refresh, size: 18),
+              label: Text(AppLocalizations.of(context)!.retry),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: sky600,
+                foregroundColor: Colors.white,
+                minimumSize: const Size(double.infinity, 44),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
             ),
           ],
         ),

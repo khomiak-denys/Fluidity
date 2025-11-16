@@ -4,6 +4,11 @@ import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
 import 'package:fluidity/l10n/app_localizations.dart';
 import '../models/reminder.dart';
 import 'reminder_detail.dart';
+import '../models/reminder_setting.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/reminder/reminder_bloc.dart';
+import '../bloc/reminder/reminder_event.dart';
+import '../bloc/reminder/reminder_state.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -31,40 +36,33 @@ class RemindersScreen extends StatefulWidget {
 }
 
 class _RemindersScreenState extends State<RemindersScreen> {
-  // Початкові дані для прикладу
-  final List<Reminder> _reminders = [
-    Reminder(id: '1', time: '08:00', label: 'Ранкова доза', enabled: true),
-    Reminder(id: '2', time: '13:00', label: 'Після обіду', enabled: false),
-    Reminder(id: '3', time: '18:30', label: 'Вечірній келих', enabled: true),
-  ];
-
   void _addReminder(String time, String label) {
-    final newReminder = Reminder(
+    DateTime _parseHHmmToToday(String hhmm) {
+      final parts = hhmm.split(':');
+      final now = DateTime.now();
+      if (parts.length == 2) {
+        final h = int.tryParse(parts[0]) ?? now.hour;
+        final m = int.tryParse(parts[1]) ?? now.minute;
+        return DateTime(now.year, now.month, now.day, h, m);
+      }
+      return now;
+    }
+    final rs = ReminderSetting(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      time: time,
-      label: label,
-      enabled: true,
+      scheduledTime: _parseHHmmToToday(time),
+      comment: label,
+      isActive: true,
     );
-    setState(() {
-      _reminders.add(newReminder);
-      // Сортуємо за часом для коректного відображення
-      _reminders.sort((a, b) => a.time.compareTo(b.time));
-    });
+    context.read<ReminderBloc>().add(AddReminderEvent(rs));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.reminderAdded), behavior: SnackBarBehavior.floating));
   }
 
   void _toggleReminder(String id) {
-    setState(() {
-      final index = _reminders.indexWhere((r) => r.id == id);
-      if (index != -1) {
-        _reminders[index] =
-            _reminders[index].copyWith(enabled: !_reminders[index].enabled);
-      }
-    });
+    context.read<ReminderBloc>().add(ToggleReminderEvent(id));
   }
 
   void _deleteReminder(String id) {
-    setState(() => _reminders.removeWhere((r) => r.id == id));
+    context.read<ReminderBloc>().add(DeleteReminderEvent(id));
     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.reminderDeleted), behavior: SnackBarBehavior.floating));
   }
 
@@ -161,21 +159,47 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _buildReminderList() {
-    if (_reminders.isEmpty) {
-      return Center(
-        child: Text(AppLocalizations.of(context)!.remindersEmpty),
-      );
+    String _fmt(DateTime dt) {
+      final hh = dt.hour.toString().padLeft(2, '0');
+      final mm = dt.minute.toString().padLeft(2, '0');
+      return '$hh:$mm';
     }
+    final state = context.watch<ReminderBloc>().state;
+    final items = state is ReminderLoaded
+        ? state.data
+        : state is ReminderLoading
+            ? state.data
+            : state is ReminderError
+                ? state.data
+                : <ReminderSetting>[];
+
+    if (state is ReminderLoading && items.isEmpty) {
+      return const Center(child: CircularProgressIndicator());
+    }
+    if (items.isEmpty) {
+      return Center(child: Text(AppLocalizations.of(context)!.remindersEmpty));
+    }
+    // Map domain items to UI reminders for display
+    final ui = items
+        .map((r) => Reminder(id: r.id, time: _fmt(r.scheduledTime), label: r.comment, enabled: r.isActive))
+        .toList();
+
     return Column(
-      children: _reminders.asMap().entries.map((e) {
+      children: ui.asMap().entries.map((e) {
         final i = e.key;
-  final reminder = e.value;
+        final reminder = e.value;
         return Padding(
-          padding: const EdgeInsets.only(bottom: 12), // space-y-3
+          padding: const EdgeInsets.only(bottom: 12),
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReminderDetailScreen(reminder: reminder)));
+              final found = items.firstWhere((r) => r.id == reminder.id, orElse: () => ReminderSetting(
+                id: reminder.id,
+                scheduledTime: DateTime.now(),
+                comment: reminder.label,
+                isActive: reminder.enabled,
+              ));
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReminderDetailScreen(reminder: found)));
             },
             child: _ReminderCard(
               reminder: reminder,
@@ -226,47 +250,54 @@ class _ReminderCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16), // p-4
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Left Section (Icon + Text)
-            Row(
-              children: [
-                // Icon (w-10 h-10 rounded-full)
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: avatarBgColor,
+            // Left flexible content
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: avatarBgColor,
+                    ),
+                    child: const Icon(Icons.access_time, color: Colors.white, size: 20),
                   ),
-                  child: const Icon(Icons.access_time, color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      reminder.time,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500, // font-medium
-                        fontSize: 16,
-                        color: timeColor,
-                      ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          reminder.time,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: timeColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          reminder.label,
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.2,
+                            color: labelColor,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      reminder.label,
-                      style: TextStyle(
-                        fontSize: 14, // text-sm
-                        color: labelColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-            // Right Section (Switch + Delete)
+            // Fixed trailing actions
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Switch(
                   value: enabled,
@@ -274,10 +305,9 @@ class _ReminderCard extends StatelessWidget {
                   activeThumbColor: sky500,
                   activeTrackColor: sky500.withAlpha((0.24 * 255).round()),
                 ),
-                // Delete Button (Button variant="ghost")
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 20), // Trash2
-                  color: red500, // text-red-500
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  color: red500,
                   onPressed: () => onDelete(reminder.id),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 40, minHeight: 40),

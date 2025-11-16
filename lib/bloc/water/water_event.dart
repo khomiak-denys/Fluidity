@@ -1,4 +1,4 @@
-import '../../models/water_intake.dart';
+import '../../models/water_entry.dart';
 
 abstract class WaterEvent {}
 
@@ -9,7 +9,7 @@ class RefreshWaterEvent extends WaterEvent {}
 class SimulateErrorEvent extends WaterEvent {}
 
 class AddWaterEntryEvent extends WaterEvent {
-  final WaterIntakeEntry entry;
+  final WaterEntry entry;
   AddWaterEntryEvent(this.entry);
 }
 

@@ -1,8 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'blocs/water/water_bloc.dart';
-import 'blocs/water/water_event.dart';
+import 'dart:async';
+import 'bloc/water/water_bloc.dart';
+import 'bloc/water/water_event.dart';
+import 'bloc/reminder/reminder_bloc.dart';
+import 'bloc/reminder/reminder_event.dart';
 // ignore_for_file: use_build_context_synchronously
 import 'l10n/app_localizations.dart';
 import 'screens/home_screen.dart';
@@ -10,14 +13,19 @@ import 'screens/login_screen.dart';
 import 'screens/statistics_screen.dart';
 import 'screens/reminder_screen.dart';
 import 'screens/profile_screen.dart';
-import 'models/water_intake.dart';
 import 'services/firebase_service.dart';
 import 'widgets/bottom_navigation.dart';
 import 'screens/register_screen.dart';
+import 'repositories/water_entry_repository.dart';
+import 'repositories/user_profile_repository.dart';
+import 'repositories/reminder_setting_repository.dart';
+import 'models/user_profile.dart';
+import 'services/notification_service.dart';
+import 'bloc/reminder/reminder_state.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase
+  // Initialize Firebase (blocking before UI)
   await FirebaseService.instance.init();
 
   // Load saved language from SharedPreferences (default 'en')
@@ -25,6 +33,14 @@ Future<void> main() async {
   final savedLang = prefs.getString('language') ?? 'en';
 
   runApp(WaterTrackerApp(initialLanguage: savedLang));
+
+  // Defer notifications init to avoid jank on first frame
+  Future.microtask(() async {
+    try {
+      await NotificationService.instance.init();
+      await NotificationService.instance.requestPermissions();
+    } catch (_) {}
+  });
 }
 
 class WaterTrackerApp extends StatefulWidget {
@@ -43,19 +59,9 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
   String activeTab = 'home';
   int dailyGoal = 2000;
   bool notificationsEnabled = true;
+  StreamSubscription<UserProfile?>? _profileSub;
 
-  // Mock data
-  List<WaterIntakeEntry> entries = [
-    WaterIntakeEntry(id: '1', amount: 250, time: '09:30', type: 'glass', comment: ''),
-    WaterIntakeEntry(id: '2', amount: 500, time: '12:15', type: 'bottle', comment: ''),
-    WaterIntakeEntry(id: '3', amount: 350, time: '15:45', type: 'cup', comment: ''),
-  ];
-
-  List reminders = [
-    {'id': '1', 'time': '08:00', 'enabled': true, 'label': 'Morning hydration'},
-    {'id': '2', 'time': '12:00', 'enabled': true, 'label': 'Lunch break'},
-    {'id': '3', 'time': '16:00', 'enabled': false, 'label': 'Afternoon boost'},
-  ];
+  // Removed hardcoded mock entries and reminders
 
   late String language = widget.initialLanguage;
 
@@ -71,11 +77,28 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       final fbUser = FirebaseService.instance.auth.currentUser;
       if (fbUser != null) {
         isAuthenticated = true;
+        _attachProfileStream();
       }
     } catch (_) {
       // If anything goes wrong, leave isAuthenticated as false.
       isAuthenticated = false;
     }
+  }
+
+  void _attachProfileStream() {
+    final fbUser = FirebaseService.instance.auth.currentUser;
+    final uid = fbUser?.uid;
+    _profileSub?.cancel();
+    if (uid == null || uid.isEmpty) return;
+    final repo = UserProfileRepository();
+    _profileSub = repo.watchById(uid).listen((profile) {
+      if (!mounted) return;
+      if (profile != null) {
+        setState(() {
+          dailyGoal = profile.targetWaterAmount;
+        });
+      }
+    });
   }
 
   Future<void> handleLogin(String email, String password) async {
@@ -90,6 +113,30 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
         authError = null;
       });
       FirebaseService.instance.logEvent('login', {'method': 'email'});
+      // Ensure user profile exists in Firestore
+      try {
+        final fbUser = FirebaseService.instance.auth.currentUser;
+        if (fbUser != null) {
+          final repo = UserProfileRepository();
+          final existing = await repo.getById(fbUser.uid);
+          if (existing == null) {
+            final display = fbUser.displayName ?? '';
+            final parts = display.trim().split(' ');
+            final first = parts.isNotEmpty ? parts.first : '';
+            final last = parts.length > 1 ? parts.sublist(1).join(' ') : '';
+            final profile = UserProfile(
+              id: fbUser.uid,
+              firstName: first,
+              lastName: last,
+              email: fbUser.email ?? '',
+              targetWaterAmount: dailyGoal,
+              registrationDate: DateTime.now(),
+            );
+            await repo.upsert(profile);
+          }
+        }
+      } catch (_) {}
+      _attachProfileStream();
     } else {
       setState(() {
         authError = error;
@@ -153,7 +200,11 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
     setState(() {
       isAuthenticated = false;
       authError = null;
+      dailyGoal = 2000;
     });
+    await _profileSub?.cancel();
+    // Cancel scheduled notifications on sign out
+    try { await NotificationService.instance.cancelAll(); } catch (_) {}
   }
 
   String _localizeAuthMessage(BuildContext ctx, String code) {
@@ -194,7 +245,6 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
         );
       case 'statistics':
         return StatisticsScreen(
-          entries: entries,
           dailyGoal: dailyGoal,
         );
       case 'reminders':
@@ -209,7 +259,15 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
         };
         return ProfileScreen(
           dailyGoal: dailyGoal,
-          onDailyGoalChange: (g) => setState(() => dailyGoal = g),
+          onDailyGoalChange: (g) async {
+            setState(() => dailyGoal = g);
+            final uid = fbUser?.uid;
+            if (uid != null && uid.isNotEmpty) {
+              try {
+                await UserProfileRepository().updateGoal(uid, g);
+              } catch (_) {}
+            }
+          },
           notificationsEnabled: notificationsEnabled,
           onNotificationsToggle: () => setState(() => notificationsEnabled = !notificationsEnabled),
           onSignOut: handleSignOut,
@@ -229,11 +287,11 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
 
   @override
   Widget build(BuildContext context) {
-    return MultiBlocProvider(
-      providers: [
-        BlocProvider<WaterBloc>(create: (_) => WaterBloc()..add(LoadWaterEvent())),
-      ],
-      child: MaterialApp(
+    final fbUser = FirebaseService.instance.auth.currentUser;
+    final uid = (isAuthenticated && fbUser != null) ? fbUser.uid : '';
+    final waterRepo = WaterEntryRepository();
+
+    return MaterialApp(
       localizationsDelegates: AppLocalizations.localizationsDelegates,
       supportedLocales: AppLocalizations.supportedLocales,
       locale: Locale(language),
@@ -248,11 +306,36 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
             ),
       },
       home: isAuthenticated
-          ? Scaffold(
-              body: renderScreen(),
-              bottomNavigationBar: BottomNavigation(
-                activeTab: activeTab,
-                onTabChange: setTab,
+          ? MultiBlocProvider(
+              providers: [
+                BlocProvider<WaterBloc>(
+                  create: (_) => WaterBloc(repo: waterRepo, userId: uid)..add(LoadWaterEvent()),
+                ),
+                BlocProvider<ReminderBloc>(
+                  create: (_) => ReminderBloc(repo: ReminderSettingRepository(), userId: uid)..add(LoadRemindersEvent()),
+                ),
+              ],
+              child: BlocListener<ReminderBloc, ReminderState>(
+                listenWhen: (prev, next) => next is ReminderLoaded,
+                listener: (context, state) async {
+                  if (state is ReminderLoaded) {
+                    try {
+                      // Update localized notification title before scheduling
+                      final loc = AppLocalizations.of(context);
+                      if (loc != null) {
+                        NotificationService.instance.updateLocalizedStrings(loc);
+                      }
+                      await NotificationService.instance.sync(state.data);
+                    } catch (_) {}
+                  }
+                },
+                child: Scaffold(
+                  body: renderScreen(),
+                  bottomNavigationBar: BottomNavigation(
+                    activeTab: activeTab,
+                    onTabChange: setTab,
+                  ),
+                ),
               ),
             )
           : Builder(
@@ -262,7 +345,6 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
                 error: authError != null ? _localizeAuthMessage(context, authError!) : null,
               ),
             ),
-      ),
     );
   }
 }

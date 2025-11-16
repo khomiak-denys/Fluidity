@@ -3,7 +3,10 @@ import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart';
-import '../models/water_intake.dart'; // WaterIntakeEntry model
+import '../models/water_entry.dart'; // WaterEntry model
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/water/water_bloc.dart';
+import '../bloc/water/water_state.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -24,78 +27,176 @@ const Color borderGray = Color(0xFFE5E7EB); // border-gray-200 / border-sky-200
 // ОСНОВНИЙ ВІДЖЕТ
 // =========================================================================
 
-class StatisticsScreen extends StatelessWidget {
-  final List<WaterIntakeEntry> entries;
+enum StatsPeriod { day, week, month }
+
+class StatisticsScreen extends StatefulWidget {
   final int dailyGoal;
 
   const StatisticsScreen({
     super.key,
-    required this.entries,
     required this.dailyGoal,
   });
 
+  @override
+  State<StatisticsScreen> createState() => _StatisticsScreenState();
+}
+
+class _StatisticsScreenState extends State<StatisticsScreen> {
+  StatsPeriod _period = StatsPeriod.week;
+
   // Логіка для розрахунку статистики
-  Map<String, dynamic> _calculateStats() {
-    final todayIntake = entries.fold<int>(0, (sum, e) => sum + e.amount);
+  Map<String, dynamic> _calculateStats(List<WaterEntry> allEntries) {
+    final now = DateTime.now();
+    DateTime dayStart(DateTime d) => DateTime(d.year, d.month, d.day);
+    bool isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
 
-    final weeklyData = [
-      {'day': 'Пн', 'intake': 1800, 'goal': dailyGoal},
-      {'day': 'Вт', 'intake': 2200, 'goal': dailyGoal},
-      {'day': 'Ср', 'intake': 1900, 'goal': dailyGoal},
-      {'day': 'Чт', 'intake': 2400, 'goal': dailyGoal},
-      {'day': 'Пт', 'intake': 2100, 'goal': dailyGoal},
-      {'day': 'Сб', 'intake': 1700, 'goal': dailyGoal},
-      {
-        'day': 'Нд',
-        'intake': todayIntake,
-        'goal': dailyGoal,
-      },
-    ];
+    // Filter entries by selected period
+    List<WaterEntry> filtered;
+    List<Map<String, dynamic>> bars = [];
 
-    final weekTotal = weeklyData.fold<int>(0, (sum, d) => sum + (d['intake'] as int));
-    final weekAverage = (weekTotal / 7).round();
+    // Pre-calc week and month ranges for cross-period summaries
+    final startOfWeek = dayStart(now).subtract(Duration(days: now.weekday - 1));
+    final endOfWeek = startOfWeek.add(const Duration(days: 7));
+    final startOfMonth = DateTime(now.year, now.month, 1);
+    final endOfMonth = DateTime(now.year, now.month + 1, 1);
+
+    switch (_period) {
+      case StatsPeriod.day:
+        final start = dayStart(now);
+        final end = start.add(const Duration(days: 1));
+        filtered = allEntries.where((e) => e.timestamp.isAfter(start.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(end)).toList();
+        // For chart we can show last 7 hours distribution or skip; keep weekly chart area hidden for day
+        // We'll use hourly distribution card below.
+        bars = [];
+        break;
+      case StatsPeriod.week:
+        // Use pre-calculated Monday-start week
+        filtered = allEntries.where((e) => e.timestamp.isAfter(startOfWeek.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfWeek)).toList();
+        // Build 7-day bars Mon..Sun with localized labels
+        final labels = [
+          AppLocalizations.of(context)!.weekdayMonShort,
+          AppLocalizations.of(context)!.weekdayTueShort,
+          AppLocalizations.of(context)!.weekdayWedShort,
+          AppLocalizations.of(context)!.weekdayThuShort,
+          AppLocalizations.of(context)!.weekdayFriShort,
+          AppLocalizations.of(context)!.weekdaySatShort,
+          AppLocalizations.of(context)!.weekdaySunShort,
+        ];
+        bars = List.generate(7, (i) {
+          final day = startOfWeek.add(Duration(days: i));
+          final total = filtered.where((e) => isSameDay(e.timestamp, day)).fold<int>(0, (s, e) => s + e.amountMl);
+          return {'label': labels[i], 'intake': total};
+        });
+        break;
+      case StatsPeriod.month:
+        filtered = allEntries.where((e) => e.timestamp.isAfter(startOfMonth.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfMonth)).toList();
+        final daysInMonth = endOfMonth.difference(startOfMonth).inDays;
+        bars = List.generate(daysInMonth, (i) {
+          final day = startOfMonth.add(Duration(days: i));
+          final total = filtered.where((e) => isSameDay(e.timestamp, day)).fold<int>(0, (s, e) => s + e.amountMl);
+          return {'label': '${i + 1}', 'intake': total};
+        });
+        break;
+    }
+
+    final periodTotal = filtered.fold<int>(0, (sum, e) => sum + e.amountMl);
+    final periodLen = _period == StatsPeriod.day ? 1 : (_period == StatsPeriod.week ? 7 : bars.length);
+    final periodAverage = (periodTotal / periodLen).round();
+    final todayTotal = allEntries
+        .where((e) => isSameDay(e.timestamp, now))
+        .fold<int>(0, (sum, e) => sum + e.amountMl);
+
+    // Cross-period totals for cards (always Monday-start week, current month)
+    final weekTotal = allEntries
+        .where((e) => e.timestamp.isAfter(startOfWeek.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfWeek))
+        .fold<int>(0, (s, e) => s + e.amountMl);
+    final monthTotal = allEntries
+        .where((e) => e.timestamp.isAfter(startOfMonth.subtract(const Duration(milliseconds: 1))) && e.timestamp.isBefore(endOfMonth))
+        .fold<int>(0, (s, e) => s + e.amountMl);
 
     return {
-      'weeklyData': weeklyData,
-      'todayIntake': todayIntake,
-      'weekAverage': weekAverage,
+      'bars': bars,
+      'filtered': filtered,
+      'todayIntake': todayTotal,
+      'periodAverage': periodAverage,
+      'periodTotal': periodTotal,
       'weekTotal': weekTotal,
+      'monthTotal': monthTotal,
     };
   }
 
   @override
   Widget build(BuildContext context) {
-  final data = _calculateStats();
-  final weeklyData = data['weeklyData'] as List<Map<String, dynamic>>;
-  final todayIntake = data['todayIntake'] as int;
-  final weekAverage = data['weekAverage'] as int;
-  final weekTotal = data['weekTotal'] as int;
+    // Read entries from WaterBloc state
+  final state = context.watch<WaterBloc>().state;
+    final List<WaterEntry> entries = state is WaterLoaded
+        ? state.data
+        : state is WaterLoading
+            ? state.data
+            : state is WaterError
+                ? state.data
+                : const <WaterEntry>[];
 
-  final stats = [
-    {
+  final data = _calculateStats(entries);
+  final bars = data['bars'] as List<Map<String, dynamic>>;
+  final todayIntake = data['todayIntake'] as int;
+  final periodAverage = data['periodAverage'] as int;
+  final periodTotal = data['periodTotal'] as int;
+  // final weekTotal = data['weekTotal'] as int; // no longer used directly
+  // final monthTotal = data['monthTotal'] as int; // not directly used; periodTotal covers month when selected
+
+  final List<Map<String, dynamic>> stats = [];
+
+  if (_period == StatsPeriod.day) {
+    // Day: show only today's intake
+    stats.add({
       'title': AppLocalizations.of(context)!.statsTodayTitle,
       'value': '${todayIntake}ml',
       'icon': Icons.opacity_rounded,
       'color': sky600,
       'bgColor': sky100,
-    },
-    {
+    });
+  } else if (_period == StatsPeriod.week) {
+    // Week: average + weekly total (no today's intake)
+    stats.add({
       'title': AppLocalizations.of(context)!.statsAverageTitle,
-      'value': '${weekAverage}ml',
+      'value': '${periodAverage}ml',
       'icon': Icons.trending_up_rounded,
       'color': green600,
       'bgColor': green100,
-    },
-    {
+    });
+    stats.add({
       'title': AppLocalizations.of(context)!.statsWeekTotalTitle,
-      'value': '${(weekTotal / 1000).toStringAsFixed(1)}L',
+      'value': '${(periodTotal / 1000).toStringAsFixed(1)}L',
       'icon': Icons.calendar_month_rounded,
       'color': orange600,
       'bgColor': orange100,
-    },
-  ];
+    });
+  } else {
+    // Month: average + monthly total (no today's intake)
+    stats.add({
+      'title': AppLocalizations.of(context)!.statsAverageTitle,
+      'value': '${periodAverage}ml',
+      'icon': Icons.trending_up_rounded,
+      'color': green600,
+      'bgColor': green100,
+    });
+    stats.add({
+      'title': AppLocalizations.of(context)!.statsMonthTotalTitle,
+      'value': '${(periodTotal / 1000).toStringAsFixed(1)}L',
+      'icon': Icons.calendar_month_rounded,
+      'color': orange600,
+      'bgColor': orange100,
+    });
+  }
 
-    return Scaffold(
+  final headerText = _period == StatsPeriod.day
+    ? AppLocalizations.of(context)!.statisticsDaily
+    : _period == StatsPeriod.week
+      ? AppLocalizations.of(context)!.statisticsWeekly
+      : AppLocalizations.of(context)!.statisticsMonthly;
+
+  return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
         toolbarHeight: 0,
@@ -110,13 +211,18 @@ class StatisticsScreen extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-        // --- Header ---
-        _buildHeader(context)
+  // --- Header ---
+  _buildHeader(context, headerText)
                   .animate()
                   .fadeIn(duration: 500.ms)
                   .slideY(begin: -0.2, end: 0),
 
               const SizedBox(height: 20), // space-y-4
+
+              // --- Period Selector ---
+              _buildPeriodSelector(),
+
+              const SizedBox(height: 12),
 
               // --- Stats Cards ---
               _buildStatsCards(stats)
@@ -126,8 +232,8 @@ class StatisticsScreen extends StatelessWidget {
 
               const SizedBox(height: 20), // space-y-4
 
-              // --- Weekly Progress Chart ---
-        _buildWeeklyChartCard(context, weeklyData)
+              // --- Progress Chart (Week/Month) ---
+  if (_period != StatsPeriod.day) _buildPeriodChartCard(context, bars)
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 400.ms)
                   .slideY(begin: 0.2, end: 0),
@@ -135,7 +241,7 @@ class StatisticsScreen extends StatelessWidget {
               const SizedBox(height: 20), // space-y-4
 
               // --- Hourly Distribution (Today) ---
-              if (entries.isNotEmpty)
+              if (_period == StatsPeriod.day && entries.isNotEmpty)
                 _buildHourlyDistributionCard(context, entries)
                     .animate()
                     .fadeIn(duration: 500.ms, delay: 600.ms)
@@ -147,12 +253,38 @@ class StatisticsScreen extends StatelessWidget {
     );
   }
 
+  Widget _buildPeriodSelector() {
+    Widget buildButton(String label, StatsPeriod p) {
+      final selected = _period == p;
+      return Expanded(
+        child: OutlinedButton(
+          onPressed: () => setState(() => _period = p),
+          style: OutlinedButton.styleFrom(
+            side: BorderSide(color: selected ? sky600 : borderGray),
+            backgroundColor: selected ? sky50 : Colors.white,
+          ),
+          child: Text(label, maxLines: 1, overflow: TextOverflow.ellipsis, style: TextStyle(color: selected ? sky700 : mutedForeground)),
+        ),
+      );
+    }
+
+    return Row(
+      children: [
+  buildButton(AppLocalizations.of(context)!.periodDay, StatsPeriod.day),
+        const SizedBox(width: 8),
+  buildButton(AppLocalizations.of(context)!.periodWeek, StatsPeriod.week),
+        const SizedBox(width: 8),
+  buildButton(AppLocalizations.of(context)!.periodMonth, StatsPeriod.month),
+      ],
+    );
+  }
+
   // --- Header Widget ---
-  Widget _buildHeader(BuildContext context) {
+  Widget _buildHeader(BuildContext context, String headerText) {
     return Column(
       children: [
         Text(
-          AppLocalizations.of(context)!.statistics,
+          headerText,
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
@@ -229,7 +361,7 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   // --- Weekly Chart Card Widget ---
-  Widget _buildWeeklyChartCard(BuildContext context, List<Map<String, dynamic>> weeklyData) {
+  Widget _buildPeriodChartCard(BuildContext context, List<Map<String, dynamic>> data) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1,
@@ -241,7 +373,9 @@ class StatisticsScreen extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 8), // pb-3
             child: Text(
-              AppLocalizations.of(context)!.statisticsWeekly,
+              _period == StatsPeriod.week
+                  ? AppLocalizations.of(context)!.statisticsWeekly
+                  : AppLocalizations.of(context)!.statisticsMonthly,
               style: const TextStyle(
                 color: sky700,
                 fontWeight: FontWeight.bold,
@@ -257,8 +391,19 @@ class StatisticsScreen extends StatelessWidget {
               child: BarChart(
                 BarChartData(
                   alignment: BarChartAlignment.spaceAround,
-                  maxY: dailyGoal * 1.2, // Максимальне значення на осі Y
-                  barTouchData: const BarTouchData(enabled: true),
+                  maxY: widget.dailyGoal * 1.2, // Максимальне значення на осі Y
+                  barTouchData: BarTouchData(
+                    enabled: true,
+                    touchTooltipData: BarTouchTooltipData(
+                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                        final value = rod.toY.toInt();
+                        return BarTooltipItem(
+                          '${value}ml',
+                          const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
+                        );
+                      },
+                    ),
+                  ),
                   titlesData: FlTitlesData(
                     show: true,
                     topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
@@ -269,7 +414,7 @@ class StatisticsScreen extends StatelessWidget {
                         reservedSize: 32,
                         getTitlesWidget: (value, meta) {
                           if (value == 0) return const Text('0', style: TextStyle(fontSize: 10, color: mutedForeground));
-                          if (value == dailyGoal.toDouble()) return Text('${dailyGoal}ml', style: const TextStyle(fontSize: 10, color: green600));
+                          if (value == widget.dailyGoal.toDouble()) return Text('${widget.dailyGoal}ml', style: const TextStyle(fontSize: 10, color: green600));
                           return const SizedBox.shrink();
                         },
                       ),
@@ -279,11 +424,11 @@ class StatisticsScreen extends StatelessWidget {
                         showTitles: true,
                         getTitlesWidget: (value, meta) {
                           final raw = value.toInt();
-                          if (weeklyData.isEmpty) return const SizedBox.shrink();
-                          final index = raw.clamp(0, weeklyData.length - 1);
+                          if (data.isEmpty) return const SizedBox.shrink();
+                          final index = raw.clamp(0, data.length - 1);
                           return Padding(
                             padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(weeklyData[index]['day'] as String,
+                            child: Text(data[index]['label'] as String,
                                 style: const TextStyle(fontSize: 10, color: mutedForeground)),
                           );
                         },
@@ -294,7 +439,7 @@ class StatisticsScreen extends StatelessWidget {
                     show: true,
                     drawVerticalLine: false,
                     getDrawingHorizontalLine: (value) {
-                      if (value == dailyGoal) {
+                      if (value == widget.dailyGoal) {
                         // Імітація лінії цілі (goal)
                         return FlLine(
                           color: green600.withAlpha((0.7 * 255).round()),
@@ -310,7 +455,7 @@ class StatisticsScreen extends StatelessWidget {
                     },
                   ),
                   borderData: FlBorderData(show: false),
-                  barGroups: weeklyData.asMap().entries.map((entry) {
+                  barGroups: data.asMap().entries.map((entry) {
                     int index = entry.key;
                     final data = entry.value;
                     return BarChartGroupData(
@@ -340,7 +485,7 @@ class StatisticsScreen extends StatelessWidget {
   }
 
   // --- Hourly Distribution Card Widget ---
-  Widget _buildHourlyDistributionCard(BuildContext context, List<WaterIntakeEntry> entries) {
+  Widget _buildHourlyDistributionCard(BuildContext context, List<WaterEntry> entries) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1,
@@ -365,7 +510,17 @@ class StatisticsScreen extends StatelessWidget {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // pt-0
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: entries.map((entry) {
+                children: entries
+                    .where((e) {
+                      final n = DateTime.now();
+                      return e.timestamp.year == n.year && e.timestamp.month == n.month && e.timestamp.day == n.day;
+                    })
+                    .map((entry) {
+                  String _fmt(DateTime dt) {
+                    final hh = dt.hour.toString().padLeft(2, '0');
+                    final mm = dt.minute.toString().padLeft(2, '0');
+                    return '$hh:$mm';
+                  }
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 8), // space-y-2
                   child: Container(
@@ -391,13 +546,13 @@ class StatisticsScreen extends StatelessWidget {
                             ),
                             const SizedBox(width: 8), // gap-2
                             Text(
-                              entry.time,
+                              _fmt(entry.timestamp),
                               style: const TextStyle(fontSize: 13, color: mutedForeground), // text-xs sm:text-sm text-muted-foreground
                             ),
                           ],
                         ),
                         Text(
-                          '${entry.amount}ml',
+                          '${entry.amountMl}ml',
                           style: const TextStyle(
                             fontWeight: FontWeight.w500, // font-medium
                             color: sky700,

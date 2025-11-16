@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
-import '../services/firebase_service.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
@@ -222,18 +221,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 if (email.isNotEmpty) Text(email, style: const TextStyle(color: mutedForeground, fontSize: 13)),
                 if (email.isEmpty) Text(userPhone, style: const TextStyle(color: mutedForeground, fontSize: 13)), // text-sm text-muted-foreground
                 const SizedBox(height: 4),
-                // Demo User Badge
-                Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(
-                    color: green100, // bg-green-100
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    AppLocalizations.of(context)!.demoUser,
-                    style: const TextStyle(fontSize: 11, color: green700, fontWeight: FontWeight.w500), // text-xs text-green-700
-                  ),
-                ),
+                // Removed demo user badge per request
               ],
             ),
           ],
@@ -401,16 +389,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
         ),
-        const SizedBox(height: 12),
-        ElevatedButton(
-          onPressed: () {
-            // Log an event and force a crash for testing Crashlytics
-            FirebaseService.instance.logEvent('profile_test_crash', {'source': 'profile_screen'});
-            FirebaseService.instance.forceCrash();
-          },
-          style: ElevatedButton.styleFrom(backgroundColor: Colors.black),
-          child: Text(AppLocalizations.of(context)!.testCrashlytics, style: const TextStyle(color: Colors.white)),
-        ),
       ],
     );
   }
@@ -514,7 +492,12 @@ class _GoalSettingDialogState extends State<_GoalSettingDialog> {
                       backgroundColor: sky600,
                       foregroundColor: Colors.white,
                     ),
-                    child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(fontSize: 16)),
+                    child: Text(
+                      AppLocalizations.of(context)!.save,
+                      style: const TextStyle(fontSize: 16),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ),
               ],

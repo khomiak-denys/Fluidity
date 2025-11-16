@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
-import '../models/water_intake.dart';
+import '../models/water_entry.dart';
 
 class WaterIntakeCard extends StatelessWidget {
-  final WaterIntakeEntry entry;
+  final WaterEntry entry;
   final void Function(String) onDelete;
   final String unit;
 
@@ -51,7 +51,7 @@ class WaterIntakeCard extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      typeIcons[entry.type]!,
+                      typeIcons[entry.drinkType] ?? '💧',
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
@@ -64,7 +64,7 @@ class WaterIntakeCard extends StatelessWidget {
                           Icon(Icons.opacity, size: 16, color: Colors.cyan[600]),
                           const SizedBox(width: 4),
                           Text(
-                            '${entry.amount}$unit',
+                            '${entry.amountMl}$unit',
                             style: TextStyle(
                               fontWeight: FontWeight.w500,
                               color: Colors.cyan[700],
@@ -78,7 +78,7 @@ class WaterIntakeCard extends StatelessWidget {
                           const Icon(Icons.access_time, size: 12, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            entry.time,
+                            _formatTime(entry.timestamp),
                             style: const TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                           const SizedBox(width: 6),
@@ -89,7 +89,7 @@ class WaterIntakeCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              typeLabels[entry.type]!,
+                              typeLabels[entry.drinkType] ?? 'Custom',
                               style: const TextStyle(fontSize: 10),
                             ),
                           ),
@@ -109,4 +109,10 @@ class WaterIntakeCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatTime(DateTime dt) {
+  final hh = dt.hour.toString().padLeft(2, '0');
+  final mm = dt.minute.toString().padLeft(2, '0');
+  return '$hh:$mm';
 }

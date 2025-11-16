@@ -527,6 +527,18 @@ abstract class AppLocalizations {
   /// **'Statistics for the week'**
   String get statisticsWeekly;
 
+  /// No description provided for @statisticsDaily.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics for the day'**
+  String get statisticsDaily;
+
+  /// No description provided for @statisticsMonthly.
+  ///
+  /// In en, this message translates to:
+  /// **'Statistics for the month'**
+  String get statisticsMonthly;
+
   /// No description provided for @hourlyDistribution.
   ///
   /// In en, this message translates to:
@@ -550,6 +562,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'Weekly total'**
   String get statsWeekTotalTitle;
+
+  /// No description provided for @statsMonthTotalTitle.
+  ///
+  /// In en, this message translates to:
+  /// **'Monthly total'**
+  String get statsMonthTotalTitle;
 
   /// No description provided for @entryDeleted.
   ///
@@ -605,6 +623,86 @@ abstract class AppLocalizations {
   /// **'No account? Register'**
   String get noAccountPrompt;
 
+  /// Hint for optional comment field when adding entry
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment (optional)'**
+  String get addCommentHint;
+
+  /// Error title when entries failed to load
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load entries'**
+  String get errorLoadingEntries;
+
+  /// Permission denied error text
+  ///
+  /// In en, this message translates to:
+  /// **'Permission denied. Please grant access and try again.'**
+  String get errorPermissionDenied;
+
+  /// Generic error text
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Please try again.'**
+  String get errorGeneric;
+
+  /// Retry button label
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// Error title for reminders loading failure
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load reminders'**
+  String get errorLoadingReminders;
+
+  /// Short weekday labels starting from Monday
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get weekdayMonShort;
+
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get weekdayTueShort;
+
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get weekdayWedShort;
+
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get weekdayThuShort;
+
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get weekdayFriShort;
+
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get weekdaySatShort;
+
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get weekdaySunShort;
+
+  /// Period filter buttons
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get periodDay;
+
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get periodWeek;
+
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get periodMonth;
+
   /// No description provided for @auth_email_not_verified.
   ///
   /// In en, this message translates to:
@@ -652,6 +750,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A verification email has been sent to your address. Please check your inbox.'**
   String get auth_verification_email_sent;
+
+  /// Title used for drink water notification
+  ///
+  /// In en, this message translates to:
+  /// **'Time to drink water 💧'**
+  String get notificationDrinkTitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

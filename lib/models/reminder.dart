@@ -1,22 +1,27 @@
 class Reminder {
   final String id;
-  final String time; // Format "HH:mm"
-  final bool enabled;
+  final String time; // formatted HH:mm
   final String label;
+  final bool enabled;
 
-  Reminder({
+  const Reminder({
     required this.id,
     required this.time,
-    required this.enabled,
     required this.label,
+    required this.enabled,
   });
 
-  Reminder copyWith({bool? enabled}) {
+  Reminder copyWith({
+    String? id,
+    String? time,
+    String? label,
+    bool? enabled,
+  }) {
     return Reminder(
-      id: id,
-      time: time,
+      id: id ?? this.id,
+      time: time ?? this.time,
+      label: label ?? this.label,
       enabled: enabled ?? this.enabled,
-      label: label,
     );
   }
 }

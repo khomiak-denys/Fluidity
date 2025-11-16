@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../models/reminder.dart';
+import '../models/reminder_setting.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 
 // Local color tokens to match app style
@@ -10,12 +10,17 @@ const Color _sky600 = Color(0xFF0284C7);
 const Color _mutedForeground = Color(0xFF6B7280);
 
 class ReminderDetailScreen extends StatelessWidget {
-  final Reminder reminder;
+  final ReminderSetting reminder;
 
   const ReminderDetailScreen({super.key, required this.reminder});
 
   @override
   Widget build(BuildContext context) {
+    String _formatTime(DateTime dt) {
+      final hh = dt.hour.toString().padLeft(2, '0');
+      final mm = dt.minute.toString().padLeft(2, '0');
+      return '$hh:$mm';
+    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -49,7 +54,7 @@ class ReminderDetailScreen extends StatelessWidget {
               ),
               const SizedBox(height: 8),
               Text(
-                reminder.label,
+                reminder.comment,
                 style: const TextStyle(fontSize: 14, color: _mutedForeground),
               ),
               const SizedBox(height: 16),
@@ -84,9 +89,9 @@ class ReminderDetailScreen extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(reminder.time, style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _sky600)),
+                              Text(_formatTime(reminder.scheduledTime), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _sky600)),
                               const SizedBox(height: 6),
-                              Text(reminder.label, style: const TextStyle(color: Colors.grey)),
+                              Text(reminder.comment, style: const TextStyle(color: Colors.grey)),
                             ],
                           ),
                         ],
@@ -100,7 +105,7 @@ class ReminderDetailScreen extends StatelessWidget {
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
                             child: Row(mainAxisSize: MainAxisSize.min, children: [
-                              Text(reminder.enabled ? 'Enabled' : 'Disabled', style: TextStyle(color: reminder.enabled ? Colors.green[700] : Colors.grey[600], fontWeight: FontWeight.w600)),
+                              Text(reminder.isActive ? 'Enabled' : 'Disabled', style: TextStyle(color: reminder.isActive ? Colors.green[700] : Colors.grey[600], fontWeight: FontWeight.w600)),
                             ]),
                           ),
                         ],
@@ -111,7 +116,7 @@ class ReminderDetailScreen extends StatelessWidget {
                       // Additional info area
                       Text(AppLocalizations.of(context)!.selectTime, style: const TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 6),
-                      Text(reminder.time, style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                      Text(_formatTime(reminder.scheduledTime), style: const TextStyle(fontSize: 14, color: Colors.black87)),
                       const SizedBox(height: 16),
 
                       // Read-only details, no actions here
