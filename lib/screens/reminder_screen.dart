@@ -1,15 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
-import 'package:flutter/foundation.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
+import '../models/reminder.dart';
+import 'reminder_detail.dart';
 import '../models/reminder_setting.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/reminder/reminder_bloc.dart';
 import '../bloc/reminder/reminder_event.dart';
 import '../bloc/reminder/reminder_state.dart';
-import 'reminder_detail.dart';
-import '../services/notification_service.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -38,34 +37,33 @@ class RemindersScreen extends StatefulWidget {
 
 class _RemindersScreenState extends State<RemindersScreen> {
   void _addReminder(String time, String label) {
-    DateTime _parseHHmmToDateTime(String hhmm) {
+    DateTime _parseHHmmToToday(String hhmm) {
       final parts = hhmm.split(':');
       final now = DateTime.now();
-      final h = int.tryParse(parts.elementAt(0)) ?? 0;
-      final m = int.tryParse(parts.elementAt(1)) ?? 0;
-      return DateTime(now.year, now.month, now.day, h, m);
+      if (parts.length == 2) {
+        final h = int.tryParse(parts[0]) ?? now.hour;
+        final m = int.tryParse(parts[1]) ?? now.minute;
+        return DateTime(now.year, now.month, now.day, h, m);
+      }
+      return now;
     }
-    final newReminder = ReminderSetting(
+    final rs = ReminderSetting(
       id: DateTime.now().millisecondsSinceEpoch.toString(),
-      scheduledTime: _parseHHmmToDateTime(time),
+      scheduledTime: _parseHHmmToToday(time),
       comment: label,
       isActive: true,
     );
-    context.read<ReminderBloc>().add(AddReminderEvent(newReminder));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.reminderAdded), behavior: SnackBarBehavior.floating),
-    );
+    context.read<ReminderBloc>().add(AddReminderEvent(rs));
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.reminderAdded), behavior: SnackBarBehavior.floating));
   }
 
-  void _toggleReminder(ReminderSetting r) {
-    context.read<ReminderBloc>().add(ToggleReminderEvent(r.id));
+  void _toggleReminder(String id) {
+    context.read<ReminderBloc>().add(ToggleReminderEvent(id));
   }
 
   void _deleteReminder(String id) {
     context.read<ReminderBloc>().add(DeleteReminderEvent(id));
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(AppLocalizations.of(context)!.reminderDeleted), behavior: SnackBarBehavior.floating),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(AppLocalizations.of(context)!.reminderDeleted), behavior: SnackBarBehavior.floating));
   }
 
   void _showAddReminderDialog() {
@@ -112,59 +110,12 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
               const SizedBox(height: 20),
 
-          // --- Debug buttons (only in debug mode) ---
-          if (kDebugMode) _buildDebugButtons(),
-
-          if (kDebugMode) const SizedBox(height: 20),
-
               // --- Reminders List ---
               _buildReminderList(),
             ],
           ),
         ),
       ),
-    );
-  }
-
-  Widget _buildDebugButtons() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        Text(
-          'Debug: notifications',
-          style: const TextStyle(fontSize: 13, color: mutedForeground),
-        ),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () async {
-                  await NotificationService.instance.showDebugNow();
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Debug: immediate notification shown')),
-                  );
-                },
-                child: const Text('Show now'),
-              ),
-            ),
-            const SizedBox(width: 8),
-            Expanded(
-              child: OutlinedButton(
-                onPressed: () async {
-                  await NotificationService.instance.scheduleDebugInSeconds(10);
-                  if (!mounted) return;
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(content: Text('Debug: scheduled in 10s')), 
-                  );
-                },
-                child: const Text('In 10s'),
-              ),
-            ),
-          ],
-        ),
-      ],
     );
   }
 
@@ -208,22 +159,33 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _buildReminderList() {
+    String _fmt(DateTime dt) {
+      final hh = dt.hour.toString().padLeft(2, '0');
+      final mm = dt.minute.toString().padLeft(2, '0');
+      return '$hh:$mm';
+    }
     final state = context.watch<ReminderBloc>().state;
-    if (state is ReminderLoading) {
+    final items = state is ReminderLoaded
+        ? state.data
+        : state is ReminderLoading
+            ? state.data
+            : state is ReminderError
+                ? state.data
+                : <ReminderSetting>[];
+
+    if (state is ReminderLoading && items.isEmpty) {
       return const Center(child: CircularProgressIndicator());
     }
-    if (state is ReminderError) {
-      return _ReminderErrorCard(error: state.error.toString())
-          .animate()
-          .fadeIn(duration: 500.ms)
-          .slideY(begin: 0.2, end: 0);
-    }
-    final reminders = state is ReminderLoaded ? state.data : state is ReminderLoading ? state.data : <ReminderSetting>[];
-    if (reminders.isEmpty) {
+    if (items.isEmpty) {
       return Center(child: Text(AppLocalizations.of(context)!.remindersEmpty));
     }
+    // Map domain items to UI reminders for display
+    final ui = items
+        .map((r) => Reminder(id: r.id, time: _fmt(r.scheduledTime), label: r.comment, enabled: r.isActive))
+        .toList();
+
     return Column(
-      children: reminders.asMap().entries.map((e) {
+      children: ui.asMap().entries.map((e) {
         final i = e.key;
         final reminder = e.value;
         return Padding(
@@ -231,11 +193,17 @@ class _RemindersScreenState extends State<RemindersScreen> {
           child: InkWell(
             borderRadius: BorderRadius.circular(12),
             onTap: () {
-              Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReminderDetailScreen(reminder: reminder)));
+              final found = items.firstWhere((r) => r.id == reminder.id, orElse: () => ReminderSetting(
+                id: reminder.id,
+                scheduledTime: DateTime.now(),
+                comment: reminder.label,
+                isActive: reminder.enabled,
+              ));
+              Navigator.of(context).push(MaterialPageRoute(builder: (_) => ReminderDetailScreen(reminder: found)));
             },
             child: _ReminderCard(
               reminder: reminder,
-              onToggle: (_) => _toggleReminder(reminder),
+              onToggle: _toggleReminder,
               onDelete: _deleteReminder,
             ),
           ).animate().fadeIn(duration: 500.ms, delay: (300 + i * 100).ms).slideX(begin: -0.1, end: 0),
@@ -250,7 +218,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
 // =========================================================================
 
 class _ReminderCard extends StatelessWidget {
-  final ReminderSetting reminder;
+  final Reminder reminder;
   final Function(String) onToggle;
   final Function(String) onDelete;
 
@@ -262,7 +230,7 @@ class _ReminderCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final bool enabled = reminder.isActive;
+    final bool enabled = reminder.enabled;
 
     // bg-gradient-to-r from-sky-50 to-cyan-50 border-sky-200 : bg-gray-50 border-gray-200
     final Color bgColor = enabled ? sky50 : gray50;
@@ -282,47 +250,54 @@ class _ReminderCard extends StatelessWidget {
       child: Padding(
         padding: const EdgeInsets.all(16), // p-4
         child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            // Left Section (Icon + Text)
-            Row(
-              children: [
-                // Icon (w-10 h-10 rounded-full)
-                Container(
-                  width: 40,
-                  height: 40,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: avatarBgColor,
+            // Left flexible content
+            Expanded(
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 40,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      color: avatarBgColor,
+                    ),
+                    child: const Icon(Icons.access_time, color: Colors.white, size: 20),
                   ),
-                  child: const Icon(Icons.access_time, color: Colors.white, size: 20),
-                ),
-                const SizedBox(width: 12),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      _formatTime(reminder.scheduledTime),
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500, // font-medium
-                        fontSize: 16,
-                        color: timeColor,
-                      ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          reminder.time,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w500,
+                            fontSize: 16,
+                            color: timeColor,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          reminder.label,
+                          softWrap: true,
+                          overflow: TextOverflow.visible,
+                          style: TextStyle(
+                            fontSize: 14,
+                            height: 1.2,
+                            color: labelColor,
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 2),
-                    Text(
-                      reminder.comment,
-                      style: TextStyle(
-                        fontSize: 14, // text-sm
-                        color: labelColor,
-                      ),
-                    ),
-                  ],
-                ),
-              ],
+                  ),
+                ],
+              ),
             ),
-            // Right Section (Switch + Delete)
+            // Fixed trailing actions
             Row(
+              mainAxisSize: MainAxisSize.min,
               children: [
                 Switch(
                   value: enabled,
@@ -330,10 +305,9 @@ class _ReminderCard extends StatelessWidget {
                   activeThumbColor: sky500,
                   activeTrackColor: sky500.withAlpha((0.24 * 255).round()),
                 ),
-                // Delete Button (Button variant="ghost")
                 IconButton(
-                  icon: const Icon(Icons.delete_outline, size: 20), // Trash2
-                  color: red500, // text-red-500
+                  icon: const Icon(Icons.delete_outline, size: 20),
+                  color: red500,
                   onPressed: () => onDelete(reminder.id),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(minWidth: 40, minHeight: 40),
@@ -344,12 +318,6 @@ class _ReminderCard extends StatelessWidget {
         ),
       ),
     );
-  }
-
-  String _formatTime(DateTime dt) {
-    final hh = dt.hour.toString().padLeft(2, '0');
-    final mm = dt.minute.toString().padLeft(2, '0');
-    return '$hh:$mm';
   }
 }
 
@@ -465,61 +433,10 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
                       backgroundColor: sky500,
                       foregroundColor: Colors.white,
                     ),
-                      child: Text(
-                        AppLocalizations.of(context)!.save,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(fontSize: 16),
-                      ),
+                      child: Text(AppLocalizations.of(context)!.save, style: const TextStyle(fontSize: 16)),
                   ),
                 ),
               ],
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class _ReminderErrorCard extends StatelessWidget {
-  final String error;
-  const _ReminderErrorCard({required this.error});
-
-  @override
-  Widget build(BuildContext context) {
-    final l10n = AppLocalizations.of(context)!;
-    final friendly = error.contains('permission_denied')
-        ? l10n.errorPermissionDenied
-        : l10n.errorGeneric;
-    return Card(
-      margin: EdgeInsets.zero,
-      elevation: 0,
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: sky200, width: 2),
-      ),
-      child: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Text('⚠️', style: TextStyle(fontSize: 40)),
-            const SizedBox(height: 12),
-            Text(l10n.errorLoadingReminders, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: sky700)),
-            const SizedBox(height: 8),
-            Text(friendly, textAlign: TextAlign.center, style: const TextStyle(color: mutedForeground)),
-            const SizedBox(height: 16),
-            ElevatedButton.icon(
-              onPressed: () => context.read<ReminderBloc>().add(RefreshRemindersEvent()),
-              icon: const Icon(Icons.refresh, size: 18),
-              label: Text(l10n.retry),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: sky600,
-                foregroundColor: Colors.white,
-                minimumSize: const Size(double.infinity, 44),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              ),
             ),
           ],
         ),
