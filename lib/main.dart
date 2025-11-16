@@ -20,10 +20,12 @@ import 'repositories/water_entry_repository.dart';
 import 'repositories/user_profile_repository.dart';
 import 'repositories/reminder_setting_repository.dart';
 import 'models/user_profile.dart';
+import 'services/notification_service.dart';
+import 'bloc/reminder/reminder_state.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  // Initialize Firebase
+  // Initialize Firebase (blocking before UI)
   await FirebaseService.instance.init();
 
   // Load saved language from SharedPreferences (default 'en')
@@ -31,6 +33,14 @@ Future<void> main() async {
   final savedLang = prefs.getString('language') ?? 'en';
 
   runApp(WaterTrackerApp(initialLanguage: savedLang));
+
+  // Defer notifications init to avoid jank on first frame
+  Future.microtask(() async {
+    try {
+      await NotificationService.instance.init();
+      await NotificationService.instance.requestPermissions();
+    } catch (_) {}
+  });
 }
 
 class WaterTrackerApp extends StatefulWidget {
@@ -193,6 +203,8 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       dailyGoal = 2000;
     });
     await _profileSub?.cancel();
+    // Cancel scheduled notifications on sign out
+    try { await NotificationService.instance.cancelAll(); } catch (_) {}
   }
 
   String _localizeAuthMessage(BuildContext ctx, String code) {
@@ -303,11 +315,21 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
                   create: (_) => ReminderBloc(repo: ReminderSettingRepository(), userId: uid)..add(LoadRemindersEvent()),
                 ),
               ],
-              child: Scaffold(
-                body: renderScreen(),
-                bottomNavigationBar: BottomNavigation(
-                  activeTab: activeTab,
-                  onTabChange: setTab,
+              child: BlocListener<ReminderBloc, ReminderState>(
+                listenWhen: (prev, next) => next is ReminderLoaded,
+                listener: (context, state) async {
+                  if (state is ReminderLoaded) {
+                    try {
+                      await NotificationService.instance.sync(state.data);
+                    } catch (_) {}
+                  }
+                },
+                child: Scaffold(
+                  body: renderScreen(),
+                  bottomNavigationBar: BottomNavigation(
+                    activeTab: activeTab,
+                    onTabChange: setTab,
+                  ),
                 ),
               ),
             )

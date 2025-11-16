@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
+import 'package:flutter/foundation.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 import '../models/reminder_setting.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
@@ -8,6 +9,7 @@ import '../bloc/reminder/reminder_bloc.dart';
 import '../bloc/reminder/reminder_event.dart';
 import '../bloc/reminder/reminder_state.dart';
 import 'reminder_detail.dart';
+import '../services/notification_service.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -110,12 +112,59 @@ class _RemindersScreenState extends State<RemindersScreen> {
 
               const SizedBox(height: 20),
 
+          // --- Debug buttons (only in debug mode) ---
+          if (kDebugMode) _buildDebugButtons(),
+
+          if (kDebugMode) const SizedBox(height: 20),
+
               // --- Reminders List ---
               _buildReminderList(),
             ],
           ),
         ),
       ),
+    );
+  }
+
+  Widget _buildDebugButtons() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Text(
+          'Debug: notifications',
+          style: const TextStyle(fontSize: 13, color: mutedForeground),
+        ),
+        const SizedBox(height: 8),
+        Row(
+          children: [
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () async {
+                  await NotificationService.instance.showDebugNow();
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Debug: immediate notification shown')),
+                  );
+                },
+                child: const Text('Show now'),
+              ),
+            ),
+            const SizedBox(width: 8),
+            Expanded(
+              child: OutlinedButton(
+                onPressed: () async {
+                  await NotificationService.instance.scheduleDebugInSeconds(10);
+                  if (!mounted) return;
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Debug: scheduled in 10s')), 
+                  );
+                },
+                child: const Text('In 10s'),
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 
