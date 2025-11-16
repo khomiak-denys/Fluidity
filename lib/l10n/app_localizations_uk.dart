@@ -248,15 +248,6 @@ class AppLocalizationsUk extends AppLocalizations {
   String get statsMonthTotalTitle => 'Загалом за місяць';
 
   @override
-  String get errorLoadingEntries => 'Помилка завантаження записів';
-  @override
-  String get errorLoadingReminders => 'Помилка завантаження нагадувань';
-  @override
-  String get errorPermissionDenied => 'Доступ заборонено. Перевірте права або виконайте повторний вхід.';
-  @override
-  String get errorGeneric => 'Щось пішло не так. Спробуйте ще раз.';
-
-  @override
   String get entryDeleted => 'Запис видалено';
 
   @override
@@ -284,37 +275,22 @@ class AppLocalizationsUk extends AppLocalizations {
   String get noAccountPrompt => 'Немає акаунту? Зареєструватися';
 
   @override
-  String get auth_email_not_verified => 'Будь ласка, підтвердіть вашу електронну пошту перед входом.';
+  String get addCommentHint => 'Додайте коментар (необов’язково)';
 
   @override
-  String get auth_invalid_credentials => 'Неправильний email або пароль.';
+  String get errorLoadingEntries => 'Не вдалося завантажити записи';
 
   @override
-  String get auth_invalid_email => 'Неправильний формат email.';
+  String get errorPermissionDenied => 'Доступ заборонено. Надайте дозвіл і спробуйте ще раз.';
 
   @override
-  String get auth_weak_password => 'Пароль занадто слабкий.';
+  String get errorGeneric => 'Щось пішло не так. Спробуйте ще раз.';
 
   @override
-  String get auth_email_already_in_use => 'Цей email вже зареєстровано.';
+  String get retry => 'Повторити';
 
   @override
-  String get auth_registration_error => 'Помилка реєстрації. Спробуйте пізніше.';
-
-  @override
-  String get auth_unknown_error => 'Сталася невідома помилка. Спробуйте пізніше.';
-
-  @override
-  String get auth_verification_email_sent => 'Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення.';
-
-  @override
-  String get periodDay => 'День';
-
-  @override
-  String get periodWeek => 'Тиждень';
-
-  @override
-  String get periodMonth => 'Місяць';
+  String get errorLoadingReminders => 'Не вдалося завантажити нагадування';
 
   @override
   String get weekdayMonShort => 'Пн';
@@ -338,8 +314,35 @@ class AppLocalizationsUk extends AppLocalizations {
   String get weekdaySunShort => 'Нд';
 
   @override
-  String get retry => 'Повторити';
+  String get periodDay => 'День';
 
   @override
-  String get addCommentHint => 'Додайте коментар...';
+  String get periodWeek => 'Тиждень';
+
+  @override
+  String get periodMonth => 'Місяць';
+
+  @override
+  String get auth_email_not_verified => 'Будь ласка, підтвердіть вашу електронну пошту перед входом.';
+
+  @override
+  String get auth_invalid_credentials => 'Неправильний email або пароль.';
+
+  @override
+  String get auth_invalid_email => 'Неправильний формат email.';
+
+  @override
+  String get auth_weak_password => 'Пароль занадто слабкий.';
+
+  @override
+  String get auth_email_already_in_use => 'Цей email вже зареєстровано.';
+
+  @override
+  String get auth_registration_error => 'Помилка реєстрації. Спробуйте пізніше.';
+
+  @override
+  String get auth_unknown_error => 'Сталася невідома помилка. Спробуйте пізніше.';
+
+  @override
+  String get auth_verification_email_sent => 'Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення.';
 }

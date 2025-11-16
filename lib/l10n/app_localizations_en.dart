@@ -248,15 +248,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsMonthTotalTitle => 'Monthly total';
 
   @override
-  String get errorLoadingEntries => 'Error loading entries';
-  @override
-  String get errorLoadingReminders => 'Error loading reminders';
-  @override
-  String get errorPermissionDenied => 'Permission denied. Please check your access and try again.';
-  @override
-  String get errorGeneric => 'Something went wrong. Please try again.';
-
-  @override
   String get entryDeleted => 'Entry deleted';
 
   @override
@@ -284,37 +275,22 @@ class AppLocalizationsEn extends AppLocalizations {
   String get noAccountPrompt => 'No account? Register';
 
   @override
-  String get auth_email_not_verified => 'Please verify your email before signing in.';
+  String get addCommentHint => 'Add a comment (optional)';
 
   @override
-  String get auth_invalid_credentials => 'Incorrect email or password.';
+  String get errorLoadingEntries => 'Could not load entries';
 
   @override
-  String get auth_invalid_email => 'Invalid email format.';
+  String get errorPermissionDenied => 'Permission denied. Please grant access and try again.';
 
   @override
-  String get auth_weak_password => 'The password is too weak.';
+  String get errorGeneric => 'Something went wrong. Please try again.';
 
   @override
-  String get auth_email_already_in_use => 'This email is already registered.';
+  String get retry => 'Retry';
 
   @override
-  String get auth_registration_error => 'Registration failed. Please try again later.';
-
-  @override
-  String get auth_unknown_error => 'An unknown error occurred. Please try again later.';
-
-  @override
-  String get auth_verification_email_sent => 'A verification email has been sent to your address. Please check your inbox.';
-
-  @override
-  String get periodDay => 'Day';
-
-  @override
-  String get periodWeek => 'Week';
-
-  @override
-  String get periodMonth => 'Month';
+  String get errorLoadingReminders => 'Could not load reminders';
 
   @override
   String get weekdayMonShort => 'Mon';
@@ -338,8 +314,35 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekdaySunShort => 'Sun';
 
   @override
-  String get retry => 'Retry';
+  String get periodDay => 'Day';
 
   @override
-  String get addCommentHint => 'Add a comment...';
+  String get periodWeek => 'Week';
+
+  @override
+  String get periodMonth => 'Month';
+
+  @override
+  String get auth_email_not_verified => 'Please verify your email before signing in.';
+
+  @override
+  String get auth_invalid_credentials => 'Incorrect email or password.';
+
+  @override
+  String get auth_invalid_email => 'Invalid email format.';
+
+  @override
+  String get auth_weak_password => 'The password is too weak.';
+
+  @override
+  String get auth_email_already_in_use => 'This email is already registered.';
+
+  @override
+  String get auth_registration_error => 'Registration failed. Please try again later.';
+
+  @override
+  String get auth_unknown_error => 'An unknown error occurred. Please try again later.';
+
+  @override
+  String get auth_verification_email_sent => 'A verification email has been sent to your address. Please check your inbox.';
 }

@@ -27,11 +27,6 @@ class WaterIntakeCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _formatTime(DateTime dt) {
-      final hh = dt.hour.toString().padLeft(2, '0');
-      final mm = dt.minute.toString().padLeft(2, '0');
-      return '$hh:$mm';
-    }
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 6.0),
       child: Card(
@@ -56,7 +51,7 @@ class WaterIntakeCard extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      typeIcons[entry.drinkType]!,
+                      typeIcons[entry.drinkType] ?? '💧',
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
@@ -94,8 +89,7 @@ class WaterIntakeCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              typeLabels[entry.drinkType]!,
-                              
+                              typeLabels[entry.drinkType] ?? 'Custom',
                               style: const TextStyle(fontSize: 10),
                             ),
                           ),
@@ -115,4 +109,10 @@ class WaterIntakeCard extends StatelessWidget {
       ),
     );
   }
+}
+
+String _formatTime(DateTime dt) {
+  final hh = dt.hour.toString().padLeft(2, '0');
+  final mm = dt.minute.toString().padLeft(2, '0');
+  return '$hh:$mm';
 }
