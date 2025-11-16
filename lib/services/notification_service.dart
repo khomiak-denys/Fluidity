@@ -1,7 +1,6 @@
 import 'dart:io';
 import 'dart:convert';
 import 'package:flutter/foundation.dart';
-import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:timezone/timezone.dart' as tz;
@@ -27,6 +26,7 @@ class NotificationService {
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
   bool _initialized = false;
   final Set<int> _activeIds = <int>{};
+  String _drinkTitle = 'Time to drink water 💧';
 
   int _clampToInt32(int v) => v & 0x7fffffff;
 
@@ -135,7 +135,7 @@ class NotificationService {
   // Centralized content builders so you can tweak notification text in one place.
   // Customize these two methods to change title/body templates.
   String _buildDailyTitle(ReminderSetting r) {
-    return 'Fluidity';
+    return _drinkTitle;
   }
 
   String _buildDailyBody(ReminderSetting r) {
@@ -248,109 +248,7 @@ class NotificationService {
     }
   }
 
-  // Debug helpers
-  Future<void> scheduleDebugInSeconds(int seconds) async {
-    if (kIsWeb) return;
-    if (!_initialized) {
-      if (kDebugMode) { print('[Notif][debug] scheduleDebugInSeconds before init, running init()'); }
-      await init();
-      await requestPermissions();
-    }
-    tz.TZDateTime computeWhen() {
-      final now = tz.TZDateTime.now(tz.local);
-      // add small buffer to ensure it's in the future even after brief UI hops
-      return now.add(Duration(milliseconds: (seconds * 1000) + 250));
-    }
-    var when = computeWhen();
-    if (kDebugMode) {
-      // ignore: avoid_print
-      print('[Notif][debug] scheduling one-off in ${seconds}s at $when');
-    }
-
-    try {
-      await _plugin.zonedSchedule(
-        999999,
-        'Fluidity (debug)',
-        'Test notification in ${seconds}s',
-        when,
-        _details(),
-        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-        uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-      );
-    } catch (e) {
-      final isExactNotPermitted = e is PlatformException && e.code == 'exact_alarms_not_permitted';
-      if (isExactNotPermitted) {
-        // Try to open/request exact alarm permission if supported by plugin, then retry exact once.
-        try {
-          final androidImpl = _plugin.resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>();
-          final granted = await androidImpl?.requestExactAlarmsPermission();
-          if (kDebugMode) { print('[Notif][debug] requested exact alarm permission, granted=$granted'); }
-          if (granted == true) {
-            when = computeWhen();
-            await _plugin.zonedSchedule(
-              999999,
-              'Fluidity (debug)',
-              'Test notification in ${seconds}s',
-              when,
-              _details(),
-              androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-              uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-            );
-            return;
-          }
-        } catch (eReq) {
-          if (kDebugMode) { print('[Notif][debug] exact alarm permission request error: $eReq'); }
-        }
-        if (kDebugMode) { print('[Notif][debug] exact alarm not permitted; retrying with inexactAllowWhileIdle'); }
-        try {
-          when = computeWhen();
-          await _plugin.zonedSchedule(
-            999999,
-            'Fluidity (debug)',
-            'Test notification in ${seconds}s (inexact)',
-            when,
-            _details(),
-            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            uiLocalNotificationDateInterpretation: UILocalNotificationDateInterpretation.absoluteTime,
-          );
-          return;
-        } catch (e2) {
-          if (kDebugMode) { print('[Notif][debug] inexact retry failed ($e2); falling back to Future.delayed + show'); }
-        }
-      } else {
-        if (kDebugMode) { print('[Notif][debug] zonedSchedule failed ($e); fallback to Future.delayed + show'); }
-      }
-      // Final fallback works only while app process is alive (foreground/background). If the OS kills the app,
-      // this won't run; use this as a developer aid during testing.
-      Future.delayed(Duration(seconds: seconds), () async {
-        await _plugin.show(
-          999999,
-          'Fluidity (debug)',
-          'Fallback test notification after ${seconds}s',
-          _details(),
-        );
-      });
-    }
-  }
-
-  Future<void> showDebugNow() async {
-    if (kIsWeb) return;
-    if (!_initialized) {
-      if (kDebugMode) { print('[Notif][debug] showDebugNow before init, running init()'); }
-      await init();
-      await requestPermissions();
-    }
-    if (kDebugMode) {
-      // ignore: avoid_print
-      print('[Notif][debug] show immediate notification');
-    }
-    await _plugin.show(
-      999998,
-      'Fluidity (debug)',
-      'Immediate test notification',
-      _details(),
-    );
-  }
+  // Debug helper methods removed per request (no longer scheduling immediate test notifications)
 
   // ---------------- Persistence helpers ----------------
   static const _prefsKeyDaily = 'notif_daily_list_v1';
@@ -418,6 +316,19 @@ class NotificationService {
       }
     } catch (e) {
       if (kDebugMode) { print('[Notif] restorePersistedDailySchedules error: $e'); }
+    }
+  }
+
+  // Allow updating localized strings (must be called from UI context when locale changes)
+  void updateLocalizedStrings(dynamic loc) {
+    try {
+      // Expecting an AppLocalizations instance; kept dynamic to avoid direct dependency import here.
+      final title = loc.notificationDrinkTitle as String?;
+      if (title != null && title.trim().isNotEmpty) {
+        _drinkTitle = title.trim();
+      }
+    } catch (_) {
+      // ignore localization update errors silently
     }
   }
 }

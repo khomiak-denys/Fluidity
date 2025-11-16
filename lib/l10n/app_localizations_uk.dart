@@ -345,4 +345,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get auth_verification_email_sent => 'Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення.';
+
+  @override
+  String get notificationDrinkTitle => 'Час пити воду 💧';
 }

@@ -345,4 +345,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get auth_verification_email_sent => 'A verification email has been sent to your address. Please check your inbox.';
+
+  @override
+  String get notificationDrinkTitle => 'Time to drink water 💧';
 }

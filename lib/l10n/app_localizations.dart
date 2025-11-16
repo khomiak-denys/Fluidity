@@ -750,6 +750,12 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'A verification email has been sent to your address. Please check your inbox.'**
   String get auth_verification_email_sent;
+
+  /// Title used for drink water notification
+  ///
+  /// In en, this message translates to:
+  /// **'Time to drink water 💧'**
+  String get notificationDrinkTitle;
 }
 
 class _AppLocalizationsDelegate extends LocalizationsDelegate<AppLocalizations> {

@@ -320,6 +320,11 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
                 listener: (context, state) async {
                   if (state is ReminderLoaded) {
                     try {
+                      // Update localized notification title before scheduling
+                      final loc = AppLocalizations.of(context);
+                      if (loc != null) {
+                        NotificationService.instance.updateLocalizedStrings(loc);
+                      }
                       await NotificationService.instance.sync(state.data);
                     } catch (_) {}
                   }
