@@ -7,6 +7,7 @@ import '../models/water_entry.dart'; // WaterEntry model
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/water/water_bloc.dart';
 import '../bloc/water/water_state.dart';
+import '../widgets/monthly_bar_chart_scrollable.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
 const Color sky50 = Color(0xFFF0F9FF);
@@ -139,6 +140,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
 
   final data = _calculateStats(entries);
   final bars = data['bars'] as List<Map<String, dynamic>>;
+  final filteredEntries = data['filtered'] as List<WaterEntry>;
   final todayIntake = data['todayIntake'] as int;
   final periodAverage = data['periodAverage'] as int;
   final periodTotal = data['periodTotal'] as int;
@@ -233,7 +235,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
               const SizedBox(height: 20), // space-y-4
 
               // --- Progress Chart (Week/Month) ---
-  if (_period != StatsPeriod.day) _buildPeriodChartCard(context, bars)
+  if (_period != StatsPeriod.day) _buildPeriodChartCard(context, bars, filteredEntries)
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 400.ms)
                   .slideY(begin: 0.2, end: 0),
@@ -361,7 +363,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
   }
 
   // --- Weekly Chart Card Widget ---
-  Widget _buildPeriodChartCard(BuildContext context, List<Map<String, dynamic>> data) {
+  Widget _buildPeriodChartCard(BuildContext context, List<Map<String, dynamic>> data, List<WaterEntry> filteredEntries) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1,
@@ -384,101 +386,107 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             ),
           ),
           // CardContent
-          Padding(
-            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // pt-0
-            child: SizedBox(
-              height: 220, // h-48 sm:h-64
-              child: BarChart(
-                BarChartData(
-                  alignment: BarChartAlignment.spaceAround,
-                  maxY: widget.dailyGoal * 1.2, // Максимальне значення на осі Y
-                  barTouchData: BarTouchData(
-                    enabled: true,
-                    touchTooltipData: BarTouchTooltipData(
-                      getTooltipItem: (group, groupIndex, rod, rodIndex) {
-                        final value = rod.toY.toInt();
-                        return BarTooltipItem(
-                          '${value}ml',
-                          const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
-                        );
-                      },
-                    ),
-                  ),
-                  titlesData: FlTitlesData(
-                    show: true,
-                    topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
-                    leftTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        reservedSize: 32,
-                        getTitlesWidget: (value, meta) {
-                          if (value == 0) return const Text('0', style: TextStyle(fontSize: 10, color: mutedForeground));
-                          if (value == widget.dailyGoal.toDouble()) return Text('${widget.dailyGoal}ml', style: const TextStyle(fontSize: 10, color: green600));
-                          return const SizedBox.shrink();
-                        },
-                      ),
-                    ),
-                    bottomTitles: AxisTitles(
-                      sideTitles: SideTitles(
-                        showTitles: true,
-                        getTitlesWidget: (value, meta) {
-                          final raw = value.toInt();
-                          if (data.isEmpty) return const SizedBox.shrink();
-                          final index = raw.clamp(0, data.length - 1);
-                          return Padding(
-                            padding: const EdgeInsets.only(top: 8.0),
-                            child: Text(data[index]['label'] as String,
-                                style: const TextStyle(fontSize: 10, color: mutedForeground)),
+          if (_period == StatsPeriod.month)
+            MonthlyBarChartScrollable(
+              entries: filteredEntries,
+              month: DateTime.now(),
+            )
+          else
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16, 0, 16, 16), // pt-0
+              child: SizedBox(
+                height: 220, // h-48 sm:h-64
+                child: BarChart(
+                  BarChartData(
+                    alignment: BarChartAlignment.spaceAround,
+                    maxY: widget.dailyGoal * 1.2, // Максимальне значення на осі Y
+                    barTouchData: BarTouchData(
+                      enabled: true,
+                      touchTooltipData: BarTouchTooltipData(
+                        getTooltipItem: (group, groupIndex, rod, rodIndex) {
+                          final value = rod.toY.toInt();
+                          return BarTooltipItem(
+                            '${value}ml',
+                            const TextStyle(color: Colors.white, fontWeight: FontWeight.w600),
                           );
                         },
                       ),
                     ),
-                  ),
-                  gridData: FlGridData(
-                    show: true,
-                    drawVerticalLine: false,
-                    getDrawingHorizontalLine: (value) {
-                      if (value == widget.dailyGoal) {
-                        // Імітація лінії цілі (goal)
-                        return FlLine(
-                          color: green600.withAlpha((0.7 * 255).round()),
-                          strokeWidth: 1.5,
-                          // FlChart не підтримує пунктирну лінію Goal Line безпосередньо,
-                          // але ми можемо імітувати її товстою лінією.
-                        );
-                      }
-                      return FlLine(
-                        color: borderGray.withAlpha((0.5 * 255).round()), // CartesianGrid stroke="#e0f7ff"
-                        strokeWidth: 0.5,
-                      );
-                    },
-                  ),
-                  borderData: FlBorderData(show: false),
-                  barGroups: data.asMap().entries.map((entry) {
-                    int index = entry.key;
-                    final data = entry.value;
-                    return BarChartGroupData(
-                      x: index,
-                      barRods: [
-                        BarChartRodData(
-                          toY: (data['intake'] as int).toDouble(),
-                          // Використовуємо LinearGradient для імітації градієнта
-                          gradient: LinearGradient(
-                            colors: [sky600.withAlpha((0.8 * 255).round()), sky600.withAlpha((0.6 * 255).round())],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
-                          borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
-                          width: 16, // Зменшення ширини для кращого вигляду
+                    titlesData: FlTitlesData(
+                      show: true,
+                      topTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      rightTitles: const AxisTitles(sideTitles: SideTitles(showTitles: false)),
+                      leftTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          reservedSize: 32,
+                          getTitlesWidget: (value, meta) {
+                            if (value == 0) return const Text('0', style: TextStyle(fontSize: 10, color: mutedForeground));
+                            if (value == widget.dailyGoal.toDouble()) return Text('${widget.dailyGoal}ml', style: const TextStyle(fontSize: 10, color: green600));
+                            return const SizedBox.shrink();
+                          },
                         ),
-                      ],
-                    );
-                  }).toList(),
+                      ),
+                      bottomTitles: AxisTitles(
+                        sideTitles: SideTitles(
+                          showTitles: true,
+                          getTitlesWidget: (value, meta) {
+                            final raw = value.toInt();
+                            if (data.isEmpty) return const SizedBox.shrink();
+                            final index = raw.clamp(0, data.length - 1);
+                            return Padding(
+                              padding: const EdgeInsets.only(top: 8.0),
+                              child: Text(data[index]['label'] as String,
+                                  style: const TextStyle(fontSize: 10, color: mutedForeground)),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                    gridData: FlGridData(
+                      show: true,
+                      drawVerticalLine: false,
+                      getDrawingHorizontalLine: (value) {
+                        if (value == widget.dailyGoal) {
+                          // Імітація лінії цілі (goal)
+                          return FlLine(
+                            color: green600.withAlpha((0.7 * 255).round()),
+                            strokeWidth: 1.5,
+                            // FlChart не підтримує пунктирну лінію Goal Line безпосередньо,
+                            // але ми можемо імітувати її товстою лінією.
+                          );
+                        }
+                        return FlLine(
+                          color: borderGray.withAlpha((0.5 * 255).round()), // CartesianGrid stroke="#e0f7ff"
+                          strokeWidth: 0.5,
+                        );
+                      },
+                    ),
+                    borderData: FlBorderData(show: false),
+                    barGroups: data.asMap().entries.map((entry) {
+                      int index = entry.key;
+                      final data = entry.value;
+                      return BarChartGroupData(
+                        x: index,
+                        barRods: [
+                          BarChartRodData(
+                            toY: (data['intake'] as int).toDouble(),
+                            // Використовуємо LinearGradient для імітації градієнта
+                            gradient: LinearGradient(
+                              colors: [sky600.withAlpha((0.8 * 255).round()), sky600.withAlpha((0.6 * 255).round())],
+                              begin: Alignment.topCenter,
+                              end: Alignment.bottomCenter,
+                            ),
+                            borderRadius: const BorderRadius.only(topLeft: Radius.circular(4), topRight: Radius.circular(4)),
+                            width: 16, // Зменшення ширини для кращого вигляду
+                          ),
+                        ],
+                      );
+                    }).toList(),
+                  ),
                 ),
               ),
             ),
-          ),
         ],
       ),
     );
