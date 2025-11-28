@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'dart:async';
+import 'package:flutter/services.dart'; // додано для SystemUiOverlayStyle
 import 'bloc/water/water_bloc.dart';
 import 'bloc/water/water_event.dart';
 import 'bloc/reminder/reminder_bloc.dart';
@@ -59,6 +60,7 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
   String activeTab = 'home';
   int dailyGoal = 2000;
   bool notificationsEnabled = true;
+  bool notificationsSystemAllowed = false; // новий прапорець
   StreamSubscription<UserProfile?>? _profileSub;
 
   // Removed hardcoded mock entries and reminders
@@ -83,6 +85,28 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
       // If anything goes wrong, leave isAuthenticated as false.
       isAuthenticated = false;
     }
+
+    // Ініціалізація дозволів для сповіщень
+    Future.microtask(() async {
+      try {
+        await NotificationService.instance.init();
+        await NotificationService.instance.requestPermissions();
+        // requestPermissions() повертає void, тому не присвоюємо його в змінну
+        if (mounted) {
+          // Вважаємо, що дозвіл надано після успішного виклику (за відсутності явного API перевірки)
+          setState(() => notificationsSystemAllowed = true);
+        }
+      } catch (_) {
+        // Якщо трапилась помилка — вважаємо, що системний дозвіл не надано
+        if (mounted) {
+          setState(() {
+            notificationsSystemAllowed = false;
+            notificationsEnabled = false;
+          });
+        }
+        try { await NotificationService.instance.cancelAll(); } catch (_) {}
+      }
+    });
   }
 
   void _attachProfileStream() {
@@ -248,6 +272,75 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
           dailyGoal: dailyGoal,
         );
       case 'reminders':
+        // Блокування екрану нагадувань, якщо сповіщення вимкнено або системний дозвіл відсутній
+        if (!notificationsEnabled || !notificationsSystemAllowed) {
+          final loc = AppLocalizations.of(context);
+          final title = !notificationsSystemAllowed
+              ? (loc?.errorPermissionDenied ?? 'Permission denied. Please enable notifications in Settings.')
+              : (loc?.notifications ?? 'Notifications');
+          final subtitle = !notificationsSystemAllowed
+              ? 'Enable system notification permission in Settings.'
+              : 'Enable notifications in Profile to manage reminders.';
+          return Scaffold(
+            backgroundColor: Colors.white,
+            appBar: AppBar(
+              toolbarHeight: 0,
+              backgroundColor: Colors.white,
+              elevation: 0,
+              systemOverlayStyle: SystemUiOverlayStyle.dark,
+            ),
+            body: Center(
+              child: Padding(
+                padding: const EdgeInsets.all(24.0),
+                child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    const Icon(Icons.notifications_off_rounded, size: 48, color: Colors.grey),
+                    const SizedBox(height: 12),
+                    Text(title, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey)),
+                    const SizedBox(height: 8),
+                    Text(subtitle, textAlign: TextAlign.center, style: const TextStyle(color: Colors.grey, fontSize: 12)),
+                    const SizedBox(height: 16),
+                    if (!notificationsSystemAllowed)
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          // Повторна перевірка/запит дозволу
+                          try {
+                            await NotificationService.instance.requestPermissions();
+                            if (mounted) {
+                              setState(() {
+                                notificationsSystemAllowed = true;
+                                notificationsEnabled = true; // авто-вмикання майстер‑перемикача
+                              });
+                            }
+                            // Синхронізація нагадувань, якщо вони завантажені
+                            final rbState = (_navigatorKey.currentContext ?? context).read<ReminderBloc>().state;
+                            if (rbState is ReminderLoaded) {
+                              await NotificationService.instance.sync(rbState.data);
+                            }
+                          } catch (_) {
+                            // Дозвіл все ще не надано
+                            if (mounted) {
+                              setState(() {
+                                notificationsSystemAllowed = false;
+                                notificationsEnabled = false;
+                              });
+                            }
+                          }
+                        },
+                        icon: const Icon(Icons.refresh),
+                        label: Text(loc?.retry ?? 'Retry'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.blue,
+                          foregroundColor: Colors.white,
+                        ),
+                      ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }
         return const RemindersScreen();
       case 'profile':
         final fbUser = FirebaseService.instance.auth.currentUser;
@@ -268,13 +361,73 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
               } catch (_) {}
             }
           },
-          notificationsEnabled: notificationsEnabled,
-          onNotificationsToggle: () => setState(() => notificationsEnabled = !notificationsEnabled),
+          notificationsEnabled: notificationsEnabled && notificationsSystemAllowed,
+          onNotificationsToggle: () async {
+            if (!notificationsSystemAllowed) {
+              // Покажемо діалог із інструкцією та Retry (без openSystemSettings)
+              final loc = AppLocalizations.of(_navigatorKey.currentContext ?? context);
+              await showDialog<void>(
+                context: _navigatorKey.currentContext ?? context,
+                builder: (ctx) {
+                  return AlertDialog(
+                    title: Text(loc?.errorPermissionDenied ?? 'Permission denied'),
+                    content: const Text('Please enable notifications in system Settings to use reminders. Return and tap Retry.'),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(ctx).pop(),
+                        child: Text(loc?.cancel ?? 'Cancel'),
+                      ),
+                      ElevatedButton(
+                        onPressed: () async {
+                          Navigator.of(ctx).pop();
+                          try {
+                            await NotificationService.instance.requestPermissions();
+                            if (mounted) {
+                              setState(() {
+                                notificationsSystemAllowed = true;
+                                notificationsEnabled = true;
+                              });
+                            }
+                            final rbState = (_navigatorKey.currentContext ?? context).read<ReminderBloc>().state;
+                            if (rbState is ReminderLoaded) {
+                              await NotificationService.instance.sync(rbState.data);
+                            }
+                          } catch (_) {
+                            if (mounted) {
+                              setState(() {
+                                notificationsSystemAllowed = false;
+                                notificationsEnabled = false;
+                              });
+                            }
+                          }
+                        },
+                        child: Text(loc?.retry ?? 'Retry'),
+                      ),
+                    ],
+                  );
+                },
+              );
+              return;
+            }
+
+            final newVal = !notificationsEnabled;
+            setState(() => notificationsEnabled = newVal);
+            try {
+              if (!newVal) {
+                await NotificationService.instance.cancelAll();
+              } else {
+                final ctx = _navigatorKey.currentContext ?? context;
+                final rbState = ctx.read<ReminderBloc>().state;
+                if (rbState is ReminderLoaded) {
+                  await NotificationService.instance.sync(rbState.data);
+                }
+              }
+            } catch (_) {}
+          },
           onSignOut: handleSignOut,
           user: userMap,
           language: language,
           onLanguageChange: (l) async {
-            // update state and persist selection
             setState(() => language = l);
             final prefs = await SharedPreferences.getInstance();
             await prefs.setString('language', l);
@@ -320,12 +473,21 @@ class _WaterTrackerAppState extends State<WaterTrackerApp> {
                 listener: (context, state) async {
                   if (state is ReminderLoaded) {
                     try {
-                      // Update localized notification title before scheduling
                       final loc = AppLocalizations.of(context);
                       if (loc != null) {
                         NotificationService.instance.updateLocalizedStrings(loc);
                       }
-                      await NotificationService.instance.sync(state.data);
+                      final hasActive = state.data.any((r) => r.isActive);
+                      // Якщо з'явилось хоч одне активне нагадування — увімкнути майстер‑перемикач (тільки якщо системний дозвіл є)
+                      if (hasActive && !notificationsEnabled && notificationsSystemAllowed) {
+                        setState(() => notificationsEnabled = true);
+                      }
+                      // Синхронізувати або скасувати залежно від майстер‑перемикача та системного дозволу
+                      if (notificationsEnabled && notificationsSystemAllowed && hasActive) {
+                        await NotificationService.instance.sync(state.data);
+                      } else {
+                        await NotificationService.instance.cancelAll();
+                      }
                     } catch (_) {}
                   }
                 },
