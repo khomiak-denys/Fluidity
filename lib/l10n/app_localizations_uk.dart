@@ -227,6 +227,12 @@ class AppLocalizationsUk extends AppLocalizations {
   String get statisticsWeekly => 'Статистика за тиждень';
 
   @override
+  String get statisticsDaily => 'Статистика за день';
+
+  @override
+  String get statisticsMonthly => 'Статистика за місяць';
+
+  @override
   String get hourlyDistribution => 'Розподіл за сьогодні';
 
   @override
@@ -237,6 +243,9 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get statsWeekTotalTitle => 'Загалом за тиждень';
+
+  @override
+  String get statsMonthTotalTitle => 'Загалом за місяць';
 
   @override
   String get entryDeleted => 'Запис видалено';
@@ -266,6 +275,54 @@ class AppLocalizationsUk extends AppLocalizations {
   String get noAccountPrompt => 'Немає акаунту? Зареєструватися';
 
   @override
+  String get addCommentHint => 'Додайте коментар (необов’язково)';
+
+  @override
+  String get errorLoadingEntries => 'Не вдалося завантажити записи';
+
+  @override
+  String get errorPermissionDenied => 'Доступ заборонено. Надайте дозвіл і спробуйте ще раз.';
+
+  @override
+  String get errorGeneric => 'Щось пішло не так. Спробуйте ще раз.';
+
+  @override
+  String get retry => 'Повторити';
+
+  @override
+  String get errorLoadingReminders => 'Не вдалося завантажити нагадування';
+
+  @override
+  String get weekdayMonShort => 'Пн';
+
+  @override
+  String get weekdayTueShort => 'Вт';
+
+  @override
+  String get weekdayWedShort => 'Ср';
+
+  @override
+  String get weekdayThuShort => 'Чт';
+
+  @override
+  String get weekdayFriShort => 'Пт';
+
+  @override
+  String get weekdaySatShort => 'Сб';
+
+  @override
+  String get weekdaySunShort => 'Нд';
+
+  @override
+  String get periodDay => 'День';
+
+  @override
+  String get periodWeek => 'Тиждень';
+
+  @override
+  String get periodMonth => 'Місяць';
+
+  @override
   String get auth_email_not_verified => 'Будь ласка, підтвердіть вашу електронну пошту перед входом.';
 
   @override
@@ -288,4 +345,7 @@ class AppLocalizationsUk extends AppLocalizations {
 
   @override
   String get auth_verification_email_sent => 'Лист для підтвердження надіслано на вашу пошту. Перевірте вхідні повідомлення.';
+
+  @override
+  String get notificationDrinkTitle => 'Час пити воду 💧';
 }
