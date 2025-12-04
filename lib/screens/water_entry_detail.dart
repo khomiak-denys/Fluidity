@@ -59,7 +59,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      AppLocalizations.of(context)!.addEntry,
+                      '${AppLocalizations.of(context)!.addEntry} (CI demo)',
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _sky600),
                     ),
                   ),
