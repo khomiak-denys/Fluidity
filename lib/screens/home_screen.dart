@@ -63,8 +63,8 @@ class _HomeScreenState extends State<HomeScreen> {
     final duration = nextMidnight.difference(now);
     _midnightTimer = Timer(duration, () {
       if (!mounted) return;
-      setState(() {}); // rebuild to apply today-filter and clear list for new day
-      _scheduleMidnightTick(); // reschedule for the following day
+      setState(() {}); 
+      _scheduleMidnightTick(); 
     });
   }
 
@@ -547,7 +547,7 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
                 contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               ),
               items: const [
-                DropdownMenuItem(value: 'glass', child: Text('🥛 Glass', style: TextStyle(fontSize: 16))),
+                DropdownMenuItem(value: 'glass', child: Text('🥛 Склянка', style: TextStyle(fontSize: 16))),
                 DropdownMenuItem(value: 'bottle', child: Text('🍼 Bottle', style: TextStyle(fontSize: 16))),
                 DropdownMenuItem(value: 'cup', child: Text('☕ Cup', style: TextStyle(fontSize: 16))),
               ],
