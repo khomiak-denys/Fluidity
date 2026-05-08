@@ -256,11 +256,9 @@ class _MainShell extends StatelessWidget {
                       if (!notifState.systemAllowed)
                         ElevatedButton.icon(
                           onPressed: () async {
-                            await context.read<NotificationsCubit>().retryPermission();
                             final rbState = context.read<ReminderBloc>().state;
-                            if (rbState is ReminderLoaded) {
-                              await context.read<NotificationsCubit>().syncFromReminders(rbState.data);
-                            }
+                            final reminders = rbState is ReminderLoaded ? rbState.data : const <ReminderSetting>[];
+                            await context.read<NotificationsCubit>().retryAndSync(reminders);
                           },
                           icon: const Icon(Icons.refresh),
                           label: Text(loc?.retry ?? 'Retry'),
@@ -307,11 +305,9 @@ class _MainShell extends StatelessWidget {
                         ElevatedButton(
                           onPressed: () async {
                             Navigator.of(ctx).pop();
-                            await context.read<NotificationsCubit>().retryPermission();
                             final rbState = context.read<ReminderBloc>().state;
-                            if (rbState is ReminderLoaded) {
-                              await context.read<NotificationsCubit>().syncFromReminders(rbState.data);
-                            }
+                            final reminders = rbState is ReminderLoaded ? rbState.data : const <ReminderSetting>[];
+                            await context.read<NotificationsCubit>().retryAndSync(reminders);
                           },
                           child: Text(loc?.retry ?? 'Retry'),
                         ),
@@ -331,7 +327,7 @@ class _MainShell extends StatelessWidget {
               await prefs.remove('user_uid');
               await prefs.remove('user_email');
 
-              await context.read<NotificationsCubit>().cancelAll();
+              await context.read<NotificationsCubit>().handleSignOut();
               context.read<AppSettingsCubit>().resetForSignOut();
               await context.read<SessionCubit>().signOut();
             },

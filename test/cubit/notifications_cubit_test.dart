@@ -1,6 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fluidity/cubit/notifications/notifications_cubit.dart';
+import 'package:fluidity/cubit/notifications/notifications_state.dart';
 import 'package:fluidity/models/reminder_setting.dart';
 
 class _FakeNotificationGateway implements NotificationGateway {
@@ -75,5 +76,44 @@ void main() {
 
     expect(gateway.cancelAllCalled, isTrue);
     expect(cubit.state.enabled, isFalse);
+  });
+
+  test('retryAndSync success requests permission and syncs', () async {
+    await cubit.bootstrap();
+    gateway.requestCalled = false;
+    final reminders = [
+      ReminderSetting(
+        id: '1',
+        scheduledTime: DateTime(2026, 1, 1, 9, 0),
+        comment: 'Water',
+        isActive: true,
+      ),
+    ];
+
+    await cubit.retryAndSync(reminders);
+
+    expect(gateway.requestCalled, isTrue);
+    expect(gateway.syncCalls, 1);
+  });
+
+  test('retryAndSync denied transitions to disabled state', () async {
+    await cubit.bootstrap();
+    gateway.throwOnPermission = true;
+
+    await cubit.retryAndSync(const []);
+
+    expect(cubit.state.systemAllowed, isFalse);
+    expect(cubit.state.enabled, isFalse);
+    expect(gateway.cancelAllCalled, isTrue);
+  });
+
+  test('handleSignOut cancels notifications and resets state', () async {
+    await cubit.bootstrap();
+    await cubit.handleSignOut();
+
+    expect(gateway.cancelAllCalled, isTrue);
+    expect(cubit.state.status, NotificationsStatus.initial);
+    expect(cubit.state.enabled, isTrue);
+    expect(cubit.state.systemAllowed, isFalse);
   });
 }

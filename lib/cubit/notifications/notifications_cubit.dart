@@ -62,6 +62,12 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     }
   }
 
+  Future<void> retryAndSync(List<ReminderSetting> reminders) async {
+    await retryPermission();
+    if (!state.systemAllowed || !state.enabled) return;
+    await syncFromReminders(reminders);
+  }
+
   Future<void> setEnabled(bool value, List<ReminderSetting> reminders) async {
     if (!state.systemAllowed && value) {
       return;
@@ -94,6 +100,13 @@ class NotificationsCubit extends Cubit<NotificationsState> {
   }
 
   Future<void> cancelAll() => notificationService.cancelAll();
+
+  Future<void> handleSignOut() async {
+    try {
+      await notificationService.cancelAll();
+    } catch (_) {}
+    emit(const NotificationsState());
+  }
 
   Future<void> _disableAndCancel() async {
     emit(state.copyWith(
