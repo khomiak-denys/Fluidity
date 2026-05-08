@@ -1,5 +1,6 @@
 import 'dart:async';
 
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../models/user_profile.dart';
 import '../../services/firebase_service.dart';
@@ -10,7 +11,7 @@ class SessionCubit extends Cubit<SessionState> {
   final FirebaseService firebaseService;
   final UserProfileRepository userProfileRepository;
 
-  StreamSubscription<dynamic>? _authSub;
+  StreamSubscription<User?>? _authSub;
   StreamSubscription<UserProfile?>? _profileSub;
 
   SessionCubit({
@@ -20,7 +21,6 @@ class SessionCubit extends Cubit<SessionState> {
 
   Future<void> bootstrap() async {
     _bindAuthStream();
-    _syncFromCurrentUser();
   }
 
   void _bindAuthStream() {
@@ -47,34 +47,12 @@ class SessionCubit extends Cubit<SessionState> {
     });
   }
 
-  void _syncFromCurrentUser() {
-    final user = firebaseService.auth.currentUser;
-    if (user == null) {
-      emit(const SessionState(
-        status: SessionStatus.unauthenticated,
-        authenticated: false,
-      ));
-      return;
-    }
-
-    emit(state.copyWith(
-      status: SessionStatus.authenticated,
-      authenticated: true,
-      uid: user.uid,
-      email: user.email,
-      displayName: user.displayName,
-      clearAuthError: true,
-    ));
-    _attachProfileStream(user.uid);
-  }
-
   Future<void> login(String email, String password) async {
     emit(state.copyWith(status: SessionStatus.loading, clearAuthError: true));
     final error = await firebaseService.signInWithEmail(email.trim(), password);
     if (error == null) {
       await firebaseService.logEvent('login', {'method': 'email'});
       await _ensureProfileForCurrentUser();
-      _syncFromCurrentUser();
       return;
     }
 
@@ -95,10 +73,6 @@ class SessionCubit extends Cubit<SessionState> {
     );
 
     if (error == null) {
-      emit(state.copyWith(
-        status: SessionStatus.unauthenticated,
-        clearAuthError: true,
-      ));
       return;
     }
 
@@ -113,12 +87,6 @@ class SessionCubit extends Cubit<SessionState> {
     try {
       await firebaseService.signOut();
     } catch (_) {}
-
-    _profileSub?.cancel();
-    emit(const SessionState(
-      status: SessionStatus.unauthenticated,
-      authenticated: false,
-    ));
   }
 
   Future<void> _ensureProfileForCurrentUser() async {
