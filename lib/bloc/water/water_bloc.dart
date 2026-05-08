@@ -1,16 +1,14 @@
-import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../common/stream_backed_bloc.dart';
 import '../../models/water_entry.dart';
 import '../../repositories/water_entry_repository.dart';
 import 'water_event.dart';
 import 'water_state.dart';
 
-class WaterBloc extends Bloc<WaterEvent, WaterState> {
+class WaterBloc extends StreamBackedBloc<WaterEvent, WaterState, WaterEntry> {
   final WaterEntryRepository repo;
-  final String userId;
-  StreamSubscription<List<WaterEntry>>? _subscription;
 
-  WaterBloc({required this.repo, required this.userId}) : super(WaterInitial()) {
+  WaterBloc({required this.repo, required super.userId}) : super(initialState: WaterInitial()) {
     on<LoadWaterEvent>(_onLoad);
     on<RefreshWaterEvent>(_onLoad);
     on<SimulateErrorEvent>(_onSimulateError);
@@ -21,16 +19,9 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
   }
 
   Future<void> _onLoad(WaterEvent event, Emitter<WaterState> emit) async {
-    final currentData = state is WaterLoaded ? (state as WaterLoaded).data : <WaterEntry>[];
-    emit(WaterLoading(data: currentData));
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (userId.isEmpty) {
-      emit(WaterLoaded(data: const []));
-      return;
-    }
-    await _subscription?.cancel();
-    _subscription = repo.watchAll(userId).listen(
-      (entries) => add(_WaterStreamUpdated(entries)),
+    await handleLoad(
+      emit,
+      onData: (entries) => add(_WaterStreamUpdated(entries)),
       onError: (e) => add(_WaterStreamError(e)),
     );
   }
@@ -71,15 +62,28 @@ class WaterBloc extends Bloc<WaterEvent, WaterState> {
   }
 
   void _onStreamError(_WaterStreamError event, Emitter<WaterState> emit) {
-    final currentData = state is WaterLoaded ? (state as WaterLoaded).data : <WaterEntry>[];
-    emit(WaterError(error: event.error, data: currentData));
+    emit(errorState(event.error, currentData(state)));
   }
 
   @override
-  Future<void> close() {
-    _subscription?.cancel();
-    return super.close();
+  List<WaterEntry> currentData(WaterState state) {
+    if (state is WaterLoaded) return state.data;
+    if (state is WaterLoading) return state.data;
+    if (state is WaterError) return state.data;
+    return const <WaterEntry>[];
   }
+
+  @override
+  WaterState loadingState(List<WaterEntry> data) => WaterLoading(data: data);
+
+  @override
+  WaterState loadedState(List<WaterEntry> data) => WaterLoaded(data: data);
+
+  @override
+  WaterState errorState(Object error, List<WaterEntry> data) => WaterError(error: error, data: data);
+
+  @override
+  Stream<List<WaterEntry>> watchAll(String userId) => repo.watchAll(userId);
 }
 
 class _WaterStreamUpdated extends WaterEvent {
