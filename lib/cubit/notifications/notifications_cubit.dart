@@ -10,7 +10,7 @@ abstract class NotificationGateway {
   Future<void> requestPermissions();
   Future<void> sync(List<ReminderSetting> reminders);
   Future<void> cancelAll();
-  void updateLocalizedStrings(dynamic loc);
+  void updateLocalizedStrings(AppLocalizations loc);
 }
 
 class NotificationServiceGateway implements NotificationGateway {
@@ -31,7 +31,7 @@ class NotificationServiceGateway implements NotificationGateway {
   Future<void> cancelAll() => service.cancelAll();
 
   @override
-  void updateLocalizedStrings(dynamic loc) => service.updateLocalizedStrings(loc);
+  void updateLocalizedStrings(AppLocalizations loc) => service.updateLocalizedStrings(loc);
 }
 
 class NotificationsCubit extends Cubit<NotificationsState> {

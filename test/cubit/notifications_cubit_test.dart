@@ -2,6 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 
 import 'package:fluidity/cubit/notifications/notifications_cubit.dart';
 import 'package:fluidity/cubit/notifications/notifications_state.dart';
+import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:fluidity/models/reminder_setting.dart';
 
 class _FakeNotificationGateway implements NotificationGateway {
@@ -35,7 +36,7 @@ class _FakeNotificationGateway implements NotificationGateway {
   }
 
   @override
-  void updateLocalizedStrings(dynamic loc) {}
+  void updateLocalizedStrings(AppLocalizations loc) {}
 }
 
 void main() {

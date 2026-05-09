@@ -103,6 +103,8 @@
         "errorGeneric": "Something went wrong. Try again.",
     "retry": "Retry",
     "errorLoadingReminders": "Could not load reminders",
+    "remindersPermissionEnableInSettings": "Enable system notification permission in Settings.",
+    "remindersEnableInProfile": "Enable notifications in Profile to manage reminders.",
     "congratulations": "Congratulations!",
     "goalReached": "You've reached your daily goal!",
     "emailValidatorEmpty": "Please enter your email",

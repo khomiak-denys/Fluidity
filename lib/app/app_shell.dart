@@ -71,11 +71,11 @@ class AppShell extends StatelessWidget {
           if (!notifState.enabled || !notifState.systemAllowed) {
             final loc = AppLocalizations.of(context);
             final title = !notifState.systemAllowed
-                ? (loc?.errorPermissionDenied ?? 'Permission denied. Please enable notifications in Settings.')
+                ? (loc?.errorPermissionDenied ?? 'Permission denied.')
                 : (loc?.notifications ?? 'Notifications');
             final subtitle = !notifState.systemAllowed
-                ? 'Enable system notification permission in Settings.'
-                : 'Enable notifications in Profile to manage reminders.';
+                ? (loc?.remindersPermissionEnableInSettings ?? 'Enable system notification permission in Settings.')
+                : (loc?.remindersEnableInProfile ?? 'Enable notifications in Profile to manage reminders.');
             return Scaffold(
               backgroundColor: Colors.white,
               appBar: AppBar(

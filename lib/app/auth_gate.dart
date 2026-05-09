@@ -49,6 +49,10 @@ class AuthGate extends StatelessWidget {
         }
       },
       child: BlocBuilder<SessionCubit, SessionState>(
+        buildWhen: (prev, next) =>
+            prev.authenticated != next.authenticated ||
+            prev.uid != next.uid ||
+            prev.authError != next.authError,
         builder: (context, sessionState) {
           if (!sessionState.authenticated || (sessionState.uid?.isEmpty ?? true)) {
             return LoginScreen(
