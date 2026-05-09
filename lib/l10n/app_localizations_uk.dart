@@ -233,64 +233,13 @@ class AppLocalizationsUk extends AppLocalizations {
   String get statisticsMonthly => 'Статистика за місяць';
 
   @override
-  String get hourlyDistribution => 'Розподіл за сьогодні';
+  String get periodDay => 'День';
 
   @override
-  String get statsTodayTitle => 'Сьогодні випито';
+  String get periodWeek => 'Тиждень';
 
   @override
-  String get statsAverageTitle => 'В середньому за день';
-
-  @override
-  String get statsWeekTotalTitle => 'Загалом за тиждень';
-
-  @override
-  String get statsMonthTotalTitle => 'Загалом за місяць';
-
-  @override
-  String get entryDeleted => 'Запис видалено';
-
-  @override
-  String get typeLabel => 'Тип';
-
-  @override
-  String get congratulations => 'Вітаємо!';
-
-  @override
-  String get goalReached => 'Ви досягли своєї денної цілі!';
-
-  @override
-  String get emailValidatorEmpty => 'Будь ласка введіть ваш email';
-
-  @override
-  String get emailValidatorInvalid => 'Будь ласка введіть коректну адресу електронної пошти';
-
-  @override
-  String get passwordValidatorEmpty => 'Будь ласка введіть ваш пароль';
-
-  @override
-  String get passwordValidatorLength => 'Пароль повинен містити щонайменше 6 символів';
-
-  @override
-  String get noAccountPrompt => 'Немає акаунту? Зареєструватися';
-
-  @override
-  String get addCommentHint => 'Додайте коментар (необов’язково)';
-
-  @override
-  String get errorLoadingEntries => 'Не вдалося завантажити записи';
-
-  @override
-  String get errorPermissionDenied => 'Доступ заборонено. Надайте дозвіл і спробуйте ще раз.';
-
-  @override
-  String get errorGeneric => 'Щось пішло не так. Спробуйте ще раз.';
-
-  @override
-  String get retry => 'Повторити';
-
-  @override
-  String get errorLoadingReminders => 'Не вдалося завантажити нагадування';
+  String get periodMonth => 'Місяць';
 
   @override
   String get weekdayMonShort => 'Пн';
@@ -314,13 +263,70 @@ class AppLocalizationsUk extends AppLocalizations {
   String get weekdaySunShort => 'Нд';
 
   @override
-  String get periodDay => 'День';
+  String get hourlyDistribution => 'Розподіл за сьогодні';
 
   @override
-  String get periodWeek => 'Тиждень';
+  String get statsTodayTitle => 'Сьогодні випито';
 
   @override
-  String get periodMonth => 'Місяць';
+  String get statsAverageTitle => 'В середньому за день';
+
+  @override
+  String get statsWeekTotalTitle => 'Загалом за тиждень';
+
+  @override
+  String get statsMonthTotalTitle => 'Загалом за місяць';
+
+  @override
+  String get entryDeleted => 'Запис видалено';
+
+  @override
+  String get typeLabel => 'Тип';
+
+  @override
+  String get addCommentHint => 'Додайте коментар (необов’язково)';
+
+  @override
+  String get errorLoadingEntries => 'Не вдалося завантажити записи';
+
+  @override
+  String get errorPermissionDenied => 'Доступ заборонено. Перевірте дозволи.';
+
+  @override
+  String get errorGeneric => 'Щось пішло не так. Спробуйте ще раз.';
+
+  @override
+  String get retry => 'Спробувати знову';
+
+  @override
+  String get errorLoadingReminders => 'Не вдалося завантажити нагадування';
+
+  @override
+  String get remindersPermissionEnableInSettings => 'Увімкніть системний дозвіл на сповіщення в Налаштуваннях.';
+
+  @override
+  String get remindersEnableInProfile => 'Увімкніть сповіщення у Профілі, щоб керувати нагадуваннями.';
+
+  @override
+  String get congratulations => 'Вітаємо!';
+
+  @override
+  String get goalReached => 'Ви досягли своєї денної цілі!';
+
+  @override
+  String get emailValidatorEmpty => 'Будь ласка введіть ваш email';
+
+  @override
+  String get emailValidatorInvalid => 'Будь ласка введіть коректну адресу електронної пошти';
+
+  @override
+  String get passwordValidatorEmpty => 'Будь ласка введіть ваш пароль';
+
+  @override
+  String get passwordValidatorLength => 'Пароль повинен містити щонайменше 6 символів';
+
+  @override
+  String get noAccountPrompt => 'Немає акаунту? Зареєструватися';
 
   @override
   String get auth_email_not_verified => 'Будь ласка, підтвердіть вашу електронну пошту перед входом.';

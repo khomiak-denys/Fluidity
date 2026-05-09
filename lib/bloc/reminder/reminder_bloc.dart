@@ -1,16 +1,14 @@
-import 'dart:async';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../common/stream_backed_bloc.dart';
 import '../../models/reminder_setting.dart';
 import '../../repositories/reminder_setting_repository.dart';
 import 'reminder_event.dart';
 import 'reminder_state.dart';
 
-class ReminderBloc extends Bloc<ReminderEvent, ReminderState> {
+class ReminderBloc extends StreamBackedBloc<ReminderEvent, ReminderState, ReminderSetting> {
   final ReminderSettingRepository repo;
-  final String userId;
-  StreamSubscription<List<ReminderSetting>>? _subscription;
 
-  ReminderBloc({required this.repo, required this.userId}) : super(ReminderInitial()) {
+  ReminderBloc({required this.repo, required super.userId}) : super(initialState: ReminderInitial()) {
     on<LoadRemindersEvent>(_onLoad);
     on<RefreshRemindersEvent>(_onLoad);
     on<AddReminderEvent>(_onAdd);
@@ -21,18 +19,9 @@ class ReminderBloc extends Bloc<ReminderEvent, ReminderState> {
   }
 
   Future<void> _onLoad(ReminderEvent event, Emitter<ReminderState> emit) async {
-    final current = state is ReminderLoaded
-        ? (state as ReminderLoaded).data
-        : <ReminderSetting>[];
-    emit(ReminderLoading(data: current));
-    await Future.delayed(const Duration(milliseconds: 100));
-    if (userId.isEmpty) {
-      emit(ReminderLoaded(data: const []));
-      return;
-    }
-    await _subscription?.cancel();
-    _subscription = repo.watchAll(userId).listen(
-      (items) => add(_ReminderStreamUpdated(items)),
+    await handleLoad(
+      emit,
+      onData: (items) => add(_ReminderStreamUpdated(items)),
       onError: (e) => add(_ReminderStreamError(e)),
     );
   }
@@ -85,15 +74,28 @@ class ReminderBloc extends Bloc<ReminderEvent, ReminderState> {
   }
 
   void _onStreamError(_ReminderStreamError event, Emitter<ReminderState> emit) {
-    final current = state is ReminderLoaded ? (state as ReminderLoaded).data : <ReminderSetting>[];
-    emit(ReminderError(error: event.error, data: current));
+    emit(errorState(event.error, currentData(state)));
   }
 
   @override
-  Future<void> close() {
-    _subscription?.cancel();
-    return super.close();
+  List<ReminderSetting> currentData(ReminderState state) {
+    if (state is ReminderLoaded) return state.data;
+    if (state is ReminderLoading) return state.data;
+    if (state is ReminderError) return state.data;
+    return const <ReminderSetting>[];
   }
+
+  @override
+  ReminderState loadingState(List<ReminderSetting> data) => ReminderLoading(data: data);
+
+  @override
+  ReminderState loadedState(List<ReminderSetting> data) => ReminderLoaded(data: data);
+
+  @override
+  ReminderState errorState(Object error, List<ReminderSetting> data) => ReminderError(error: error, data: data);
+
+  @override
+  Stream<List<ReminderSetting>> watchAll(String userId) => repo.watchAll(userId);
 }
 
 class _ReminderStreamUpdated extends ReminderEvent {

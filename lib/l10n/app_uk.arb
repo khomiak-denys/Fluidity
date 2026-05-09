@@ -103,6 +103,8 @@
         "errorGeneric": "Щось пішло не так. Спробуйте ще раз.",
     "retry": "Спробувати знову",
     "errorLoadingReminders": "Не вдалося завантажити нагадування",
+    "remindersPermissionEnableInSettings": "Увімкніть системний дозвіл на сповіщення в Налаштуваннях.",
+    "remindersEnableInProfile": "Увімкніть сповіщення у Профілі, щоб керувати нагадуваннями.",
     "congratulations": "Вітаємо!",
     "goalReached": "Ви досягли своєї денної цілі!",
     "emailValidatorEmpty": "Будь ласка введіть ваш email",

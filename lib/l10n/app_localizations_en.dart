@@ -227,70 +227,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statisticsWeekly => 'Statistics for the week';
 
   @override
-  String get statisticsDaily => 'Statistics for the day';
+  String get statisticsDaily => 'Daily statistics';
 
   @override
-  String get statisticsMonthly => 'Statistics for the month';
+  String get statisticsMonthly => 'Monthly statistics';
 
   @override
-  String get hourlyDistribution => 'Hourly distribution (today)';
+  String get periodDay => 'Day';
 
   @override
-  String get statsTodayTitle => 'Today\'s intake';
+  String get periodWeek => 'Week';
 
   @override
-  String get statsAverageTitle => 'Daily average';
-
-  @override
-  String get statsWeekTotalTitle => 'Weekly total';
-
-  @override
-  String get statsMonthTotalTitle => 'Monthly total';
-
-  @override
-  String get entryDeleted => 'Entry deleted';
-
-  @override
-  String get typeLabel => 'Type';
-
-  @override
-  String get congratulations => 'Congratulations!';
-
-  @override
-  String get goalReached => 'You\'ve reached your daily goal!';
-
-  @override
-  String get emailValidatorEmpty => 'Please enter your email';
-
-  @override
-  String get emailValidatorInvalid => 'Please enter a valid email address';
-
-  @override
-  String get passwordValidatorEmpty => 'Please enter your password';
-
-  @override
-  String get passwordValidatorLength => 'Password must be at least 6 characters';
-
-  @override
-  String get noAccountPrompt => 'No account? Register';
-
-  @override
-  String get addCommentHint => 'Add a comment (optional)';
-
-  @override
-  String get errorLoadingEntries => 'Could not load entries';
-
-  @override
-  String get errorPermissionDenied => 'Permission denied. Please grant access and try again.';
-
-  @override
-  String get errorGeneric => 'Something went wrong. Please try again.';
-
-  @override
-  String get retry => 'Retry';
-
-  @override
-  String get errorLoadingReminders => 'Could not load reminders';
+  String get periodMonth => 'Month';
 
   @override
   String get weekdayMonShort => 'Mon';
@@ -314,13 +263,70 @@ class AppLocalizationsEn extends AppLocalizations {
   String get weekdaySunShort => 'Sun';
 
   @override
-  String get periodDay => 'Day';
+  String get hourlyDistribution => 'Hourly distribution (today)';
 
   @override
-  String get periodWeek => 'Week';
+  String get statsTodayTitle => 'Today\'s intake';
 
   @override
-  String get periodMonth => 'Month';
+  String get statsAverageTitle => 'Daily average';
+
+  @override
+  String get statsWeekTotalTitle => 'Weekly total';
+
+  @override
+  String get statsMonthTotalTitle => 'Monthly total';
+
+  @override
+  String get entryDeleted => 'Entry deleted';
+
+  @override
+  String get typeLabel => 'Type';
+
+  @override
+  String get addCommentHint => 'Add a comment (optional)';
+
+  @override
+  String get errorLoadingEntries => 'Failed to load entries';
+
+  @override
+  String get errorPermissionDenied => 'Access denied. Check permissions.';
+
+  @override
+  String get errorGeneric => 'Something went wrong. Try again.';
+
+  @override
+  String get retry => 'Retry';
+
+  @override
+  String get errorLoadingReminders => 'Could not load reminders';
+
+  @override
+  String get remindersPermissionEnableInSettings => 'Enable system notification permission in Settings.';
+
+  @override
+  String get remindersEnableInProfile => 'Enable notifications in Profile to manage reminders.';
+
+  @override
+  String get congratulations => 'Congratulations!';
+
+  @override
+  String get goalReached => 'You\'ve reached your daily goal!';
+
+  @override
+  String get emailValidatorEmpty => 'Please enter your email';
+
+  @override
+  String get emailValidatorInvalid => 'Please enter a valid email address';
+
+  @override
+  String get passwordValidatorEmpty => 'Please enter your password';
+
+  @override
+  String get passwordValidatorLength => 'Password must be at least 6 characters';
+
+  @override
+  String get noAccountPrompt => 'No account? Register';
 
   @override
   String get auth_email_not_verified => 'Please verify your email before signing in.';

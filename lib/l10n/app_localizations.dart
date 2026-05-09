@@ -530,14 +530,74 @@ abstract class AppLocalizations {
   /// No description provided for @statisticsDaily.
   ///
   /// In en, this message translates to:
-  /// **'Statistics for the day'**
+  /// **'Daily statistics'**
   String get statisticsDaily;
 
   /// No description provided for @statisticsMonthly.
   ///
   /// In en, this message translates to:
-  /// **'Statistics for the month'**
+  /// **'Monthly statistics'**
   String get statisticsMonthly;
+
+  /// No description provided for @periodDay.
+  ///
+  /// In en, this message translates to:
+  /// **'Day'**
+  String get periodDay;
+
+  /// No description provided for @periodWeek.
+  ///
+  /// In en, this message translates to:
+  /// **'Week'**
+  String get periodWeek;
+
+  /// No description provided for @periodMonth.
+  ///
+  /// In en, this message translates to:
+  /// **'Month'**
+  String get periodMonth;
+
+  /// No description provided for @weekdayMonShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Mon'**
+  String get weekdayMonShort;
+
+  /// No description provided for @weekdayTueShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Tue'**
+  String get weekdayTueShort;
+
+  /// No description provided for @weekdayWedShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Wed'**
+  String get weekdayWedShort;
+
+  /// No description provided for @weekdayThuShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Thu'**
+  String get weekdayThuShort;
+
+  /// No description provided for @weekdayFriShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Fri'**
+  String get weekdayFriShort;
+
+  /// No description provided for @weekdaySatShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sat'**
+  String get weekdaySatShort;
+
+  /// No description provided for @weekdaySunShort.
+  ///
+  /// In en, this message translates to:
+  /// **'Sun'**
+  String get weekdaySunShort;
 
   /// No description provided for @hourlyDistribution.
   ///
@@ -581,6 +641,54 @@ abstract class AppLocalizations {
   /// **'Type'**
   String get typeLabel;
 
+  /// No description provided for @addCommentHint.
+  ///
+  /// In en, this message translates to:
+  /// **'Add a comment (optional)'**
+  String get addCommentHint;
+
+  /// No description provided for @errorLoadingEntries.
+  ///
+  /// In en, this message translates to:
+  /// **'Failed to load entries'**
+  String get errorLoadingEntries;
+
+  /// No description provided for @errorPermissionDenied.
+  ///
+  /// In en, this message translates to:
+  /// **'Access denied. Check permissions.'**
+  String get errorPermissionDenied;
+
+  /// No description provided for @errorGeneric.
+  ///
+  /// In en, this message translates to:
+  /// **'Something went wrong. Try again.'**
+  String get errorGeneric;
+
+  /// No description provided for @retry.
+  ///
+  /// In en, this message translates to:
+  /// **'Retry'**
+  String get retry;
+
+  /// No description provided for @errorLoadingReminders.
+  ///
+  /// In en, this message translates to:
+  /// **'Could not load reminders'**
+  String get errorLoadingReminders;
+
+  /// No description provided for @remindersPermissionEnableInSettings.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable system notification permission in Settings.'**
+  String get remindersPermissionEnableInSettings;
+
+  /// No description provided for @remindersEnableInProfile.
+  ///
+  /// In en, this message translates to:
+  /// **'Enable notifications in Profile to manage reminders.'**
+  String get remindersEnableInProfile;
+
   /// No description provided for @congratulations.
   ///
   /// In en, this message translates to:
@@ -622,86 +730,6 @@ abstract class AppLocalizations {
   /// In en, this message translates to:
   /// **'No account? Register'**
   String get noAccountPrompt;
-
-  /// Hint for optional comment field when adding entry
-  ///
-  /// In en, this message translates to:
-  /// **'Add a comment (optional)'**
-  String get addCommentHint;
-
-  /// Error title when entries failed to load
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load entries'**
-  String get errorLoadingEntries;
-
-  /// Permission denied error text
-  ///
-  /// In en, this message translates to:
-  /// **'Permission denied. Please grant access and try again.'**
-  String get errorPermissionDenied;
-
-  /// Generic error text
-  ///
-  /// In en, this message translates to:
-  /// **'Something went wrong. Please try again.'**
-  String get errorGeneric;
-
-  /// Retry button label
-  ///
-  /// In en, this message translates to:
-  /// **'Retry'**
-  String get retry;
-
-  /// Error title for reminders loading failure
-  ///
-  /// In en, this message translates to:
-  /// **'Could not load reminders'**
-  String get errorLoadingReminders;
-
-  /// Short weekday labels starting from Monday
-  ///
-  /// In en, this message translates to:
-  /// **'Mon'**
-  String get weekdayMonShort;
-
-  /// In en, this message translates to:
-  /// **'Tue'**
-  String get weekdayTueShort;
-
-  /// In en, this message translates to:
-  /// **'Wed'**
-  String get weekdayWedShort;
-
-  /// In en, this message translates to:
-  /// **'Thu'**
-  String get weekdayThuShort;
-
-  /// In en, this message translates to:
-  /// **'Fri'**
-  String get weekdayFriShort;
-
-  /// In en, this message translates to:
-  /// **'Sat'**
-  String get weekdaySatShort;
-
-  /// In en, this message translates to:
-  /// **'Sun'**
-  String get weekdaySunShort;
-
-  /// Period filter buttons
-  ///
-  /// In en, this message translates to:
-  /// **'Day'**
-  String get periodDay;
-
-  /// In en, this message translates to:
-  /// **'Week'**
-  String get periodWeek;
-
-  /// In en, this message translates to:
-  /// **'Month'**
-  String get periodMonth;
 
   /// No description provided for @auth_email_not_verified.
   ///
@@ -751,7 +779,7 @@ abstract class AppLocalizations {
   /// **'A verification email has been sent to your address. Please check your inbox.'**
   String get auth_verification_email_sent;
 
-  /// Title used for drink water notification
+  /// No description provided for @notificationDrinkTitle.
   ///
   /// In en, this message translates to:
   /// **'Time to drink water 💧'**
