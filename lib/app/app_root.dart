@@ -1,6 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// ignore_for_file: use_build_context_synchronously
 
 import '../cubit/app_settings/app_settings_cubit.dart';
 import '../cubit/app_settings/app_settings_state.dart';

@@ -1,6 +1,7 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-// ignore_for_file: use_build_context_synchronously
 
 import '../bloc/reminder/reminder_bloc.dart';
 import '../bloc/reminder/reminder_event.dart';

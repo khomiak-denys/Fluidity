@@ -1,8 +1,9 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// ignore_for_file: use_build_context_synchronously
 
 import '../bloc/reminder/reminder_bloc.dart';
 import '../bloc/reminder/reminder_state.dart';
@@ -41,7 +42,7 @@ class AppShell extends StatelessWidget {
         builder: (dialogContext) {
           return AlertDialog(
             title: Text(loc?.errorPermissionDenied ?? 'Permission denied'),
-            content: const Text('Please enable notifications in system Settings to use reminders. Return and tap Retry.'),
+            content: Text(loc?.remindersSubtitle ?? 'Set reminders to drink water'),
             actions: [
               TextButton(
                 onPressed: () => Navigator.of(dialogContext).pop(),

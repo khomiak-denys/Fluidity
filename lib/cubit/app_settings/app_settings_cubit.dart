@@ -31,9 +31,21 @@ class AppSettingsCubit extends Cubit<AppSettingsState> {
   }
 
   Future<void> setDailyGoal(int goal, String? uid) async {
-    emit(state.copyWith(dailyGoal: goal));
-    if (uid == null || uid.isEmpty) return;
-    await userProfileRepository.updateGoal(uid, goal);
+    final previousGoal = state.dailyGoal;
+    emit(state.copyWith(dailyGoal: goal, status: AppSettingsStatus.loading));
+    if (uid == null || uid.isEmpty) {
+      emit(state.copyWith(status: AppSettingsStatus.ready));
+      return;
+    }
+    try {
+      await userProfileRepository.updateGoal(uid, goal);
+      emit(state.copyWith(status: AppSettingsStatus.ready));
+    } catch (_) {
+      emit(state.copyWith(
+        dailyGoal: previousGoal,
+        status: AppSettingsStatus.error,
+      ));
+    }
   }
 
   void resetForSignOut() {

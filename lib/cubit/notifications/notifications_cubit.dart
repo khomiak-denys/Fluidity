@@ -74,24 +74,32 @@ class NotificationsCubit extends Cubit<NotificationsState> {
     }
 
     emit(state.copyWith(enabled: value));
-    if (!value) {
-      await notificationService.cancelAll();
-      return;
-    }
+    try {
+      if (!value) {
+        await notificationService.cancelAll();
+        return;
+      }
 
-    await syncFromReminders(reminders);
+      await syncFromReminders(reminders);
+    } catch (_) {
+      await _disableAndCancel();
+    }
   }
 
   Future<void> syncFromReminders(List<ReminderSetting> reminders) async {
-    final hasActive = reminders.any((r) => r.isActive);
-    if (!state.systemAllowed || !state.enabled || !hasActive) {
-      await notificationService.cancelAll();
-      return;
-    }
+    try {
+      final hasActive = reminders.any((r) => r.isActive);
+      if (!state.systemAllowed || !state.enabled || !hasActive) {
+        await notificationService.cancelAll();
+        return;
+      }
 
-    emit(state.copyWith(status: NotificationsStatus.syncing));
-    await notificationService.sync(reminders);
-    emit(state.copyWith(status: NotificationsStatus.ready));
+      emit(state.copyWith(status: NotificationsStatus.syncing));
+      await notificationService.sync(reminders);
+      emit(state.copyWith(status: NotificationsStatus.ready));
+    } catch (_) {
+      await _disableAndCancel();
+    }
   }
 
   void updateLocalizedStrings(AppLocalizations? loc) {
