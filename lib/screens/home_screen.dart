@@ -4,6 +4,7 @@ import 'package:flutter/foundation.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:flutter/services.dart'; // Для TextInputType.number
 import 'package:fluidity/widgets/water_progress.dart';
+import 'package:fluidity/ui/theme_tokens.dart';
 import '../models/water_entry.dart';
 import '../widgets/water_intake.dart';
 import 'package:fluidity/ui/button.dart';
@@ -13,19 +14,19 @@ import '../bloc/water/water_event.dart';
 import '../bloc/water/water_state.dart';
 import 'water_entry_detail.dart';
 
-const Color sky50 = Color(0xFFF0F9FF);
-const Color cyan50 = Color(0xFFECFEFF);
-const Color sky200 = Color(0xFFBAE6FD);
-const Color sky600 = Color(0xFF0284C7); // from-sky-600
-const Color cyan600 = Color(0xFF06B6D4); // to-cyan-600
-const Color sky700 = Color(0xFF0369A1);
+const Color sky50 = AppColors.sky50;
+const Color cyan50 = AppColors.cyan50;
+const Color sky200 = AppColors.sky200;
+const Color sky600 = AppColors.sky600; // from-sky-600
+const Color cyan600 = AppColors.cyan500; // to-cyan-600
+const Color sky700 = AppColors.sky700;
 const Color green700 = Color(0xFF047857);
 const Color green600 = Color(0xFF059669);
 const Color green50 = Color(0xFFF0FDF4); // from-green-50
 const Color emerald50 = Color(0xFFF0FDF8); // to-emerald-50, використаємо F0FDF4 для емуляції градієнта
 const Color green200 = Color(0xFFBBF7D0);
-const Color primaryColor = Color(0xFF0EA5E9); // Для FAB
-const Color mutedForeground = Color(0xFF6B7280); // text-muted-foreground (match reminder screen)
+const Color primaryColor = AppColors.sky500; // Для FAB
+const Color mutedForeground = AppColors.mutedForeground; // text-muted-foreground (match reminder screen)
 
 // =========================================================================
 // ОСНОВНИЙ ВІДЖЕТ

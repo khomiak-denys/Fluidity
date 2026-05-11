@@ -8,19 +8,20 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/water/water_bloc.dart';
 import '../bloc/water/water_state.dart';
 import '../widgets/monthly_bar_chart_scrollable.dart';
+import 'package:fluidity/ui/theme_tokens.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
-const Color sky50 = Color(0xFFF0F9FF);
-const Color sky100 = Color(0xFFE0F2FE);
-const Color sky200 = Color(0xFFBAE6FD);
-const Color sky600 = Color(0xFF0284C7);
-const Color sky700 = Color(0xFF0369A1);
+const Color sky50 = AppColors.sky50;
+const Color sky100 = AppColors.sky100;
+const Color sky200 = AppColors.sky200;
+const Color sky600 = AppColors.sky600;
+const Color sky700 = AppColors.sky700;
 const Color green100 = Color(0xFFDCFCE7);
 const Color green600 = Color(0xFF059669);
 const Color orange100 = Color(0xFFFFEDD5);
 const Color orange600 = Color(0XFFEA580C);
-const Color mutedForeground = Color(0xFF6B7280); // text-muted-foreground
-const Color borderGray = Color(0xFFE5E7EB); // border-gray-200 / border-sky-200
+const Color mutedForeground = AppColors.mutedForeground; // text-muted-foreground
+const Color borderGray = AppColors.gray200; // border-gray-200 / border-sky-200
 
 // WaterIntakeEntry is provided by ../widgets/water_intake.dart
 

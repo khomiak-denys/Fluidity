@@ -2,19 +2,20 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
+import 'package:fluidity/ui/theme_tokens.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
-const Color sky50 = Color(0xFFF0F9FF);
-const Color cyan50 = Color(0xFFECFEFF);
-const Color sky200 = Color(0xFFBAE6FD);
-const Color sky600 = Color(0xFF0284C7);
-const Color sky700 = Color(0xFF0369A1);
+const Color sky50 = AppColors.sky50;
+const Color cyan50 = AppColors.cyan50;
+const Color sky200 = AppColors.sky200;
+const Color sky600 = AppColors.sky600;
+const Color sky700 = AppColors.sky700;
 const Color green100 = Color(0xFFDCFCE7);
 const Color green700 = Color(0xFF047857);
 const Color red600 = Color(0xFFDC2626); // text-red-600
 const Color red200 = Color(0xFFFECACA); // border-red-200
 const Color red50 = Color(0xFFFEF2F2); // hover:bg-red-50
-const Color mutedForeground = Color(0xFF6B7280); // text-muted-foreground (сірий)
+const Color mutedForeground = AppColors.mutedForeground; // text-muted-foreground (сірий)
 const Color settingBgColor = Color(0xFFF8FAFC); // hover:bg-sky-100/50
 
 class ProfileScreen extends StatefulWidget {

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 // Для імітації іконок Lucide (Droplets, Smartphone, Lock)
 import 'package:lucide_icons/lucide_icons.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
+import 'package:fluidity/ui/theme_tokens.dart';
 
 class LoginScreen extends StatefulWidget {
   final void Function(BuildContext context, String email, String password) onLogin;
@@ -44,12 +45,12 @@ class _LoginScreenState extends State<LoginScreen> {
   @override
   Widget build(BuildContext context) {
     // Define colors used across the screen
-    const Color sky50 = Color(0xFFF0F9FF);
-    const Color cyan50 = Color(0xFFECFEFF);
-    const Color sky500 = Color(0xFF0EA5E9);
-    const Color cyan500 = Color(0xFF06B6D4);
-    const Color sky700 = Color(0xFF0369A1);
-    const Color sky200 = Color(0xFFBAE6FD);
+    const Color sky50 = AppColors.sky50;
+    const Color cyan50 = AppColors.cyan50;
+    const Color sky500 = AppColors.sky500;
+    const Color cyan500 = AppColors.cyan500;
+    const Color sky700 = AppColors.sky700;
+    const Color sky200 = AppColors.sky200;
 
     return Scaffold(
       body: Container(
