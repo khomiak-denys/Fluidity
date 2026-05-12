@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
 import 'package:fluidity/l10n/app_localizations.dart';
+import 'package:fluidity/ui/theme_tokens.dart';
 import '../models/reminder.dart';
 import 'reminder_detail.dart';
 import '../models/reminder_setting.dart';
@@ -11,18 +12,18 @@ import '../bloc/reminder/reminder_event.dart';
 import '../bloc/reminder/reminder_state.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
-const Color sky50 = Color(0xFFF0F9FF);
-const Color cyan50 = Color(0xFFECFEFF);
-const Color sky200 = Color(0xFFBAE6FD);
-const Color sky500 = Color(0xFF0EA5E9); // from-sky-500
-const Color cyan500 = Color(0xFF06B6D4); // to-cyan-500
-const Color sky600 = Color(0xFF0284C7);
-const Color sky700 = Color(0xFF0369A1);
-const Color gray50 = Color(0xFFF9FAFB);
-const Color gray200 = Color(0xFFE5E7EB);
-const Color gray400 = Color(0xFF9CA3AF);
-const Color mutedForeground = Color(0xFF6B7280); // text-muted-foreground
-const Color red500 = Color(0xFFEF4444);
+const Color sky50 = AppColors.sky50;
+const Color cyan50 = AppColors.cyan50;
+const Color sky200 = AppColors.sky200;
+const Color sky500 = AppColors.sky500; // from-sky-500
+const Color cyan500 = AppColors.cyan500; // to-cyan-500
+const Color sky600 = AppColors.sky600;
+const Color sky700 = AppColors.sky700;
+const Color gray50 = AppColors.gray50;
+const Color gray200 = AppColors.gray200;
+const Color gray400 = AppColors.gray400;
+const Color mutedForeground = AppColors.mutedForeground; // text-muted-foreground
+const Color red500 = AppColors.red500;
 
 // =========================================================================
 // ЕКРАН НАГАДУВАНЬ

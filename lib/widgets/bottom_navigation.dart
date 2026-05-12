@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
+import 'package:fluidity/ui/theme_tokens.dart';
 
 // --- Custom Colors (Derived from Tailwind classes) ---
-const Color sky200 = Color(0xFFBAE6FD);
-const Color sky100 = Color(0xFFE0F2FE); // bg-sky-100
-const Color sky600 = Color(0xFF0284C7); // text-sky-600
+const Color sky200 = AppColors.sky200;
+const Color sky100 = AppColors.sky100; // bg-sky-100
+const Color sky600 = AppColors.sky600; // text-sky-600
 const Color tabInActiveColor = Color(0xFF9E9E9E); // Приблизно Colors.grey[400]
 
 class BottomNavigation extends StatelessWidget {
