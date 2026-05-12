@@ -12,6 +12,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../bloc/water/water_bloc.dart';
 import '../bloc/water/water_event.dart';
 import '../bloc/water/water_state.dart';
+import 'view_models/home_view_models.dart';
 import 'water_entry_detail.dart';
 
 const Color sky50 = AppColors.sky50;
@@ -23,10 +24,12 @@ const Color sky700 = AppColors.sky700;
 const Color green700 = Color(0xFF047857);
 const Color green600 = Color(0xFF059669);
 const Color green50 = Color(0xFFF0FDF4); // from-green-50
-const Color emerald50 = Color(0xFFF0FDF8); // to-emerald-50, використаємо F0FDF4 для емуляції градієнта
+const Color emerald50 = Color(
+    0xFFF0FDF8); // to-emerald-50, використаємо F0FDF4 для емуляції градієнта
 const Color green200 = Color(0xFFBBF7D0);
 const Color primaryColor = AppColors.sky500; // Для FAB
-const Color mutedForeground = AppColors.mutedForeground; // text-muted-foreground (match reminder screen)
+const Color mutedForeground =
+    AppColors.mutedForeground; // text-muted-foreground (match reminder screen)
 
 // =========================================================================
 // ОСНОВНИЙ ВІДЖЕТ
@@ -60,12 +63,13 @@ class _HomeScreenState extends State<HomeScreen> {
   void _scheduleMidnightTick() {
     _midnightTimer?.cancel();
     final now = DateTime.now();
-    final nextMidnight = DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
+    final nextMidnight =
+        DateTime(now.year, now.month, now.day).add(const Duration(days: 1));
     final duration = nextMidnight.difference(now);
     _midnightTimer = Timer(duration, () {
       if (!mounted) return;
-      setState(() {}); 
-      _scheduleMidnightTick(); 
+      setState(() {});
+      _scheduleMidnightTick();
     });
   }
 
@@ -101,7 +105,7 @@ class _HomeScreenState extends State<HomeScreen> {
     context.read<WaterBloc>().add(AddWaterEntryEvent(entry));
     // Закриття діалогу
     Navigator.of(context).pop();
-    
+
     // Імітація sonner toast.success
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -123,10 +127,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  int _sumIntake(List<WaterEntry> entries) => entries.fold(0, (sum, e) => sum + e.amountMl);
-
   void _showCustomAddDialog(BuildContext context) {
-  setState(() {});
+    setState(() {});
     showDialog(
       context: context,
       builder: (context) {
@@ -135,7 +137,7 @@ class _HomeScreenState extends State<HomeScreen> {
           onClose: () => setState(() {}),
         );
       },
-  ).then((_) => setState(() {})); // На випадок закриття через backdrop
+    ).then((_) => setState(() {})); // На випадок закриття через backdrop
   }
 
   @override
@@ -150,75 +152,78 @@ class _HomeScreenState extends State<HomeScreen> {
                 ? waterState.data
                 : <WaterEntry>[];
 
-    bool _isSameDay(DateTime a, DateTime b) => a.year == b.year && a.month == b.month && a.day == b.day;
-    final now = DateTime.now();
-    final List<WaterEntry> todayEntries = allEntries.where((e) => _isSameDay(e.timestamp, now)).toList();
-    final int totalIntake = _sumIntake(todayEntries);
-
-    // Determine whether goal is achieved (no animations)
-    final bool isGoalAchieved = totalIntake >= widget.dailyGoal;
+    final summary = HomeSelector.buildSummary(
+      entries: allEntries,
+      dailyGoal: widget.dailyGoal,
+      now: DateTime.now(),
+    );
 
     return BlocListener<WaterBloc, WaterState>(
-      listener: (context, state) {}, // keep listener for future hooks; inline error UI shows the error
+      listener: (context,
+          state) {}, // keep listener for future hooks; inline error UI shows the error
       child: Scaffold(
-      // AppBar приховано, оскільки Header тепер є частиною скролінгу, як у React
-      appBar: AppBar(
-        toolbarHeight: 0,
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        systemOverlayStyle: const SystemUiOverlayStyle(
-          statusBarIconBrightness: Brightness.dark, 
-          statusBarBrightness: Brightness.light,
+        // AppBar приховано, оскільки Header тепер є частиною скролінгу, як у React
+        appBar: AppBar(
+          toolbarHeight: 0,
+          backgroundColor: Colors.transparent,
+          elevation: 0,
+          systemOverlayStyle: const SystemUiOverlayStyle(
+            statusBarIconBrightness: Brightness.dark,
+            statusBarBrightness: Brightness.light,
+          ),
         ),
-      ),
-      
-      // Обгортка для скролінгу та padding
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.only(left: 16, right: 16, top: 12, bottom: 96), // p-3 pb-20 space-y-4
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
+
+        // Обгортка для скролінгу та padding
+        body: SingleChildScrollView(
+          padding: const EdgeInsets.only(
+              left: 16, right: 16, top: 12, bottom: 96), // p-3 pb-20 space-y-4
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              // --- Header ---
+              _HomeHeader(totalIntake: summary.totalIntake),
+
+              const SizedBox(height: 16), // space-y-4/6
+
+              // --- Goal Achievement Celebration ---
+              if (summary.isGoalAchieved) const _GoalCard(),
+
+              if (summary.isGoalAchieved) const SizedBox(height: 16),
+
+              // --- Progress Ring ---
+              WaterProgress(
+                  current: summary.totalIntake.toDouble(),
+                  goal: widget.dailyGoal.toDouble()),
+
+              const SizedBox(height: 16),
+
+              // --- Quick Add Section ---
+              _QuickAddSection(onAdd: handleQuickAdd),
+
+              const SizedBox(height: 16),
+
+              // --- Today's Entries / Empty State / Error State ---
+              if (waterState is WaterError)
+                _ErrorStateCard(message: waterState.error.toString())
+              else if (summary.todayEntries.isNotEmpty)
+                _EntriesListCard(
+                    entries: summary.todayEntries, onDelete: handleDelete)
+              else
+                const _EmptyStateCard(),
+            ],
+          ),
+        ),
+
+        // Floating Action Button
+        floatingActionButton: Column(
+          mainAxisSize: MainAxisSize.min,
           children: [
-            // --- Header ---
-            _HomeHeader(totalIntake: totalIntake),
-            
-            const SizedBox(height: 16), // space-y-4/6
-
-            // --- Goal Achievement Celebration ---
-            if (isGoalAchieved) const _GoalCard(),
-            
-            if (isGoalAchieved) const SizedBox(height: 16),
-            
-            // --- Progress Ring ---
-            WaterProgress(current: totalIntake.toDouble(), goal: widget.dailyGoal.toDouble()),
-            
-            const SizedBox(height: 16),
-            
-            // --- Quick Add Section ---
-            _QuickAddSection(onAdd: handleQuickAdd),
-
-            const SizedBox(height: 16),
-            
-            // --- Today's Entries / Empty State / Error State ---
-            if (waterState is WaterError)
-              _ErrorStateCard(message: waterState.error.toString())
-            else if (todayEntries.isNotEmpty)
-              _EntriesListCard(entries: todayEntries, onDelete: handleDelete)
-            else
-              const _EmptyStateCard(),
+            _FloatingActionButton(
+              onPressed: () => _showCustomAddDialog(context),
+            ),
           ],
         ),
-      ),
-      
-      // Floating Action Button
-      floatingActionButton: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          _FloatingActionButton(
-            onPressed: () => _showCustomAddDialog(context),
-          ),
-        ],
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
+        floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
       ),
     );
   }
@@ -285,8 +290,13 @@ class _GoalCard extends StatelessWidget {
           children: [
             const Text('🎉', style: TextStyle(fontSize: 24)),
             const SizedBox(height: 4),
-            Text(AppLocalizations.of(context)!.congratulations, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: green700)),
-            Text(AppLocalizations.of(context)!.goalReached, style: const TextStyle(fontSize: 13, color: green600)),
+            Text(AppLocalizations.of(context)!.congratulations,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    color: green700)),
+            Text(AppLocalizations.of(context)!.goalReached,
+                style: const TextStyle(fontSize: 13, color: green600)),
           ],
         ),
       ),
@@ -308,7 +318,7 @@ class _QuickAddSection extends StatelessWidget {
       elevation: 2,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: sky200, width: 1), 
+        side: const BorderSide(color: sky200, width: 1),
       ),
       color: sky50, // Використовуємо один колір для простоти емуляції градієнта
       child: Column(
@@ -316,17 +326,22 @@ class _QuickAddSection extends StatelessWidget {
         children: [
           // CardHeader className="pb-3"
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12), // Емуляція CardHeader з pb-3
+            padding: const EdgeInsets.fromLTRB(
+                16, 16, 16, 12), // Емуляція CardHeader з pb-3
             child: Text(
               AppLocalizations.of(context)!.quickAddTitle,
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700), // CardTitle text-sky-700 text-base sm:text-lg
+              style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: sky700), // CardTitle text-sky-700 text-base sm:text-lg
             ),
           ),
           // CardContent className="pt-0"
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween, // justify-between
+              mainAxisAlignment:
+                  MainAxisAlignment.spaceBetween, // justify-between
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 AppButton(
@@ -374,50 +389,51 @@ class _EntriesListCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Card(
-          margin: EdgeInsets.zero,
-          elevation: 2,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // CardHeader
-              Padding(
-                padding: const EdgeInsets.fromLTRB(16, 16, 16, 12), // pb-3
-                child: Text(
-                  'Сьогоднішні записи (${entries.length})',
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700),
-                ),
-              ),
-              // CardContent (use ListView.builder so it's a proper list)
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: ListView.builder(
-                  shrinkWrap: true,
-                  physics: const NeverScrollableScrollPhysics(),
-                  itemCount: entries.length,
-                  itemBuilder: (context, index) {
-                    final entry = entries[index];
-                    return InkWell(
-                      borderRadius: BorderRadius.circular(12),
-                      onTap: () => Navigator.of(context).push(MaterialPageRoute(builder: (_) => WaterEntryDetailScreen(entry: entry))),
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(vertical: 0.0),
-                        child: WaterIntakeCard(
-                          entry: entry,
-                          onDelete: onDelete,
-                        ),
-                      ),
-                    );
-                  },
-                ),
-              ),
-              const SizedBox(height: 16), // Додаємо відступ знизу, як space-y-
-            ],
+      margin: EdgeInsets.zero,
+      elevation: 2,
+      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          // CardHeader
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 12), // pb-3
+            child: Text(
+              'Сьогоднішні записи (${entries.length})',
+              style: const TextStyle(
+                  fontSize: 18, fontWeight: FontWeight.bold, color: sky700),
+            ),
           ),
+          // CardContent (use ListView.builder so it's a proper list)
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: ListView.builder(
+              shrinkWrap: true,
+              physics: const NeverScrollableScrollPhysics(),
+              itemCount: entries.length,
+              itemBuilder: (context, index) {
+                final entry = entries[index];
+                return InkWell(
+                  borderRadius: BorderRadius.circular(12),
+                  onTap: () => Navigator.of(context).push(MaterialPageRoute(
+                      builder: (_) => WaterEntryDetailScreen(entry: entry))),
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 0.0),
+                    child: WaterIntakeCard(
+                      entry: entry,
+                      onDelete: onDelete,
+                    ),
+                  ),
+                );
+              },
+            ),
+          ),
+          const SizedBox(height: 16), // Додаємо відступ знизу, як space-y-
+        ],
+      ),
     );
   }
 }
-
 
 // Empty State Card
 class _EmptyStateCard extends StatelessWidget {
@@ -431,20 +447,27 @@ class _EmptyStateCard extends StatelessWidget {
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
         // border-dashed border-2 border-sky-200
-        side: const BorderSide(color: sky200, style: BorderStyle.solid, width: 2), 
+        side:
+            const BorderSide(color: sky200, style: BorderStyle.solid, width: 2),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(32.0), 
+        padding: const EdgeInsets.all(32.0),
         child: Column(
           children: [
-            const Text('💧', style: TextStyle(fontSize: 40)), 
+            const Text('💧', style: TextStyle(fontSize: 40)),
             const SizedBox(height: 16), // mb-2
-            Text(AppLocalizations.of(context)!.startTrackingTitle, style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 16, color: sky700)), // font-medium text-sky-700
-            const SizedBox(height: 8), 
+            Text(AppLocalizations.of(context)!.startTrackingTitle,
+                style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                    color: sky700)), // font-medium text-sky-700
+            const SizedBox(height: 8),
             Text(
-              AppLocalizations.of(context)!.startTrackingBody, 
-              textAlign: TextAlign.center, 
-              style: const TextStyle(fontSize: 14, color: Colors.grey), // text-sm text-muted-foreground
+              AppLocalizations.of(context)!.startTrackingBody,
+              textAlign: TextAlign.center,
+              style: const TextStyle(
+                  fontSize: 14,
+                  color: Colors.grey), // text-sm text-muted-foreground
             ),
           ],
         ),
@@ -468,7 +491,7 @@ class _FloatingActionButton extends StatelessWidget {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(30)),
       child: const Icon(Icons.add),
     );
-}
+  }
 }
 
 // Custom Add Dialog
@@ -492,7 +515,7 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
     _amountController.dispose();
     super.dispose();
   }
-  
+
   // Додано для ініціалізації
   @override
   void initState() {
@@ -511,10 +534,13 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       contentPadding: EdgeInsets.zero,
       titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-      
-  // DialogHeader
-  title: Text(AppLocalizations.of(context)!.addWater, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), // text-base sm:text-lg
-      
+
+      // DialogHeader
+      title: Text(AppLocalizations.of(context)!.addWater,
+          style: const TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold)), // text-base sm:text-lg
+
       // DialogContent
       content: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -523,7 +549,9 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             // Amount Input
-            Text('${AppLocalizations.of(context)!.amount} (ml)', style: const TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
+            Text('${AppLocalizations.of(context)!.amount} (ml)',
+                style: const TextStyle(
+                    fontSize: 14, color: Colors.black54)), // Label text-sm
             const SizedBox(height: 4),
             TextField(
               controller: _amountController,
@@ -532,34 +560,46 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
               decoration: const InputDecoration(
                 hintText: null,
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               ),
               // onChanged: (_) => setState(() {}), // Оновлюється через addListener
             ),
             const SizedBox(height: 16), // space-y-4
-            
+
             // Type Select
-            Text(AppLocalizations.of(context)!.typeLabel, style: const TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
+            Text(AppLocalizations.of(context)!.typeLabel,
+                style: const TextStyle(
+                    fontSize: 14, color: Colors.black54)), // Label text-sm
             const SizedBox(height: 4),
             DropdownButtonFormField<String>(
               initialValue: _selectedType,
               decoration: const InputDecoration(
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 8, horizontal: 12),
               ),
               items: const [
-                DropdownMenuItem(value: 'glass', child: Text('🥛 Склянка', style: TextStyle(fontSize: 16))),
-                DropdownMenuItem(value: 'bottle', child: Text('🍼 Bottle', style: TextStyle(fontSize: 16))),
-                DropdownMenuItem(value: 'cup', child: Text('☕ Cup', style: TextStyle(fontSize: 16))),
+                DropdownMenuItem(
+                    value: 'glass',
+                    child: Text('🥛 Склянка', style: TextStyle(fontSize: 16))),
+                DropdownMenuItem(
+                    value: 'bottle',
+                    child: Text('🍼 Bottle', style: TextStyle(fontSize: 16))),
+                DropdownMenuItem(
+                    value: 'cup',
+                    child: Text('☕ Cup', style: TextStyle(fontSize: 16))),
               ],
               onChanged: (v) {
                 if (v != null) setState(() => _selectedType = v);
               },
             ),
             const SizedBox(height: 16),
-            
+
             // Comment Textarea
-            Text(AppLocalizations.of(context)!.comment, style: const TextStyle(fontSize: 14, color: Colors.black54)), // Label text-sm
+            Text(AppLocalizations.of(context)!.comment,
+                style: const TextStyle(
+                    fontSize: 14, color: Colors.black54)), // Label text-sm
             const SizedBox(height: 4),
             TextField(
               maxLines: 2, // rows={2}
@@ -567,7 +607,8 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
               decoration: InputDecoration(
                 hintText: AppLocalizations.of(context)!.addCommentHint,
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               ),
             ),
             const SizedBox(height: 24),
@@ -590,7 +631,10 @@ class __CustomAddDialogState extends State<_CustomAddDialog> {
                 Expanded(
                   child: AppButton(
                     text: AppLocalizations.of(context)!.save,
-                    onPressed: isDisabled ? null : () => widget.onAdd(amount, _selectedType, _comment.isEmpty ? null : _comment),
+                    onPressed: isDisabled
+                        ? null
+                        : () => widget.onAdd(amount, _selectedType,
+                            _comment.isEmpty ? null : _comment),
                     variant: ButtonVariant.primary,
                     size: ButtonSize.medium, // min-h-[44px]
                   ),
@@ -617,7 +661,8 @@ class _ErrorStateCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(12),
-        side: const BorderSide(color: sky200, style: BorderStyle.solid, width: 2),
+        side:
+            const BorderSide(color: sky200, style: BorderStyle.solid, width: 2),
       ),
       child: Padding(
         padding: const EdgeInsets.all(24.0),
@@ -626,7 +671,9 @@ class _ErrorStateCard extends StatelessWidget {
           children: [
             const Text('⚠️', style: TextStyle(fontSize: 40)),
             const SizedBox(height: 12),
-            Text(AppLocalizations.of(context)!.errorLoadingEntries, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600, color: sky700)),
+            Text(AppLocalizations.of(context)!.errorLoadingEntries,
+                style: const TextStyle(
+                    fontSize: 16, fontWeight: FontWeight.w600, color: sky700)),
             const SizedBox(height: 8),
             Builder(builder: (context) {
               final l10n = AppLocalizations.of(context)!;
@@ -634,18 +681,22 @@ class _ErrorStateCard extends StatelessWidget {
               final friendly = raw.contains('permission_denied')
                   ? l10n.errorPermissionDenied
                   : l10n.errorGeneric;
-              return Text(friendly, textAlign: TextAlign.center, style: const TextStyle(color: mutedForeground));
+              return Text(friendly,
+                  textAlign: TextAlign.center,
+                  style: const TextStyle(color: mutedForeground));
             }),
             const SizedBox(height: 16),
             ElevatedButton.icon(
-              onPressed: () => context.read<WaterBloc>().add(RefreshWaterEvent()),
+              onPressed: () =>
+                  context.read<WaterBloc>().add(RefreshWaterEvent()),
               icon: const Icon(Icons.refresh, size: 18),
               label: Text(AppLocalizations.of(context)!.retry),
               style: ElevatedButton.styleFrom(
                 backgroundColor: sky600,
                 foregroundColor: Colors.white,
                 minimumSize: const Size(double.infinity, 44),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12)),
               ),
             ),
           ],
