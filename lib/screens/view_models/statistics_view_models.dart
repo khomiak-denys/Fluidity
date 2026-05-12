@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:fluidity/models/water_entry.dart';
 
 enum StatsPeriod { day, week, month }
@@ -29,6 +30,22 @@ class StatsSummary {
     required this.periodTotal,
     required this.weekTotal,
     required this.monthTotal,
+  });
+}
+
+class StatsCardItem {
+  final String title;
+  final String value;
+  final IconData icon;
+  final Color color;
+  final Color bgColor;
+
+  const StatsCardItem({
+    required this.title,
+    required this.value,
+    required this.icon,
+    required this.color,
+    required this.bgColor,
   });
 }
 

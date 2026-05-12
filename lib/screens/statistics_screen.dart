@@ -24,22 +24,6 @@ const Color orange600 = Color(0XFFEA580C);
 const Color mutedForeground = AppColors.mutedForeground;
 const Color borderGray = AppColors.gray200;
 
-class StatsCardItem {
-  final String title;
-  final String value;
-  final IconData icon;
-  final Color color;
-  final Color bgColor;
-
-  const StatsCardItem({
-    required this.title,
-    required this.value,
-    required this.icon,
-    required this.color,
-    required this.bgColor,
-  });
-}
-
 class StatisticsScreen extends StatefulWidget {
   final int dailyGoal;
 
