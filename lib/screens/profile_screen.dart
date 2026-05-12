@@ -77,8 +77,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           widget.onDailyGoalChange(newGoal);
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
-              content: Text(
-                  '${AppLocalizations.of(context)!.dailyGoal}: $newGoal мл'),
+              content:
+                  Text(AppLocalizations.of(context)!.dailyGoalUpdated(newGoal)),
               behavior: SnackBarBehavior.floating,
             ),
           );

@@ -56,6 +56,10 @@ class StatisticsCalculator {
     required DateTime now,
     required List<String> weekdayLabels,
   }) {
+    assert(
+      weekdayLabels.length == 7,
+      'weekdayLabels must contain exactly 7 labels (Mon..Sun).',
+    );
     DateTime dayStart(DateTime d) => DateTime(d.year, d.month, d.day);
     bool isSameDay(DateTime a, DateTime b) =>
         a.year == b.year && a.month == b.month && a.day == b.day;

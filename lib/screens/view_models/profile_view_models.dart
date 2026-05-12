@@ -51,7 +51,7 @@ class ProfileSectionsBuilder {
         items: [
           ProfileItemViewModel(
             label: loc.dailyGoal,
-            value: '$dailyGoal мл',
+            value: '$dailyGoal ${loc.unitMl}',
             action: onGoalTap,
             icon: Icons.flag_outlined,
             kind: ProfileItemKind.action,

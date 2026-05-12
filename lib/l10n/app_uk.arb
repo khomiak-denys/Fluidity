@@ -95,6 +95,19 @@
     "statsAverageTitle": "В середньому за день",
     "statsWeekTotalTitle": "Загалом за тиждень",
         "statsMonthTotalTitle": "Загалом за місяць",
+    "todayEntriesCount": "Сьогоднішні записи ({count})",
+    "@todayEntriesCount": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "dailyGoalUpdated": "Добову ціль оновлено: {goal} мл",
+    "@dailyGoalUpdated": {
+        "placeholders": {
+            "goal": {}
+        }
+    },
+    "unitMl": "мл",
     "entryDeleted": "Запис видалено",
     "typeLabel": "Тип",
         "addCommentHint": "Додайте коментар (необов’язково)",

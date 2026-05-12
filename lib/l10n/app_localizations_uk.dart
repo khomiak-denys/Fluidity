@@ -278,6 +278,19 @@ class AppLocalizationsUk extends AppLocalizations {
   String get statsMonthTotalTitle => 'Загалом за місяць';
 
   @override
+  String todayEntriesCount(Object count) {
+    return 'Сьогоднішні записи ($count)';
+  }
+
+  @override
+  String dailyGoalUpdated(Object goal) {
+    return 'Добову ціль оновлено: $goal мл';
+  }
+
+  @override
+  String get unitMl => 'мл';
+
+  @override
   String get entryDeleted => 'Запис видалено';
 
   @override

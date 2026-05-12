@@ -399,7 +399,7 @@ class _EntriesListCard extends StatelessWidget {
           Padding(
             padding: const EdgeInsets.fromLTRB(16, 16, 16, 12), // pb-3
             child: Text(
-              'Сьогоднішні записи (${entries.length})',
+              AppLocalizations.of(context)!.todayEntriesCount(entries.length),
               style: const TextStyle(
                   fontSize: 18, fontWeight: FontWeight.bold, color: sky700),
             ),

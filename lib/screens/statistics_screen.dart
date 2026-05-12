@@ -146,8 +146,9 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
                     .fadeIn(duration: 500.ms, delay: 400.ms)
                     .slideY(begin: 0.2, end: 0),
               const SizedBox(height: 20),
-              if (_period == StatsPeriod.day && entries.isNotEmpty)
-                _buildHourlyDistributionCard(context, entries)
+              if (_period == StatsPeriod.day &&
+                  summary.filteredEntries.isNotEmpty)
+                _buildHourlyDistributionCard(context, summary.filteredEntries)
                     .animate()
                     .fadeIn(duration: 500.ms, delay: 600.ms)
                     .slideY(begin: 0.2, end: 0),
@@ -443,12 +444,7 @@ class _StatisticsScreenState extends State<StatisticsScreen> {
             padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: entries.where((e) {
-                final n = DateTime.now();
-                return e.timestamp.year == n.year &&
-                    e.timestamp.month == n.month &&
-                    e.timestamp.day == n.day;
-              }).map((entry) {
+              children: entries.map((entry) {
                 String fmt(DateTime dt) {
                   final hh = dt.hour.toString().padLeft(2, '0');
                   final mm = dt.minute.toString().padLeft(2, '0');

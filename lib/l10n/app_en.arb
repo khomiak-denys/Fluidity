@@ -95,6 +95,19 @@
     "statsAverageTitle": "Daily average",
     "statsWeekTotalTitle": "Weekly total",
         "statsMonthTotalTitle": "Monthly total",
+    "todayEntriesCount": "Today's entries ({count})",
+    "@todayEntriesCount": {
+        "placeholders": {
+            "count": {}
+        }
+    },
+    "dailyGoalUpdated": "Daily goal updated: {goal} ml",
+    "@dailyGoalUpdated": {
+        "placeholders": {
+            "goal": {}
+        }
+    },
+    "unitMl": "ml",
     "entryDeleted": "Entry deleted",
     "typeLabel": "Type",
         "addCommentHint": "Add a comment (optional)",

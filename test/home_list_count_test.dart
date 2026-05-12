@@ -64,6 +64,6 @@ void main() {
     await tester.pumpWidget(makeApp(const HomeScreen(dailyGoal: 2000), bloc));
     await tester.pump();
 
-    expect(find.text('Сьогоднішні записи (2)'), findsOneWidget);
+    expect(find.text("Today's entries (2)"), findsOneWidget);
   });
 }
