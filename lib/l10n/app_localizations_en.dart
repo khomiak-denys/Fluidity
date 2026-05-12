@@ -278,6 +278,19 @@ class AppLocalizationsEn extends AppLocalizations {
   String get statsMonthTotalTitle => 'Monthly total';
 
   @override
+  String todayEntriesCount(Object count) {
+    return 'Today\'s entries ($count)';
+  }
+
+  @override
+  String dailyGoalUpdated(Object goal) {
+    return 'Daily goal updated: $goal ml';
+  }
+
+  @override
+  String get unitMl => 'ml';
+
+  @override
   String get entryDeleted => 'Entry deleted';
 
   @override

@@ -629,6 +629,24 @@ abstract class AppLocalizations {
   /// **'Monthly total'**
   String get statsMonthTotalTitle;
 
+  /// No description provided for @todayEntriesCount.
+  ///
+  /// In en, this message translates to:
+  /// **'Today\'s entries ({count})'**
+  String todayEntriesCount(Object count);
+
+  /// No description provided for @dailyGoalUpdated.
+  ///
+  /// In en, this message translates to:
+  /// **'Daily goal updated: {goal} ml'**
+  String dailyGoalUpdated(Object goal);
+
+  /// No description provided for @unitMl.
+  ///
+  /// In en, this message translates to:
+  /// **'ml'**
+  String get unitMl;
+
   /// No description provided for @entryDeleted.
   ///
   /// In en, this message translates to:
