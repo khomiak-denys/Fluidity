@@ -74,17 +74,14 @@ class StatisticsCalculator {
         final end = start.add(const Duration(days: 1));
         filtered = entries
             .where((e) =>
-                e.timestamp
-                    .isAfter(start.subtract(const Duration(milliseconds: 1))) &&
-                e.timestamp.isBefore(end))
+                !e.timestamp.isBefore(start) && e.timestamp.isBefore(end))
             .toList();
         bars = const <StatsBarItem>[];
         break;
       case StatsPeriod.week:
         filtered = entries
             .where((e) =>
-                e.timestamp.isAfter(
-                    startOfWeek.subtract(const Duration(milliseconds: 1))) &&
+                !e.timestamp.isBefore(startOfWeek) &&
                 e.timestamp.isBefore(endOfWeek))
             .toList();
         bars = List.generate(7, (i) {
@@ -98,8 +95,7 @@ class StatisticsCalculator {
       case StatsPeriod.month:
         filtered = entries
             .where((e) =>
-                e.timestamp.isAfter(
-                    startOfMonth.subtract(const Duration(milliseconds: 1))) &&
+                !e.timestamp.isBefore(startOfMonth) &&
                 e.timestamp.isBefore(endOfMonth))
             .toList();
         final daysInMonth = endOfMonth.difference(startOfMonth).inDays;
@@ -124,14 +120,12 @@ class StatisticsCalculator {
 
     final weekTotal = entries
         .where((e) =>
-            e.timestamp.isAfter(
-                startOfWeek.subtract(const Duration(milliseconds: 1))) &&
+            !e.timestamp.isBefore(startOfWeek) &&
             e.timestamp.isBefore(endOfWeek))
         .fold<int>(0, (s, e) => s + e.amountMl);
     final monthTotal = entries
         .where((e) =>
-            e.timestamp.isAfter(
-                startOfMonth.subtract(const Duration(milliseconds: 1))) &&
+            !e.timestamp.isBefore(startOfMonth) &&
             e.timestamp.isBefore(endOfMonth))
         .fold<int>(0, (s, e) => s + e.amountMl);
 

@@ -94,6 +94,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         ? widget.user['displayName']
         : null;
     final email = widget.user['email'] ?? '';
+    final profileSections = _profileSections;
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -121,8 +122,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                       begin: const Offset(0.9, 0.9),
                       end: const Offset(1.0, 1.0)),
               const SizedBox(height: 20),
-              ..._profileSections.map((section) {
-                final sectionIndex = _profileSections.indexOf(section);
+              ...profileSections.asMap().entries.map((entry) {
+                final sectionIndex = entry.key;
+                final section = entry.value;
                 return _buildSettingsSection(context, section)
                     .animate()
                     .fadeIn(
