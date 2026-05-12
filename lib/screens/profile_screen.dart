@@ -4,19 +4,16 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:fluidity/ui/theme_tokens.dart';
 
-// --- Custom Colors (Derived from Tailwind classes) ---
+import 'view_models/profile_view_models.dart';
+
 const Color sky50 = AppColors.sky50;
 const Color cyan50 = AppColors.cyan50;
 const Color sky200 = AppColors.sky200;
 const Color sky600 = AppColors.sky600;
 const Color sky700 = AppColors.sky700;
-const Color green100 = Color(0xFFDCFCE7);
-const Color green700 = Color(0xFF047857);
-const Color red600 = Color(0xFFDC2626); // text-red-600
-const Color red200 = Color(0xFFFECACA); // border-red-200
-const Color red50 = Color(0xFFFEF2F2); // hover:bg-red-50
-const Color mutedForeground = AppColors.mutedForeground; // text-muted-foreground (сірий)
-const Color settingBgColor = Color(0xFFF8FAFC); // hover:bg-sky-100/50
+const Color red600 = Color(0xFFDC2626);
+const Color red200 = Color(0xFFFECACA);
+const Color mutedForeground = AppColors.mutedForeground;
 
 class ProfileScreen extends StatefulWidget {
   final int dailyGoal;
@@ -47,6 +44,17 @@ class ProfileScreen extends StatefulWidget {
 class _ProfileScreenState extends State<ProfileScreen> {
   late TextEditingController _goalController;
 
+  List<ProfileSectionViewModel> get _profileSections =>
+      ProfileSectionsBuilder.build(
+        loc: AppLocalizations.of(context)!,
+        dailyGoal: widget.dailyGoal,
+        notificationsEnabled: widget.notificationsEnabled,
+        onGoalTap: _showGoalDialog,
+        onNotificationsToggle: widget.onNotificationsToggle,
+        language: widget.language,
+        onLanguageChange: widget.onLanguageChange,
+      );
+
   @override
   void initState() {
     super.initState();
@@ -60,7 +68,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
   }
 
   void _showGoalDialog() {
-  _goalController.text = widget.dailyGoal.toString();
+    _goalController.text = widget.dailyGoal.toString();
     showDialog(
       context: context,
       builder: (ctx) => _GoalSettingDialog(
@@ -68,52 +76,27 @@ class _ProfileScreenState extends State<ProfileScreen> {
         onSave: (newGoal) {
           widget.onDailyGoalChange(newGoal);
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('${AppLocalizations.of(context)!.dailyGoal}: $newGoal мл'), behavior: SnackBarBehavior.floating),
+            SnackBar(
+              content: Text(
+                  '${AppLocalizations.of(context)!.dailyGoal}: $newGoal мл'),
+              behavior: SnackBarBehavior.floating,
+            ),
           );
         },
       ),
     );
   }
 
-  // --- Налаштування секцій (як у React-коді) ---
-  List<Map<String, dynamic>> get _profileSections => [
-        {
-          'title': AppLocalizations.of(context)!.settings,
-          'icon': Icons.settings,
-          'items': [
-            {
-              'label': AppLocalizations.of(context)!.dailyGoal,
-              'value': "${widget.dailyGoal} мл",
-              'action': _showGoalDialog,
-              'icon': Icons.flag_outlined,
-            },
-            {
-              'label': AppLocalizations.of(context)!.notifications,
-              'value': widget.notificationsEnabled,
-              'action': widget.onNotificationsToggle,
-              'icon': Icons.notifications_none_outlined,
-              'isSwitch': true,
-            },
-            {
-              'label': AppLocalizations.of(context)!.language,
-              'value': widget.language == "en" ? AppLocalizations.of(context)!.english : AppLocalizations.of(context)!.ukrainian,
-              'action': () => widget.onLanguageChange(
-                    widget.language == "en" ? "uk" : "en",
-                  ),
-              'icon': Icons.language,
-            },
-          ],
-        },
-      ];
-
   @override
   Widget build(BuildContext context) {
-    final userPhone = widget.user["phoneNumber"] ?? "";
-    final displayName = widget.user['displayName']?.isNotEmpty == true ? widget.user['displayName'] : null;
+    final userPhone = widget.user['phoneNumber'] ?? '';
+    final displayName = widget.user['displayName']?.isNotEmpty == true
+        ? widget.user['displayName']
+        : null;
     final email = widget.user['email'] ?? '';
 
     return Scaffold(
-      backgroundColor: Colors.white, // Фон білий, а не світло-блакитний, як у попередньому Flutter-коді
+      backgroundColor: Colors.white,
       appBar: AppBar(
         toolbarHeight: 0,
         backgroundColor: Colors.white,
@@ -122,39 +105,31 @@ class _ProfileScreenState extends State<ProfileScreen> {
       ),
       body: SafeArea(
         child: SingleChildScrollView(
-          // p-3 pb-20 space-y-4
           padding: const EdgeInsets.fromLTRB(16, 12, 16, 96),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
-              // --- Header ---
               _buildHeader(context)
                   .animate()
                   .fadeIn(duration: 500.ms)
                   .slideY(begin: -0.2, end: 0),
-
               const SizedBox(height: 16),
-
-        // --- User Info Card (motion.div) ---
-        _buildUserInfoCard(userPhone, displayName, email)
+              _buildUserInfoCard(userPhone, displayName, email)
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 100.ms)
-                  .scale(begin: const Offset(0.9, 0.9), end: const Offset(1.0, 1.0)),
-
+                  .scale(
+                      begin: const Offset(0.9, 0.9),
+                      end: const Offset(1.0, 1.0)),
               const SizedBox(height: 20),
-
-              // --- Settings Sections ---
               ..._profileSections.map((section) {
-                int sectionIndex = _profileSections.indexOf(section);
+                final sectionIndex = _profileSections.indexOf(section);
                 return _buildSettingsSection(context, section)
                     .animate()
-                    .fadeIn(duration: 500.ms, delay: (200 + sectionIndex * 100).ms)
+                    .fadeIn(
+                        duration: 500.ms, delay: (200 + sectionIndex * 100).ms)
                     .slideY(begin: 0.1, end: 0);
-              }).toList(),
-
+              }),
               const SizedBox(height: 24),
-
-              // --- Sign Out Button (motion.div) ---
               _buildSignOutButton()
                   .animate()
                   .fadeIn(duration: 500.ms, delay: 400.ms)
@@ -174,20 +149,20 @@ class _ProfileScreenState extends State<ProfileScreen> {
           style: const TextStyle(
             fontSize: 22,
             fontWeight: FontWeight.bold,
-            color: sky700, // text-sky-700
+            color: sky700,
           ),
         ),
         const SizedBox(height: 4),
         Text(
           AppLocalizations.of(context)!.profileSubtitle,
-          style: const TextStyle(color: mutedForeground, fontSize: 13), // text-muted-foreground
+          style: const TextStyle(color: mutedForeground, fontSize: 13),
         ),
       ],
     );
   }
 
-  Widget _buildUserInfoCard(String userPhone, String? displayName, String email) {
-    // Card className="bg-gradient-to-r from-sky-50 to-cyan-50 border-sky-200"
+  Widget _buildUserInfoCard(
+      String userPhone, String? displayName, String email) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 2,
@@ -195,15 +170,14 @@ class _ProfileScreenState extends State<ProfileScreen> {
         borderRadius: BorderRadius.circular(12),
         side: const BorderSide(color: sky200, width: 1),
       ),
-      color: sky50, // Емуляція градієнта
+      color: sky50,
       child: Padding(
-        padding: const EdgeInsets.all(16.0), // p-4 sm:p-6
+        padding: const EdgeInsets.all(16.0),
         child: Row(
           children: [
-            // Avatar (bg-gradient-to-r from-sky-500 to-cyan-500)
             Container(
-              width: 56, // w-16 sm:w-16
-              height: 56, // h-16 sm:h-16
+              width: 56,
+              height: 56,
               decoration: const BoxDecoration(
                 shape: BoxShape.circle,
                 gradient: LinearGradient(
@@ -212,17 +186,26 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   end: Alignment.bottomRight,
                 ),
               ),
-              child: const Icon(Icons.person, color: Colors.white, size: 32), // w-8 h-8 text-white
+              child: const Icon(Icons.person, color: Colors.white, size: 32),
             ),
             const SizedBox(width: 16),
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(displayName ?? AppLocalizations.of(context)!.greeting, style: const TextStyle(fontWeight: FontWeight.w600, color: sky700)), // font-semibold text-sky-700
-                if (email.isNotEmpty) Text(email, style: const TextStyle(color: mutedForeground, fontSize: 13)),
-                if (email.isEmpty) Text(userPhone, style: const TextStyle(color: mutedForeground, fontSize: 13)), // text-sm text-muted-foreground
+                Text(
+                  displayName ?? AppLocalizations.of(context)!.greeting,
+                  style: const TextStyle(
+                      fontWeight: FontWeight.w600, color: sky700),
+                ),
+                if (email.isNotEmpty)
+                  Text(email,
+                      style: const TextStyle(
+                          color: mutedForeground, fontSize: 13)),
+                if (email.isEmpty)
+                  Text(userPhone,
+                      style: const TextStyle(
+                          color: mutedForeground, fontSize: 13)),
                 const SizedBox(height: 4),
-                // Removed demo user badge per request
               ],
             ),
           ],
@@ -231,9 +214,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSettingsSection(BuildContext context, Map<String, dynamic> section) {
-  final sectionIcon = section['icon'] as IconData;
-
+  Widget _buildSettingsSection(
+      BuildContext context, ProfileSectionViewModel section) {
     return Card(
       margin: EdgeInsets.zero,
       elevation: 1,
@@ -241,29 +223,28 @@ class _ProfileScreenState extends State<ProfileScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // CardHeader
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4), // pb-3
+            padding: const EdgeInsets.fromLTRB(16, 16, 16, 4),
             child: Row(
               children: [
-                Icon(sectionIcon, color: sky700, size: 20), // w-5 h-5 text-sky-700
+                Icon(section.icon, color: sky700, size: 20),
                 const SizedBox(width: 8),
                 Text(
-                  section['title'] as String,
-                  style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: sky700), // CardTitle text-sky-700
+                  section.title,
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold, color: sky700),
                 ),
               ],
             ),
           ),
-          // CardContent
           Padding(
-            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16), // pt-0, space-y-3
+            padding: const EdgeInsets.fromLTRB(16, 8, 16, 16),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
-              children: (section['items'] as List<Map<String, dynamic>>).map((item) {
+              children: section.items.map((item) {
                 return Padding(
                   padding: const EdgeInsets.symmetric(vertical: 4.0),
-                  child: item['isSwitch'] == true
+                  child: item.kind == ProfileItemKind.toggle
                       ? _buildSwitchItem(item: item)
                       : _buildSettingItem(item: item),
                 );
@@ -275,58 +256,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
-  Widget _buildSettingItem({required Map<String, dynamic> item}) {
-  final itemIcon = item['icon'] as IconData;
-    final String label = item['label'] as String;
-    final String value = item['value'] as String;
-    final VoidCallback onTap = item['action'] as VoidCallback;
-
+  Widget _buildSettingItem({required ProfileItemViewModel item}) {
     return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(8),
-      // bg-sky-50 rounded-lg hover:bg-sky-100 transition-colors
-      child: Container(
-        padding: const EdgeInsets.all(12), // p-3
-        decoration: BoxDecoration(
-          color: sky50,
-          borderRadius: BorderRadius.circular(8),
-        ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            Row(
-              children: [
-                // Icon wrapper (w-8 h-8 bg-white rounded-full)
-                Container(
-                  width: 32,
-                  height: 32,
-                  decoration: const BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: Colors.white,
-                  ),
-                  child: Icon(itemIcon, size: 16, color: sky600), // w-4 h-4 text-sky-600
-                ),
-                const SizedBox(width: 12),
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: sky700, fontSize: 15)), // font-medium text-sky-700 text-sm sm:text-base
-              ],
-            ),
-            Text(
-              value,
-              style: const TextStyle(color: mutedForeground, fontSize: 13), // text-muted-foreground text-xs sm:text-sm
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildSwitchItem({required Map<String, dynamic> item}) {
-  final itemIcon = item['icon'] as IconData;
-    final String label = item['label'] as String;
-    final VoidCallback onToggle = item['action'] as VoidCallback;
-
-    return InkWell(
-      onTap: onToggle,
+      onTap: item.action,
       borderRadius: BorderRadius.circular(8),
       child: Container(
         padding: const EdgeInsets.all(12),
@@ -339,7 +271,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             Row(
               children: [
-                // Icon wrapper
                 Container(
                   width: 32,
                   height: 32,
@@ -347,18 +278,70 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     shape: BoxShape.circle,
                     color: Colors.white,
                   ),
-                  child: Icon(itemIcon, size: 16, color: sky600),
+                  child: Icon(item.icon, size: 16, color: sky600),
                 ),
                 const SizedBox(width: 12),
-                Text(label, style: const TextStyle(fontWeight: FontWeight.w500, color: sky700, fontSize: 15)),
+                Text(
+                  item.label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: sky700,
+                    fontSize: 15,
+                  ),
+                ),
               ],
             ),
-              Switch(
-                value: widget.notificationsEnabled,
-                onChanged: (_) => onToggle(),
-                activeThumbColor: sky600,
-                activeTrackColor: sky600.withAlpha((0.24 * 255).round()), // Колір акценту
-              ),
+            Text(
+              item.value,
+              style: const TextStyle(color: mutedForeground, fontSize: 13),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSwitchItem({required ProfileItemViewModel item}) {
+    return InkWell(
+      onTap: item.action,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.all(12),
+        decoration: BoxDecoration(
+          color: sky50,
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Row(
+              children: [
+                Container(
+                  width: 32,
+                  height: 32,
+                  decoration: const BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: Colors.white,
+                  ),
+                  child: Icon(item.icon, size: 16, color: sky600),
+                ),
+                const SizedBox(width: 12),
+                Text(
+                  item.label,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    color: sky700,
+                    fontSize: 15,
+                  ),
+                ),
+              ],
+            ),
+            Switch(
+              value: widget.notificationsEnabled,
+              onChanged: (_) => item.action(),
+              activeThumbColor: sky600,
+              activeTrackColor: sky600.withAlpha((0.24 * 255).round()),
+            ),
           ],
         ),
       ),
@@ -372,32 +355,30 @@ class _ProfileScreenState extends State<ProfileScreen> {
         OutlinedButton(
           onPressed: widget.onSignOut,
           style: OutlinedButton.styleFrom(
-            foregroundColor: red600, // text-red-600
+            foregroundColor: red600,
             backgroundColor: Colors.white,
-            side: const BorderSide(color: red200, width: 1), // border-red-200
-            minimumSize: const Size(double.infinity, 56), // w-full h-12 sm:h-14
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+            side: const BorderSide(color: red200, width: 1),
+            minimumSize: const Size(double.infinity, 56),
+            shape:
+                RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
           ),
           child: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                const Icon(Icons.logout, size: 20), // w-4 h-4 mr-2
-                const SizedBox(width: 8),
-                Text(
-                  AppLocalizations.of(context)!.signOut,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
-                ),
-              ],
-            ),
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Icon(Icons.logout, size: 20),
+              const SizedBox(width: 8),
+              Text(
+                AppLocalizations.of(context)!.signOut,
+                style:
+                    const TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              ),
+            ],
+          ),
         ),
       ],
     );
   }
 }
-
-// =========================================================================
-// DIALOG
-// =========================================================================
 
 class _GoalSettingDialog extends StatefulWidget {
   final int initialGoal;
@@ -439,23 +420,23 @@ class _GoalSettingDialogState extends State<_GoalSettingDialog> {
     final isDisabled = goal <= 0 || goal > 5000;
 
     return AlertDialog(
-      // Імітація w-[90vw] max-w-sm
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
       contentPadding: EdgeInsets.zero,
       titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
-      
-  // DialogHeader
-  title: Text(AppLocalizations.of(context)!.setGoal, style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold)), 
-      
-      // DialogContent
+      title: Text(
+        AppLocalizations.of(context)!.setGoal,
+        style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+      ),
       content: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Amount Input
-            Text(AppLocalizations.of(context)!.dailyGoalMl, style: const TextStyle(fontSize: 14, color: mutedForeground)), // Label text-sm
+            Text(
+              AppLocalizations.of(context)!.dailyGoalMl,
+              style: const TextStyle(fontSize: 14, color: mutedForeground),
+            ),
             const SizedBox(height: 4),
             TextField(
               controller: _controller,
@@ -464,32 +445,34 @@ class _GoalSettingDialogState extends State<_GoalSettingDialog> {
               decoration: const InputDecoration(
                 hintText: null,
                 border: OutlineInputBorder(),
-                contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 12),
+                contentPadding:
+                    EdgeInsets.symmetric(vertical: 10, horizontal: 12),
               ),
             ),
             const SizedBox(height: 4),
             Text(
               AppLocalizations.of(context)!.recommendedGoal,
-              style: const TextStyle(fontSize: 11, color: mutedForeground), // text-xs text-muted-foreground
+              style: const TextStyle(fontSize: 11, color: mutedForeground),
             ),
             const SizedBox(height: 24),
-
-            // Buttons (flex gap-2)
             Row(
               children: [
                 Expanded(
                   child: TextButton(
                     onPressed: () => Navigator.of(context).pop(),
-                    style: TextButton.styleFrom(minimumSize: const Size(0, 44)), // min-h-[44px]
-                    child: Text(AppLocalizations.of(context)!.cancel, style: const TextStyle(fontSize: 16)),
+                    style: TextButton.styleFrom(minimumSize: const Size(0, 44)),
+                    child: Text(
+                      AppLocalizations.of(context)!.cancel,
+                      style: const TextStyle(fontSize: 16),
+                    ),
                   ),
                 ),
-                const SizedBox(width: 8), 
+                const SizedBox(width: 8),
                 Expanded(
                   child: ElevatedButton(
                     onPressed: isDisabled ? null : _handleSave,
                     style: ElevatedButton.styleFrom(
-                      minimumSize: const Size(0, 44), 
+                      minimumSize: const Size(0, 44),
                       backgroundColor: sky600,
                       foregroundColor: Colors.white,
                     ),
