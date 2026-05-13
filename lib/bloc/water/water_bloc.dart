@@ -8,10 +8,10 @@ import 'water_state.dart';
 class WaterBloc extends StreamBackedBloc<WaterEvent, WaterState, WaterEntry> {
   final WaterEntryRepository repo;
 
-  WaterBloc({required this.repo, required super.userId}) : super(initialState: WaterInitial()) {
+  WaterBloc({required this.repo, required super.userId})
+      : super(initialState: WaterInitial()) {
     on<LoadWaterEvent>(_onLoad);
     on<RefreshWaterEvent>(_onLoad);
-    on<SimulateErrorEvent>(_onSimulateError);
     on<AddWaterEntryEvent>(_onAddEntry);
     on<DeleteWaterEntryEvent>(_onDeleteEntry);
     on<_WaterStreamUpdated>(_onStreamUpdated);
@@ -26,33 +26,26 @@ class WaterBloc extends StreamBackedBloc<WaterEvent, WaterState, WaterEntry> {
     );
   }
 
-  Future<void> _onSimulateError(SimulateErrorEvent event, Emitter<WaterState> emit) async {
-    final currentData = state is WaterLoaded ? (state as WaterLoaded).data : <WaterEntry>[];
-    emit(WaterLoading(data: currentData));
-    await Future.delayed(const Duration(milliseconds: 300));
-    try {
-      throw 'Simulated error';
-    } catch (e) {
-      emit(WaterError(error: e, data: currentData));
-    }
-  }
-
-  Future<void> _onAddEntry(AddWaterEntryEvent event, Emitter<WaterState> emit) async {
+  Future<void> _onAddEntry(
+      AddWaterEntryEvent event, Emitter<WaterState> emit) async {
     if (userId.isEmpty) return;
     try {
       await repo.add(userId, event.entry);
     } catch (e) {
-      final currentData = state is WaterLoaded ? (state as WaterLoaded).data : <WaterEntry>[];
+      final currentData =
+          state is WaterLoaded ? (state as WaterLoaded).data : <WaterEntry>[];
       emit(WaterError(error: e, data: currentData));
     }
   }
 
-  Future<void> _onDeleteEntry(DeleteWaterEntryEvent event, Emitter<WaterState> emit) async {
+  Future<void> _onDeleteEntry(
+      DeleteWaterEntryEvent event, Emitter<WaterState> emit) async {
     if (userId.isEmpty) return;
     try {
       await repo.delete(userId, event.id);
     } catch (e) {
-      final currentData = state is WaterLoaded ? (state as WaterLoaded).data : <WaterEntry>[];
+      final currentData =
+          state is WaterLoaded ? (state as WaterLoaded).data : <WaterEntry>[];
       emit(WaterError(error: e, data: currentData));
     }
   }
@@ -80,7 +73,8 @@ class WaterBloc extends StreamBackedBloc<WaterEvent, WaterState, WaterEntry> {
   WaterState loadedState(List<WaterEntry> data) => WaterLoaded(data: data);
 
   @override
-  WaterState errorState(Object error, List<WaterEntry> data) => WaterError(error: error, data: data);
+  WaterState errorState(Object error, List<WaterEntry> data) =>
+      WaterError(error: error, data: data);
 
   @override
   Stream<List<WaterEntry>> watchAll(String userId) => repo.watchAll(userId);

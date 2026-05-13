@@ -6,8 +6,6 @@ class LoadWaterEvent extends WaterEvent {}
 
 class RefreshWaterEvent extends WaterEvent {}
 
-class SimulateErrorEvent extends WaterEvent {}
-
 class AddWaterEntryEvent extends WaterEvent {
   final WaterEntry entry;
   AddWaterEntryEvent(this.entry);
