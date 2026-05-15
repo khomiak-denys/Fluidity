@@ -158,10 +158,7 @@ class _HomeScreenState extends State<HomeScreen> {
       now: DateTime.now(),
     );
 
-    return BlocListener<WaterBloc, WaterState>(
-      listener: (context,
-          state) {}, // keep listener for future hooks; inline error UI shows the error
-      child: Scaffold(
+    return Scaffold(
         // AppBar приховано, оскільки Header тепер є частиною скролінгу, як у React
         appBar: AppBar(
           toolbarHeight: 0,
@@ -224,8 +221,7 @@ class _HomeScreenState extends State<HomeScreen> {
           ],
         ),
         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
-      ),
-    );
+      );
   }
 }
 
