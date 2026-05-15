@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/water_entry.dart';
+import '../ui/drink_meta.dart';
 import '../utils/time_format.dart';
 
 class WaterIntakeCard extends StatelessWidget {
@@ -13,18 +14,6 @@ class WaterIntakeCard extends StatelessWidget {
     required this.onDelete,
     this.unit = 'ml',
   });
-
-  static const Map<String, String> typeIcons = {
-    'glass': '🥛',
-    'bottle': '🍼',
-    'cup': '☕',
-  };
-
-  static const Map<String, String> typeLabels = {
-    'glass': 'Glass',
-    'bottle': 'Bottle',
-    'cup': 'Cup',
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -52,7 +41,7 @@ class WaterIntakeCard extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      typeIcons[entry.drinkType] ?? '💧',
+                      drinkTypeIcons[entry.drinkType] ?? '💧',
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
@@ -90,7 +79,7 @@ class WaterIntakeCard extends StatelessWidget {
                               borderRadius: BorderRadius.circular(6),
                             ),
                             child: Text(
-                              typeLabels[entry.drinkType] ?? 'Custom',
+                              drinkTypeLabels[entry.drinkType] ?? 'Custom',
                               style: const TextStyle(fontSize: 10),
                             ),
                           ),
@@ -111,3 +100,4 @@ class WaterIntakeCard extends StatelessWidget {
     );
   }
 }
+

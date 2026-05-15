@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/water_entry.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
+import '../ui/drink_meta.dart';
 import '../utils/time_format.dart';
 // import 'package:fluidity/ui/button.dart'; // not needed anymore
 
@@ -15,18 +16,6 @@ class WaterEntryDetailScreen extends StatelessWidget {
   final WaterEntry entry;
 
   const WaterEntryDetailScreen({super.key, required this.entry});
-
-  static const Map<String, String> _typeIcons = {
-    'glass': '🥛',
-    'bottle': '🍼',
-    'cup': '☕',
-  };
-
-  static const Map<String, String> _typeLabels = {
-    'glass': 'Glass',
-    'bottle': 'Bottle',
-    'cup': 'Cup',
-  };
 
   @override
   Widget build(BuildContext context) {
@@ -89,7 +78,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)],
                             ),
                             alignment: Alignment.center,
-                            child: Text(_typeIcons[entry.drinkType] ?? '💧', style: const TextStyle(fontSize: 28)),
+                            child: Text(drinkTypeIcons[entry.drinkType] ?? '💧', style: const TextStyle(fontSize: 28)),
                           ),
                           const SizedBox(width: 12),
                           Column(
@@ -110,7 +99,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                            child: Row(mainAxisSize: MainAxisSize.min, children: [Text(_typeLabels[entry.drinkType] ?? entry.drinkType), const SizedBox(width: 6), Text('•', style: TextStyle(color: Colors.grey.shade400)), const SizedBox(width: 6), Text('${entry.amountMl} ml', style: const TextStyle(fontWeight: FontWeight.w600))]),
+                            child: Row(mainAxisSize: MainAxisSize.min, children: [Text(drinkTypeLabels[entry.drinkType] ?? entry.drinkType), const SizedBox(width: 6), Text('•', style: TextStyle(color: Colors.grey.shade400)), const SizedBox(width: 6), Text('${entry.amountMl} ml', style: const TextStyle(fontWeight: FontWeight.w600))]),
                           ),
                         ],
                       ),
@@ -134,3 +123,4 @@ class WaterEntryDetailScreen extends StatelessWidget {
     );
   }
 }
+
