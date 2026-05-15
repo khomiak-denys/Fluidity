@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/water_entry.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
+import '../utils/time_format.dart';
 // import 'package:fluidity/ui/button.dart'; // not needed anymore
 
 // Local color tokens (kept small to avoid circular imports)
@@ -29,11 +30,6 @@ class WaterEntryDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _formatTime(DateTime dt) {
-      final hh = dt.hour.toString().padLeft(2, '0');
-      final mm = dt.minute.toString().padLeft(2, '0');
-      return '$hh:$mm';
-    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -101,7 +97,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                             children: [
                               Text('${entry.amountMl} ml', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _sky600)),
                               const SizedBox(height: 6),
-                              Row(children: [const Icon(Icons.access_time, size: 14, color: Colors.grey), const SizedBox(width: 6), Text(_formatTime(entry.timestamp), style: const TextStyle(color: Colors.grey))]),
+                              Row(children: [const Icon(Icons.access_time, size: 14, color: Colors.grey), const SizedBox(width: 6), Text(formatHm(entry.timestamp), style: const TextStyle(color: Colors.grey))]),
                             ],
                           ),
                         ],

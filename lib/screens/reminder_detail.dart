@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/reminder_setting.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
+import '../utils/time_format.dart';
 
 // Local color tokens to match app style
 const Color _sky50 = Color(0xFFF0F9FF);
@@ -16,11 +17,6 @@ class ReminderDetailScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    String _formatTime(DateTime dt) {
-      final hh = dt.hour.toString().padLeft(2, '0');
-      final mm = dt.minute.toString().padLeft(2, '0');
-      return '$hh:$mm';
-    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -89,7 +85,7 @@ class ReminderDetailScreen extends StatelessWidget {
                           Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(_formatTime(reminder.scheduledTime), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _sky600)),
+                              Text(formatHm(reminder.scheduledTime), style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _sky600)),
                               const SizedBox(height: 6),
                               Text(reminder.comment, style: const TextStyle(color: Colors.grey)),
                             ],
@@ -116,7 +112,7 @@ class ReminderDetailScreen extends StatelessWidget {
                       // Additional info area
                       Text(AppLocalizations.of(context)!.selectTime, style: const TextStyle(fontWeight: FontWeight.w600)),
                       const SizedBox(height: 6),
-                      Text(_formatTime(reminder.scheduledTime), style: const TextStyle(fontSize: 14, color: Colors.black87)),
+                      Text(formatHm(reminder.scheduledTime), style: const TextStyle(fontSize: 14, color: Colors.black87)),
                       const SizedBox(height: 16),
 
                       // Read-only details, no actions here

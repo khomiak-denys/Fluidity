@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../models/water_entry.dart';
+import '../utils/time_format.dart';
 
 class WaterIntakeCard extends StatelessWidget {
   final WaterEntry entry;
@@ -78,7 +79,7 @@ class WaterIntakeCard extends StatelessWidget {
                           const Icon(Icons.access_time, size: 12, color: Colors.grey),
                           const SizedBox(width: 4),
                           Text(
-                            _formatTime(entry.timestamp),
+                            formatHm(entry.timestamp),
                             style: const TextStyle(fontSize: 12, color: Colors.grey),
                           ),
                           const SizedBox(width: 6),
@@ -109,10 +110,4 @@ class WaterIntakeCard extends StatelessWidget {
       ),
     );
   }
-}
-
-String _formatTime(DateTime dt) {
-  final hh = dt.hour.toString().padLeft(2, '0');
-  final mm = dt.minute.toString().padLeft(2, '0');
-  return '$hh:$mm';
 }

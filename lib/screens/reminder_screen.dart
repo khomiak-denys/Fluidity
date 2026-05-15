@@ -3,6 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
 import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:fluidity/ui/theme_tokens.dart';
+import 'package:fluidity/utils/time_format.dart';
 import '../models/reminder.dart';
 import 'reminder_detail.dart';
 import '../models/reminder_setting.dart';
@@ -160,11 +161,6 @@ class _RemindersScreenState extends State<RemindersScreen> {
   }
 
   Widget _buildReminderList() {
-    String _fmt(DateTime dt) {
-      final hh = dt.hour.toString().padLeft(2, '0');
-      final mm = dt.minute.toString().padLeft(2, '0');
-      return '$hh:$mm';
-    }
     final state = context.watch<ReminderBloc>().state;
     final items = state is ReminderLoaded
         ? state.data
@@ -182,7 +178,7 @@ class _RemindersScreenState extends State<RemindersScreen> {
     }
     // Map domain items to UI reminders for display
     final ui = items
-        .map((r) => Reminder(id: r.id, time: _fmt(r.scheduledTime), label: r.comment, enabled: r.isActive))
+        .map((r) => Reminder(id: r.id, time: formatHm(r.scheduledTime), label: r.comment, enabled: r.isActive))
         .toList();
 
     return Column(
@@ -342,9 +338,7 @@ class __AddReminderDialogState extends State<_AddReminderDialog> {
     final dt = DateTime(
         now.year, now.month, now.day, _selectedTime!.hour, _selectedTime!.minute);
   // Avoid intl dependency issues in some environments — format manually
-    final hh = dt.hour.toString().padLeft(2, '0');
-    final mm = dt.minute.toString().padLeft(2, '0');
-    return '$hh:$mm';
+    return formatHm(dt);
   }
 
   Future<void> _pickTime() async {
