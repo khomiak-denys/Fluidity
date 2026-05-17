@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../models/water_entry.dart';
 import 'package:fluidity/l10n/app_localizations.dart';
+import '../ui/drink_meta.dart';
+import '../utils/time_format.dart';
 // import 'package:fluidity/ui/button.dart'; // not needed anymore
 
 // Local color tokens (kept small to avoid circular imports)
@@ -15,25 +17,8 @@ class WaterEntryDetailScreen extends StatelessWidget {
 
   const WaterEntryDetailScreen({super.key, required this.entry});
 
-  static const Map<String, String> _typeIcons = {
-    'glass': '🥛',
-    'bottle': '🍼',
-    'cup': '☕',
-  };
-
-  static const Map<String, String> _typeLabels = {
-    'glass': 'Glass',
-    'bottle': 'Bottle',
-    'cup': 'Cup',
-  };
-
   @override
   Widget build(BuildContext context) {
-    String _formatTime(DateTime dt) {
-      final hh = dt.hour.toString().padLeft(2, '0');
-      final mm = dt.minute.toString().padLeft(2, '0');
-      return '$hh:$mm';
-    }
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -59,7 +44,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                   const SizedBox(width: 4),
                   Expanded(
                     child: Text(
-                      '${AppLocalizations.of(context)!.addEntry} (CI demo)',
+                      AppLocalizations.of(context)!.addEntry,
                       style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: _sky600),
                     ),
                   ),
@@ -93,7 +78,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)],
                             ),
                             alignment: Alignment.center,
-                            child: Text(_typeIcons[entry.drinkType] ?? '💧', style: const TextStyle(fontSize: 28)),
+                            child: Text(drinkTypeIcons[entry.drinkType] ?? '💧', style: const TextStyle(fontSize: 28)),
                           ),
                           const SizedBox(width: 12),
                           Column(
@@ -101,7 +86,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                             children: [
                               Text('${entry.amountMl} ml', style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold, color: _sky600)),
                               const SizedBox(height: 6),
-                              Row(children: [const Icon(Icons.access_time, size: 14, color: Colors.grey), const SizedBox(width: 6), Text(_formatTime(entry.timestamp), style: const TextStyle(color: Colors.grey))]),
+                              Row(children: [const Icon(Icons.access_time, size: 14, color: Colors.grey), const SizedBox(width: 6), Text(formatHm(entry.timestamp), style: const TextStyle(color: Colors.grey))]),
                             ],
                           ),
                         ],
@@ -114,7 +99,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
                             decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(8)),
-                            child: Row(mainAxisSize: MainAxisSize.min, children: [Text(_typeLabels[entry.drinkType] ?? entry.drinkType), const SizedBox(width: 6), Text('•', style: TextStyle(color: Colors.grey.shade400)), const SizedBox(width: 6), Text('${entry.amountMl} ml', style: const TextStyle(fontWeight: FontWeight.w600))]),
+                            child: Row(mainAxisSize: MainAxisSize.min, children: [Text(drinkTypeLabels[entry.drinkType] ?? entry.drinkType), const SizedBox(width: 6), Text('•', style: TextStyle(color: Colors.grey.shade400)), const SizedBox(width: 6), Text('${entry.amountMl} ml', style: const TextStyle(fontWeight: FontWeight.w600))]),
                           ),
                         ],
                       ),
@@ -138,3 +123,4 @@ class WaterEntryDetailScreen extends StatelessWidget {
     );
   }
 }
+
