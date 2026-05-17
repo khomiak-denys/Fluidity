@@ -3,7 +3,7 @@ import 'package:flutter_animate/flutter_animate.dart';
 import 'package:flutter/services.dart'; // needed for SystemUiOverlayStyle
 import 'package:fluidity/l10n/app_localizations.dart';
 import 'package:fluidity/ui/theme_tokens.dart';
-import 'package:fluidity/utils/time_format.dart';
+import '../utils/time_format.dart';
 import '../models/reminder.dart';
 import 'reminder_detail.dart';
 import '../models/reminder_setting.dart';
