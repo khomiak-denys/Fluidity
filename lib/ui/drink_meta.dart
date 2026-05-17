@@ -1,7 +1,7 @@
 const Map<String, String> drinkTypeIcons = {
-  'glass': 'рџҐ›',
-  'bottle': 'рџЌј',
-  'cup': 'в•',
+  'glass': '🥛',
+  'bottle': '🍼',
+  'cup': '☕',
 };
 
 const Map<String, String> drinkTypeLabels = {
