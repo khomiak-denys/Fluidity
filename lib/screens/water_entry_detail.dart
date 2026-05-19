@@ -78,7 +78,7 @@ class WaterEntryDetailScreen extends StatelessWidget {
                               boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.04), blurRadius: 6)],
                             ),
                             alignment: Alignment.center,
-                            child: Text(drinkTypeIcons[entry.drinkType] ?? '💧', style: const TextStyle(fontSize: 28)),
+                            child: Text(drinkTypeIcons[entry.drinkType] ?? '\u{1F4A7}', style: const TextStyle(fontSize: 28)),
                           ),
                           const SizedBox(width: 12),
                           Column(
