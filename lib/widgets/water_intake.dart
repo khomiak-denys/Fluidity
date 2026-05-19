@@ -41,7 +41,7 @@ class WaterIntakeCard extends StatelessWidget {
                     ),
                     alignment: Alignment.center,
                     child: Text(
-                      drinkTypeIcons[entry.drinkType] ?? '💧',
+                      drinkTypeIcons[entry.drinkType] ?? '\u{1F4A7}',
                       style: const TextStyle(fontSize: 20),
                     ),
                   ),
