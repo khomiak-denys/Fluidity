@@ -16,3 +16,11 @@ For help getting started with Flutter development, view the
 samples, guidance on mobile development, and a full API reference.
 
 Note: Emoji characters in source files (for example in `lib/ui/drink_meta.dart`) are stored as Unicode escapes to avoid encoding issues on different platforms.
+
+## Tests
+
+Run the unit and widget tests with:
+
+```bash
+flutter test
+```
