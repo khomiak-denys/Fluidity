@@ -7,3 +7,5 @@
 - fix(screens): use unicode escape for water droplet fallback in `WaterEntryDetailScreen`
 - docs(utils): add import-style comment to `time_format.dart`
 - docs(changelog): record additional small fixes
+ - chore(repo): add .gitattributes to enforce line endings and encoding
+ - test(utils): add formatHm unit test
