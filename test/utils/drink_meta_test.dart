@@ -13,4 +13,9 @@ void main() {
     expect(drinkTypeLabels['bottle'], 'Bottle');
     expect(drinkTypeLabels['cup'], 'Cup');
   });
+
+  test('drink meta maps expose consistent keys', () {
+    expect(drinkTypeIcons.keys.toSet(), drinkTypeLabels.keys.toSet());
+    expect(drinkTypeIcons.length, 3);
+  });
 }
