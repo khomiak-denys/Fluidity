@@ -24,3 +24,5 @@ Run the unit and widget tests with:
 ```bash
 flutter test
 ```
+
+Test files live under `test/`. For more details, see TESTING.md.
