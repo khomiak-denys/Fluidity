@@ -23,3 +23,17 @@ flutter test --plain-name "formatHm"
 ```bash
 flutter test --fail-fast
 ```
+
+## Coverage
+
+```bash
+flutter test --coverage
+```
+
+Coverage output is written to `coverage/lcov.info`.
+
+## Widget tests
+
+```bash
+flutter test test/home_list_count_test.dart
+```
