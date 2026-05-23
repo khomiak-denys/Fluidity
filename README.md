@@ -25,4 +25,4 @@ Run the unit and widget tests with:
 flutter test
 ```
 
-Test files live under `test/`. For more details, see TESTING.md.
+Test files live under `test/`. For more details, see [TESTING.md](TESTING.md).
