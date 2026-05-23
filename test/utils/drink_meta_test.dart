@@ -18,4 +18,9 @@ void main() {
     expect(drinkTypeIcons.keys.toSet(), drinkTypeLabels.keys.toSet());
     expect(drinkTypeIcons.length, 3);
   });
+
+  test('unknown drink type returns null', () {
+    expect(drinkTypeIcons['unknown'], isNull);
+    expect(drinkTypeLabels['unknown'], isNull);
+  });
 }
